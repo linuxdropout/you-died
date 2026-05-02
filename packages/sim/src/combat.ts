@@ -156,7 +156,8 @@ export function checkSlashHits(state: GameState): HitResult[] {
       if (timeline.severed) continue
       if (timeline.replayComplete) continue
       if (timeline.headEndedAtTick === undefined) continue
-      if (timeline.replayOriginTick === undefined || timeline.replayStartTick === undefined) continue
+      if (timeline.replayOriginTick === undefined || timeline.replayStartTick === undefined)
+        continue
 
       const playbackTick = timeline.replayStartTick + (state.tick - timeline.replayOriginTick)
       const index = playbackTick - timeline.startTick
@@ -241,7 +242,8 @@ export function checkProjectileHits(state: GameState): HitResult[] {
       if (!snapshot) continue
       if (!snapshot.state.alive) continue
 
-      if (proj.ownerId === timeline.playerId && proj.ownerTimelineId === timeline.timelineId) continue
+      if (proj.ownerId === timeline.playerId && proj.ownerTimelineId === timeline.timelineId)
+        continue
       if (snapshot.state.isGhost) continue
 
       const plLeft = snapshot.state.pos.x - PLAYER_WIDTH / 2

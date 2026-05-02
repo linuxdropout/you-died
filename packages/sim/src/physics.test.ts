@@ -109,7 +109,9 @@ describe('physics', () => {
       state = step(state, { p1: NO_INPUT, p2: NO_INPUT })
     }
 
-    const events = state.timelines.filter((t) => t.playerId === 'p1' && t.headEndedAtTick !== undefined)
+    const events = state.timelines.filter(
+      (t) => t.playerId === 'p1' && t.headEndedAtTick !== undefined,
+    )
     expect(events.length).toBeGreaterThan(0)
   })
 

@@ -59,9 +59,7 @@ describe('combat', () => {
 
     state = step(state, { p1: inputWith({ slash: true }), p2: NO_INPUT })
 
-    const hasDeathEvent = state.events.some(
-      (e) => e.type === 'death' && e.playerId === 'p2',
-    )
+    const hasDeathEvent = state.events.some((e) => e.type === 'death' && e.playerId === 'p2')
     expect(hasDeathEvent).toBe(true)
   })
 
@@ -216,7 +214,10 @@ describe('combat', () => {
     for (let i = 0; i < 20; i++) {
       state = step(state, { p1: NO_INPUT, p2: NO_INPUT })
       const p1Now = getPlayer(state, 'p1')
-      if (state.timelines.filter((t) => t.playerId === 'p1' && t.headEndedAtTick !== undefined).length > 1) {
+      if (
+        state.timelines.filter((t) => t.playerId === 'p1' && t.headEndedAtTick !== undefined)
+          .length > 1
+      ) {
         expect(p1Now.alive).toBe(true)
         return
       }
@@ -257,7 +258,9 @@ describe('combat', () => {
     const p1After = getPlayer(state, 'p1')
     expect(p1After.alive).toBe(true)
 
-    const p1Timelines = state.timelines.filter((t) => t.playerId === 'p1' && t.headEndedAtTick !== undefined)
+    const p1Timelines = state.timelines.filter(
+      (t) => t.playerId === 'p1' && t.headEndedAtTick !== undefined,
+    )
     expect(p1Timelines.length).toBe(1)
   })
 })

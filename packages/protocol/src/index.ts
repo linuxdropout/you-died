@@ -20,8 +20,21 @@ export type ClientMessage =
   | { type: 'stateHash'; tick: number; hash: number }
 
 export type ServerMessage =
-  | { type: 'roomState'; players: LobbyPlayer[]; countdownSeconds: number | null; roomCode: string; hostId: PlayerId }
-  | { type: 'startMatch'; seed: number; playerId: PlayerId; playerIds: PlayerId[]; playerNames: Record<PlayerId, string>; playerColors: Record<PlayerId, string> }
+  | {
+      type: 'roomState'
+      players: LobbyPlayer[]
+      countdownSeconds: number | null
+      roomCode: string
+      hostId: PlayerId
+    }
+  | {
+      type: 'startMatch'
+      seed: number
+      playerId: PlayerId
+      playerIds: PlayerId[]
+      playerNames: Record<PlayerId, string>
+      playerColors: Record<PlayerId, string>
+    }
   | { type: 'inputs'; tick: number; inputs: Record<PlayerId, PlayerInput> }
   | { type: 'matchEnd'; reason: 'timeout' | 'win'; winnerId?: PlayerId | undefined }
   | { type: 'error'; message: string }

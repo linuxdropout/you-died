@@ -138,16 +138,8 @@ describe('determinism', () => {
       p4: inputWith({ left: tick % 6 === 0, shoot: tick % 13 === 0 }),
     })
 
-    const state1 = runSim(
-      777,
-      200,
-      inputFn,
-    )
-    const state2 = runSim(
-      777,
-      200,
-      inputFn,
-    )
+    const state1 = runSim(777, 200, inputFn)
+    const state2 = runSim(777, 200, inputFn)
 
     expect(stateFingerprint(state1)).toBe(stateFingerprint(state2))
   })
