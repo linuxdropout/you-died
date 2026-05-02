@@ -220,12 +220,19 @@ export function resolveParadoxes(state: GameState): void {
 
 export function processGhostActions(state: GameState): void {
   for (const timeline of state.timelines) {
+    if (timeline.replayComplete) continue
     if (timeline.headEndedAtTick === undefined) continue
     if (timeline.replayOriginTick === undefined || timeline.replayStartTick === undefined) continue
 
     const playbackTick = timeline.replayStartTick + (state.tick - timeline.replayOriginTick)
     const index = playbackTick - timeline.startTick
-    if (index < 0 || index >= timeline.snapshots.length) continue
+    if (index < 0 || index >= timeline.snapshots.length) {
+      if (index >= timeline.snapshots.length) {
+        timeline.replayComplete = true
+        timeline.snapshots = []
+      }
+      continue
+    }
 
     const snapshot = timeline.snapshots[index]
     if (!snapshot) continue
