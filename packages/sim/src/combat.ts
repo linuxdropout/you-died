@@ -93,7 +93,7 @@ export function updateSlashPositions(state: GameState): void {
   for (const slash of state.slashHitboxes) {
     if (slash.isGhost) continue
     const owner = state.players[slash.ownerId]
-    if (!owner || !owner.alive) continue
+    if (!owner?.alive) continue
     if (owner.timelineId !== slash.ownerTimelineId) continue
     slash.pos.x = owner.pos.x + slash.offsetX
     slash.pos.y = owner.pos.y - PLAYER_HEIGHT / 2
@@ -197,7 +197,7 @@ export function checkProjectileHits(state: GameState): HitResult[] {
 
     for (const player of Object.values(state.players)) {
       if (!player.alive) continue
-      if (player.id === proj.ownerId) continue
+      if (player.id === proj.ownerId && player.timelineId === proj.ownerTimelineId) continue
       if (player.isGhost && !proj.isGhost) continue
       if (player.isGhost) continue
 
@@ -235,7 +235,7 @@ export function checkProjectileHits(state: GameState): HitResult[] {
       if (!snapshot) continue
       if (!snapshot.state.alive) continue
 
-      if (proj.ownerId === timeline.playerId) continue
+      if (proj.ownerId === timeline.playerId && proj.ownerTimelineId === timeline.timelineId) continue
       if (snapshot.state.isGhost) continue
 
       const plLeft = snapshot.state.pos.x - PLAYER_WIDTH / 2
