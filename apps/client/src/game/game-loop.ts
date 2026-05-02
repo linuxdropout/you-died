@@ -2,11 +2,12 @@ import type { PlayerInput, PlayerId } from '@you-died/protocol'
 import { TICK_RATE, HASH_CHECK_INTERVAL_TICKS } from '@you-died/protocol'
 import { createInitialState, step, getRenderableState, hashState } from '@you-died/sim'
 import type { GameState } from '@you-died/sim'
-import { GameRenderer } from '@you-died/renderer'
+import { GameRenderer, AudioContextGuard } from '@you-died/renderer'
 import type { MatchContext, HudData, ScreenEvent } from '@you-died/renderer'
 import type { PlayerColor } from '@you-died/assets'
 import type { Room } from 'colyseus.js'
-import { captureInput, initKeyboardListener } from '../input/keyboard'
+import type { FirstUseCallback } from '../input/input'
+import { captureInput, initInputListeners } from '../input/input'
 import { sendMessage } from '../net/connection'
 
 export interface GameLoopConfig {
@@ -17,8 +18,10 @@ export interface GameLoopConfig {
   playerColors: Record<PlayerId, string>
   room: Room
   canvas: HTMLCanvasElement
+  audioGuard?: AudioContextGuard
   onHudUpdate?: (data: HudData) => void
   onScreenEvent?: (event: ScreenEvent) => void
+  onFirstUse?: FirstUseCallback
 }
 
 export interface GameLoop {
@@ -39,8 +42,8 @@ export function createGameLoop(config: GameLoopConfig): GameLoop {
   const confirmedQueue: ConfirmedTick[] = []
   let simInterval: ReturnType<typeof setInterval> | null = null
   let rafId: number | null = null
-  let cleanupKeyboard: (() => void) | null = null
-  const renderer = new GameRenderer()
+  let cleanupInput: (() => void) | null = null
+  const renderer = new GameRenderer(config.audioGuard)
   let initialized = false
   let destroyed = false
 
@@ -70,7 +73,7 @@ export function createGameLoop(config: GameLoopConfig): GameLoop {
 
   return {
     async start() {
-      await renderer.init(canvas)
+      await renderer.init(canvas, `${import.meta.env.BASE_URL}sprites`)
       if (destroyed) {
         renderer.destroy()
         return
@@ -87,7 +90,7 @@ export function createGameLoop(config: GameLoopConfig): GameLoop {
       if (config.onHudUpdate) renderer.onHudUpdate(config.onHudUpdate)
       if (config.onScreenEvent) renderer.onScreenEvent(config.onScreenEvent)
 
-      cleanupKeyboard = initKeyboardListener()
+      cleanupInput = initInputListeners(config.onFirstUse)
       simInterval = setInterval(simTick, 1000 / TICK_RATE)
       rafId = requestAnimationFrame(renderLoop)
     },
@@ -96,7 +99,7 @@ export function createGameLoop(config: GameLoopConfig): GameLoop {
       destroyed = true
       if (simInterval !== null) clearInterval(simInterval)
       if (rafId !== null) cancelAnimationFrame(rafId)
-      if (cleanupKeyboard !== null) cleanupKeyboard()
+      if (cleanupInput !== null) cleanupInput()
       if (initialized) renderer.destroy()
     },
 
