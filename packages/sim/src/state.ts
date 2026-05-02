@@ -14,6 +14,8 @@ export function createInitialState(config: GameConfig): GameState {
     events: [],
     nextEntityId: 1,
     winner: undefined,
+    kills: {},
+    deaths: {},
   }
 
   for (let i = 0; i < config.playerIds.length; i++) {
@@ -36,6 +38,7 @@ export function createInitialState(config: GameConfig): GameState {
       dashTicksRemaining: 0,
       dashCooldownTicks: 0,
       slashTicksRemaining: 0,
+      slashCooldownTicks: 0,
       shootCooldownTicks: 0,
       alive: true,
       isGhost: false,
@@ -43,6 +46,8 @@ export function createInitialState(config: GameConfig): GameState {
     }
 
     state.players[playerId] = player
+    state.kills[playerId] = 0
+    state.deaths[playerId] = 0
   }
 
   return state

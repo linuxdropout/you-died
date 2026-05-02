@@ -85,12 +85,15 @@ export function step(state: GameState, inputs: Record<string, PlayerInput>): Gam
   }
 
   for (const playerId of boundaryDeaths) {
+    state.deaths[playerId] = (state.deaths[playerId] ?? 0) + 1
     handleHeadDeath(state, playerId)
   }
 
   for (const hit of allHits) {
     if (hit.victimIsHead) {
-      handleHeadDeath(state, hit.victimId)
+      state.kills[hit.attackerId] = (state.kills[hit.attackerId] ?? 0) + 1
+      state.deaths[hit.victimId] = (state.deaths[hit.victimId] ?? 0) + 1
+      handleHeadDeath(state, hit.victimId, hit.attackerId)
     } else {
       handlePastDeath(state, hit.victimId, hit.victimTimelineId, hit.attackerTimelineId)
     }

@@ -54,12 +54,13 @@ export function recordSnapshot(
   timeline.snapshots.push(snapshot)
 }
 
-export function handleHeadDeath(state: GameState, playerId: PlayerId): void {
+export function handleHeadDeath(state: GameState, playerId: PlayerId, killerId?: PlayerId): void {
   const player = state.players[playerId]
   if (!player) return
 
   const currentTimeline = findCurrentTimeline(state, playerId)
   if (!currentTimeline) return
+  if (currentTimeline.headEndedAtTick !== undefined) return
 
   const rewindTarget = Math.max(currentTimeline.startTick, state.tick - REWIND_TICKS)
   const snapshotIndex = rewindTarget - currentTimeline.startTick
@@ -82,6 +83,7 @@ export function handleHeadDeath(state: GameState, playerId: PlayerId): void {
     severed: false,
     severedAtSnapshotTick: undefined,
     severedByTimelineId: undefined,
+    replayComplete: false,
   }
   state.timelines.push(newTimeline)
 
@@ -111,7 +113,7 @@ export function handleHeadDeath(state: GameState, playerId: PlayerId): void {
     p.timelineOffset -= state.tick - rewindTarget
   }
 
-  state.events.push({ tick: state.tick, type: 'death', playerId })
+  state.events.push({ tick: state.tick, type: 'death', playerId, ...(killerId ? { killerId } : {}) })
   state.events.push({ tick: state.tick, type: 'rewind', playerId })
 }
 
@@ -265,6 +267,33 @@ export function checkWinCondition(state: GameState): PlayerId | undefined {
   return undefined
 }
 
+export function getTimeoutWinner(state: GameState): PlayerId | undefined {
+  const playerIds = state.config.playerIds
+  if (playerIds.length < 2) return undefined
+
+  let bestId: PlayerId | undefined
+  let bestScore = -Infinity
+  let bestKills = -1
+  let tied = false
+
+  for (const id of playerIds) {
+    const k = state.kills[id] ?? 0
+    const d = state.deaths[id] ?? 0
+    const score = k - d
+
+    if (score > bestScore || (score === bestScore && k > bestKills)) {
+      bestId = id
+      bestScore = score
+      bestKills = k
+      tied = false
+    } else if (score === bestScore && k === bestKills) {
+      tied = true
+    }
+  }
+
+  return tied ? undefined : bestId
+}
+
 export function createInitialTimeline(
   state: GameState,
   playerId: PlayerId,
@@ -282,6 +311,7 @@ export function createInitialTimeline(
     severed: false,
     severedAtSnapshotTick: undefined,
     severedByTimelineId: undefined,
+    replayComplete: false,
   }
 
   return timeline

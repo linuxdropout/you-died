@@ -19,3 +19,4 @@ export type {
 export { createInitialState } from './state.ts'
 export { step } from './step.ts'
 export { getRenderableState } from './render.ts'
+export { getTimeoutWinner } from './timeline.ts'
