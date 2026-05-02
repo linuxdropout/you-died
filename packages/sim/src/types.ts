@@ -22,6 +22,7 @@ export interface PlayerState {
   dashTicksRemaining: number
   dashCooldownTicks: number
   slashTicksRemaining: number
+  slashCooldownTicks: number
   shootCooldownTicks: number
   alive: boolean
   isGhost: boolean
@@ -43,6 +44,7 @@ export interface SlashHitbox {
   ownerId: PlayerId
   ownerTimelineId: TimelineId
   pos: Vec2
+  offsetX: number
   width: number
   height: number
   ticksRemaining: number
@@ -66,6 +68,7 @@ export interface TimelineRecord {
   severed: boolean
   severedAtSnapshotTick: number | undefined
   severedByTimelineId: TimelineId | undefined
+  replayComplete: boolean
 }
 
 export type GameEventType =
@@ -80,6 +83,7 @@ export interface GameEvent {
   tick: number
   type: GameEventType
   playerId: PlayerId
+  killerId?: PlayerId
 }
 
 export interface GameState {
@@ -93,6 +97,8 @@ export interface GameState {
   events: GameEvent[]
   nextEntityId: number
   winner: PlayerId | undefined
+  kills: Record<PlayerId, number>
+  deaths: Record<PlayerId, number>
 }
 
 export interface RenderPlayer {

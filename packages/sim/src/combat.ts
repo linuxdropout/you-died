@@ -6,6 +6,7 @@ import {
   PROJECTILE_WIDTH,
   PROJECTILE_HEIGHT,
   SLASH_DURATION,
+  SLASH_COOLDOWN,
   SLASH_WIDTH,
   SLASH_HEIGHT,
   SLASH_OFFSET_X,
@@ -38,8 +39,9 @@ export function processPlayerActions(
 ): void {
   if (!player.alive) return
 
-  if (input.slash && player.slashTicksRemaining === 0) {
+  if (input.slash && player.slashTicksRemaining === 0 && player.slashCooldownTicks === 0) {
     player.slashTicksRemaining = SLASH_DURATION
+    player.slashCooldownTicks = SLASH_COOLDOWN
     const offsetX = player.facingRight ? SLASH_OFFSET_X : -SLASH_OFFSET_X
     state.slashHitboxes.push({
       id: nextId(state),
@@ -49,6 +51,7 @@ export function processPlayerActions(
         x: player.pos.x + offsetX,
         y: player.pos.y - PLAYER_HEIGHT / 2,
       },
+      offsetX,
       width: SLASH_WIDTH,
       height: SLASH_HEIGHT,
       ticksRemaining: SLASH_DURATION,
@@ -58,6 +61,10 @@ export function processPlayerActions(
 
   if (player.slashTicksRemaining > 0) {
     player.slashTicksRemaining--
+  }
+
+  if (player.slashCooldownTicks > 0) {
+    player.slashCooldownTicks--
   }
 
   if (input.shoot && player.shootCooldownTicks === 0) {
@@ -82,6 +89,17 @@ export function processPlayerActions(
   }
 }
 
+export function updateSlashPositions(state: GameState): void {
+  for (const slash of state.slashHitboxes) {
+    if (slash.isGhost) continue
+    const owner = state.players[slash.ownerId]
+    if (!owner || !owner.alive) continue
+    if (owner.timelineId !== slash.ownerTimelineId) continue
+    slash.pos.x = owner.pos.x + slash.offsetX
+    slash.pos.y = owner.pos.y - PLAYER_HEIGHT / 2
+  }
+}
+
 export function moveProjectiles(state: GameState): void {
   for (const proj of state.projectiles) {
     proj.pos.x += proj.vel.x
@@ -93,6 +111,7 @@ export interface HitResult {
   victimId: string
   victimTimelineId: string
   victimIsHead: boolean
+  attackerId: string
   attackerTimelineId: string
 }
 
@@ -121,6 +140,7 @@ export function checkSlashHits(state: GameState): HitResult[] {
           victimId: player.id,
           victimTimelineId: player.timelineId,
           victimIsHead: true,
+          attackerId: slash.ownerId,
           attackerTimelineId: slash.ownerTimelineId,
         })
       }
@@ -128,6 +148,7 @@ export function checkSlashHits(state: GameState): HitResult[] {
 
     for (const timeline of state.timelines) {
       if (timeline.severed) continue
+      if (timeline.replayComplete) continue
       if (timeline.headEndedAtTick === undefined) continue
       if (timeline.replayOriginTick === undefined || timeline.replayStartTick === undefined) continue
 
@@ -152,6 +173,7 @@ export function checkSlashHits(state: GameState): HitResult[] {
           victimId: timeline.playerId,
           victimTimelineId: timeline.timelineId,
           victimIsHead: false,
+          attackerId: slash.ownerId,
           attackerTimelineId: slash.ownerTimelineId,
         })
       }
@@ -189,6 +211,7 @@ export function checkProjectileHits(state: GameState): HitResult[] {
           victimId: player.id,
           victimTimelineId: player.timelineId,
           victimIsHead: true,
+          attackerId: proj.ownerId,
           attackerTimelineId: proj.ownerTimelineId,
         })
         consumedProjectiles.add(proj.id)
@@ -200,6 +223,7 @@ export function checkProjectileHits(state: GameState): HitResult[] {
 
     for (const timeline of state.timelines) {
       if (timeline.severed) continue
+      if (timeline.replayComplete) continue
       if (timeline.headEndedAtTick === undefined) continue
       if (timeline.replayOriginTick === undefined || timeline.replayStartTick === undefined)
         continue
@@ -224,6 +248,7 @@ export function checkProjectileHits(state: GameState): HitResult[] {
           victimId: timeline.playerId,
           victimTimelineId: timeline.timelineId,
           victimIsHead: false,
+          attackerId: proj.ownerId,
           attackerTimelineId: proj.ownerTimelineId,
         })
         consumedProjectiles.add(proj.id)

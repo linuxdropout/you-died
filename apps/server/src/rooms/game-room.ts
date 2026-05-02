@@ -59,6 +59,8 @@ export class GameRoom extends Room {
     if (wasMidMatch && this.controller.getPhase() === 'ended') {
       this.broadcast('matchEnd', { reason: 'timeout' as const })
       this.setSimulationInterval()
+    } else if (wasMidMatch && this.controller.getPhase() === 'match') {
+      this.broadcast('playerLeft', { playerId: client.sessionId })
     } else if (this.controller.getPhase() === 'lobby') {
       this.stopCountdown()
       this.broadcastLobbyState()

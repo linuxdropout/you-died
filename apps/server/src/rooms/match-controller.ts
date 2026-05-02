@@ -1,6 +1,6 @@
 import type { LobbyPlayer, PlayerId, PlayerInput } from '@you-died/protocol'
 import { TICK_RATE, MATCH_TIME_LIMIT_SECONDS, MAX_PLAYERS } from '@you-died/protocol'
-import { createInitialState, step, type GameState } from '@you-died/sim'
+import { createInitialState, step, getTimeoutWinner, type GameState } from '@you-died/sim'
 
 type Phase = 'lobby' | 'match' | 'ended'
 
@@ -26,6 +26,7 @@ export class MatchController {
   private seed = 0
   private pendingInputs = new Map<number, Map<PlayerId, PlayerInput>>()
   private _countdownSeconds: number | null = null
+  private inputLog: Record<PlayerId, PlayerInput>[] = []
 
   addPlayer(id: PlayerId, name: string): boolean {
     if (this.phase !== 'lobby') return false
@@ -106,6 +107,7 @@ export class MatchController {
 
   submitInput(playerId: PlayerId, tick: number, input: PlayerInput): void {
     if (this.phase !== 'match') return
+    if (tick < this.currentTick || tick > this.currentTick + TICK_RATE * 2) return
     let tickMap = this.pendingInputs.get(tick)
     if (!tickMap) {
       tickMap = new Map()
@@ -173,7 +175,7 @@ export class MatchController {
     }
     if (this.currentTick >= MATCH_TIME_LIMIT_SECONDS * TICK_RATE) {
       this.phase = 'ended'
-      return { reason: 'timeout' }
+      return { reason: 'timeout', winnerId: getTimeoutWinner(this.simState) }
     }
     return null
   }

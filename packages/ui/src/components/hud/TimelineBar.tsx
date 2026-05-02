@@ -20,7 +20,7 @@ export function TimelineBar({
   winThreshold,
   localPlayerId,
 }: TimelineBarProps): ReactNode {
-  const maxOffset = Math.max(winThreshold, ...players.map((p) => p.offsetSeconds));
+  const maxOffset = Math.max(winThreshold, ...players.map((p) => p.offsetSeconds)) || 1;
 
   return (
     <div className="timelineBar">
