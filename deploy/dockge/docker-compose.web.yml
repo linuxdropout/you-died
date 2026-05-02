@@ -1,0 +1,35 @@
+name: you-died-web
+
+services:
+  you-died-client:
+    image: ${CLIENT_IMAGE:?CLIENT_IMAGE is required}
+    restart: unless-stopped
+    networks:
+      - games
+    healthcheck:
+      test: ['CMD-SHELL', "wget -q -O- http://127.0.0.1:8084/healthz | grep -q '^ok$'"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 3s
+
+  you-died-server:
+    image: ${SERVER_IMAGE:?SERVER_IMAGE is required}
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=8083
+    networks:
+      - games
+    healthcheck:
+      test: ['CMD-SHELL', "wget -q -O- http://127.0.0.1:8083/healthz | grep -q '^ok$'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+networks:
+  games:
+    external: true
+    name: games

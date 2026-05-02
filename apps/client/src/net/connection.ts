@@ -1,7 +1,17 @@
 import { Client, Room } from 'colyseus.js'
 import type { ServerMessage, ClientMessage } from '@you-died/protocol'
 
-const DEFAULT_WS_URL = (import.meta as unknown as { env: Record<string, string | undefined> }).env['VITE_WS_URL'] ?? 'ws://localhost:8083'
+function getDefaultWsUrl(): string {
+  const envUrl = (import.meta as unknown as { env: Record<string, string | undefined> }).env['VITE_WS_URL']
+  if (envUrl) return envUrl
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    return `${proto}//${window.location.host}/you-died/ws`
+  }
+  return 'ws://localhost:8083'
+}
+
+const DEFAULT_WS_URL = getDefaultWsUrl()
 
 export function createClient(url = DEFAULT_WS_URL): Client {
   return new Client(url)

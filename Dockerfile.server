@@ -1,0 +1,63 @@
+FROM node:24-alpine AS build
+
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/client/package.json apps/client/package.json
+COPY apps/server/package.json apps/server/package.json
+COPY packages/assets/package.json packages/assets/package.json
+COPY packages/protocol/package.json packages/protocol/package.json
+COPY packages/renderer/package.json packages/renderer/package.json
+COPY packages/sim/package.json packages/sim/package.json
+COPY packages/ui/package.json packages/ui/package.json
+
+RUN apk add --no-cache python3 make g++ && \
+    pnpm install --frozen-lockfile
+
+COPY tsconfig.base.json tsconfig.base.json
+COPY packages/protocol/ packages/protocol/
+COPY packages/sim/ packages/sim/
+COPY apps/server/ apps/server/
+
+RUN pnpm --filter @you-died/server run build:bundle
+
+FROM node:24-alpine AS deps
+
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/client/package.json apps/client/package.json
+COPY apps/server/package.json apps/server/package.json
+COPY packages/assets/package.json packages/assets/package.json
+COPY packages/protocol/package.json packages/protocol/package.json
+COPY packages/renderer/package.json packages/renderer/package.json
+COPY packages/sim/package.json packages/sim/package.json
+COPY packages/ui/package.json packages/ui/package.json
+
+RUN apk add --no-cache python3 make g++ && \
+    pnpm install --frozen-lockfile && \
+    pnpm deploy --filter @you-died/server --prod /app/pruned
+
+FROM node:24-alpine AS runtime
+
+RUN addgroup -S youded && adduser -S youded -G youded
+
+WORKDIR /app
+
+COPY --from=deps /app/pruned/node_modules node_modules
+COPY --from=build /app/apps/server/dist/index.mjs dist/index.mjs
+COPY --from=deps /app/pruned/package.json package.json
+
+USER youded
+
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=8083
+
+EXPOSE 8083
+
+CMD ["node", "dist/index.mjs"]

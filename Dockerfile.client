@@ -1,0 +1,32 @@
+FROM node:24-alpine AS build
+
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@10.30.3 --activate
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/client/package.json apps/client/package.json
+COPY apps/server/package.json apps/server/package.json
+COPY packages/assets/package.json packages/assets/package.json
+COPY packages/protocol/package.json packages/protocol/package.json
+COPY packages/renderer/package.json packages/renderer/package.json
+COPY packages/sim/package.json packages/sim/package.json
+COPY packages/ui/package.json packages/ui/package.json
+
+RUN pnpm install --frozen-lockfile
+
+COPY tsconfig.base.json tsconfig.base.json
+COPY packages/ packages/
+COPY apps/client/ apps/client/
+
+RUN pnpm --filter @you-died/client build
+
+FROM nginx:1.29-alpine-slim AS runtime
+
+COPY deploy/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY deploy/nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/apps/client/dist /usr/share/nginx/html/you-died
+
+EXPOSE 8084
+
+CMD ["nginx", "-g", "daemon off;"]

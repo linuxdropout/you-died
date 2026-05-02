@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
-    "build": "tsc -p tsconfig.json --noEmit",
+    "build": "tsc -p tsconfig.json --noEmit && pnpm run build:bundle",
+    "build:bundle": "esbuild src/index.ts --bundle --platform=node --target=node24 --format=esm --outfile=dist/index.mjs --external:colyseus --external:@colyseus/ws-transport --external:@colyseus/core --alias:@you-died/protocol=../../packages/protocol/src --alias:@you-died/sim=../../packages/sim/src",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint . --max-warnings=0",
     "test": "vitest run"
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.12.2",
+    "esbuild": "^0.27.0",
     "tsx": "^4.20.6",
     "vitest": "^4.1.4"
   }

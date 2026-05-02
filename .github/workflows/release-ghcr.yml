@@ -1,0 +1,99 @@
+name: Release GHCR Images
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Optional extra image tag (example: v1.2.3)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GHCR_PAT: ${{ secrets.GHCR_PAT }}
+
+    strategy:
+      matrix:
+        include:
+          - image: you-died-client
+            dockerfile: Dockerfile.client
+          - image: you-died-server
+            dockerfile: Dockerfile.server
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        if: ${{ env.GHCR_PAT != '' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ env.GHCR_PAT }}
+
+      - name: Log in to GHCR (fallback)
+        if: ${{ env.GHCR_PAT == '' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve image tags
+        id: tags
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          IMAGE_TAG_INPUT: ${{ inputs.image_tag }}
+          IMAGE: ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}
+        run: |
+          set -euo pipefail
+          short_sha="${GITHUB_SHA::12}"
+          tags=("${IMAGE}:sha-${short_sha}")
+
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            tags+=("${IMAGE}:latest")
+          fi
+
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            tags+=("${IMAGE}:${GITHUB_REF_NAME}")
+          fi
+
+          if [[ "${EVENT_NAME}" == "workflow_dispatch" && -n "${IMAGE_TAG_INPUT}" ]]; then
+            tags+=("${IMAGE}:${IMAGE_TAG_INPUT}")
+          fi
+
+          {
+            echo "tags<<EOF"
+            printf '%s\n' "${tags[@]}"
+            echo "EOF"
+          } >> "${GITHUB_OUTPUT}"
+
+          printf 'Publishing tags:\n%s\n' "${tags[@]}"
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./${{ matrix.dockerfile }}
+          push: true
+          platforms: linux/amd64
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
