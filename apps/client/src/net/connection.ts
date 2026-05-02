@@ -1,7 +1,7 @@
 import { Client, Room } from 'colyseus.js'
 import type { ServerMessage, ClientMessage } from '@you-died/protocol'
 
-const DEFAULT_WS_URL = import.meta.env['VITE_WS_URL'] ?? 'ws://localhost:8083'
+const DEFAULT_WS_URL = (import.meta as unknown as { env: Record<string, string | undefined> }).env['VITE_WS_URL'] ?? 'ws://localhost:8083'
 
 export function createClient(url = DEFAULT_WS_URL): Client {
   return new Client(url)
