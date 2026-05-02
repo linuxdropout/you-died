@@ -34,29 +34,79 @@ export function LobbyScreen({ room, players, countdownSeconds }: Props) {
   }
 
   return (
-    <main>
-      <h1>Lobby</h1>
-      <div>
-        <input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleSetName() }}
-          placeholder="Your name"
-        />
-        <button onClick={handleSetName}>Set Name</button>
+    <div className="lobbyScreen">
+      <div className="lobbyScreenPanel">
+        <div className="lobbyScreenHeader">
+          <h1 className="lobbyScreenTitle">LOBBY</h1>
+        </div>
+
+        <div className="lobbyScreenNameRow">
+          <input
+            className="lobbyScreenInput"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleSetName() }}
+            placeholder="Your name"
+            maxLength={12}
+          />
+          <button
+            type="button"
+            className="lobbyScreenBtn lobbyScreenBtnName"
+            onClick={handleSetName}
+          >
+            SET
+          </button>
+        </div>
+
+        <div className="lobbyScreenSlots">
+          {players.map((p) => (
+            <div
+              key={p.id}
+              className={`lobbyScreenSlot${p.ready ? ' lobbyScreenSlotReady' : ''}`}
+            >
+              <span className="lobbyScreenSlotName">{p.name}</span>
+              <span className="lobbyScreenSlotStatus">
+                {p.ready ? 'READY' : '...'}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="lobbyScreenActions">
+          <button
+            type="button"
+            className="lobbyScreenBtn lobbyScreenBtnReady"
+            onClick={handleReady}
+            disabled={counting}
+          >
+            READY
+          </button>
+          {counting ? (
+            <button
+              type="button"
+              className="lobbyScreenBtn lobbyScreenBtnCancel"
+              onClick={handleCancel}
+            >
+              CANCEL ({countdownSeconds})
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="lobbyScreenBtn lobbyScreenBtnStart"
+              onClick={handleStart}
+              disabled={!allReady}
+            >
+              START
+            </button>
+          )}
+        </div>
+
+        {counting && (
+          <div className="lobbyScreenCountdown">
+            STARTING IN {countdownSeconds}...
+          </div>
+        )}
       </div>
-      <ul>
-        {players.map((p) => (
-          <li key={p.id}>
-            {p.name} {p.ready ? '(Ready)' : ''}
-          </li>
-        ))}
-      </ul>
-      <button onClick={handleReady} disabled={counting}>Ready</button>
-      {counting
-        ? <button onClick={handleCancel}>Cancel ({countdownSeconds})</button>
-        : <button onClick={handleStart} disabled={!allReady}>Start</button>
-      }
-    </main>
+    </div>
   )
 }

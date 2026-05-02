@@ -7,10 +7,16 @@ interface Props {
 
 export function EndScreen({ reason, winnerId }: Props) {
   return (
-    <main>
-      <h1>Match Over</h1>
-      <p>Reason: {reason}</p>
-      {winnerId !== undefined && <p>Winner: {winnerId}</p>}
-    </main>
+    <div className="endScreen">
+      <div className="endScreenBg" />
+
+      <div className="endScreenContent">
+        <h1 className="endScreenTitle">MATCH OVER</h1>
+        <p className="endScreenReason">{reason}</p>
+        {winnerId !== undefined && (
+          <p className="endScreenWinner">WINNER: {winnerId}</p>
+        )}
+      </div>
+    </div>
   )
 }

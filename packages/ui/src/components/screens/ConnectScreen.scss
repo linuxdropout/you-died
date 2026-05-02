@@ -1,0 +1,119 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.connectScreen {
+  position: fixed;
+  inset: 0;
+  z-index: $z-menu;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: $black;
+
+  &::after {
+    @include scanlines(0.05);
+
+    position: fixed;
+  }
+}
+
+.connectScreenBg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 80%, rgba($blood-dark, 0.2) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 20%, rgba($timeline-dark, 0.1) 0%, transparent 40%);
+}
+
+.connectScreenContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $space-3xl;
+  align-items: center;
+}
+
+.connectScreenPre {
+  color: $bone;
+  letter-spacing: 4px;
+  opacity: 0.5;
+  animation: fade-in $anim-slow ease-out both;
+
+  @include pixel-text($font-size-xs);
+}
+
+.connectScreenTitle {
+  line-height: 1.3;
+  color: $blood-bright;
+  text-align: center;
+  letter-spacing: 6px;
+  animation: slam-in $anim-med cubic-bezier(0.16, 1, 0.3, 1) 200ms both;
+
+  @include pixel-text($font-size-3xl);
+  @include blood-text;
+}
+
+.connectScreenTitleAccent {
+  color: $chalk;
+  letter-spacing: 10px;
+  text-shadow: none;
+  opacity: 0.6;
+
+  @include pixel-text($font-size-xl);
+}
+
+.connectScreenBtn {
+  min-width: 280px;
+  padding: $space-md $space-lg;
+  color: $blood-bright;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: rgba($void, 0.8);
+  opacity: 0;
+  transition:
+    background $anim-fast ease,
+    border-color $anim-fast ease;
+  animation: fade-in $anim-med ease-out 500ms both;
+
+  @include pixel-text($font-size-xs);
+  @include pixel-border($blood);
+
+  &:hover {
+    background: rgba($blood, 0.15);
+    border-color: $blood-bright;
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.connectScreenError {
+  color: $blood-bright;
+  text-align: center;
+  letter-spacing: 1px;
+  animation: fade-in $anim-snap ease-out both;
+
+  @include pixel-text($font-size-xs);
+  @include blood-text;
+}
+
+.connectScreenGibDecor {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.connectScreenGib {
+  position: absolute;
+  display: block;
+  width: 4px;
+  height: 4px;
+  background: $blood-dark;
+  box-shadow:
+    2px 2px 0 $blood-dark,
+    -2px 0 0 $gore;
+}

@@ -15,3 +15,8 @@
 // Lobby
 @use "../components/lobby/Lobby";
 @use "../components/lobby/TitleScreen";
+
+// Screens
+@use "../components/screens/ConnectScreen";
+@use "../components/screens/LobbyScreen";
+@use "../components/screens/EndScreen";

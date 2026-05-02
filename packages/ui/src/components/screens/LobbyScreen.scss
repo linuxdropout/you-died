@@ -1,0 +1,191 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.lobbyScreen {
+  position: fixed;
+  inset: 0;
+  z-index: $z-menu;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $black;
+
+  &::after {
+    @include scanlines(0.05);
+
+    position: fixed;
+  }
+}
+
+.lobbyScreenPanel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: $space-lg;
+  min-width: 360px;
+  max-width: 480px;
+  padding: $space-2xl;
+  border: 2px solid $grime;
+
+  @include panel-bg(0.95);
+}
+
+.lobbyScreenHeader {
+  display: flex;
+  align-items: baseline;
+  padding-bottom: $space-md;
+  border-bottom: 1px solid $grime;
+}
+
+.lobbyScreenTitle {
+  color: $chalk;
+  letter-spacing: 4px;
+
+  @include pixel-text($font-size-lg);
+}
+
+.lobbyScreenNameRow {
+  display: flex;
+  gap: $space-sm;
+}
+
+.lobbyScreenInput {
+  flex: 1;
+  padding: $space-sm $space-md;
+  color: $chalk;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  background: rgba($black, 0.6);
+
+  @include pixel-text($font-size-xs);
+  @include pixel-border($grime);
+
+  &::placeholder {
+    color: $grime;
+    letter-spacing: 1px;
+  }
+
+  &:focus {
+    border-color: $timeline;
+  }
+}
+
+.lobbyScreenSlots {
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+}
+
+.lobbyScreenSlot {
+  display: flex;
+  gap: $space-sm;
+  align-items: center;
+  height: $player-slot-height;
+  padding: 0 $space-sm;
+  background: rgba($black, 0.4);
+  border: 1px solid $grime;
+  transition: border-color $anim-snap ease;
+
+  @include pixel-text($font-size-xs);
+}
+
+.lobbyScreenSlotReady {
+  border-color: $ghost;
+}
+
+.lobbyScreenSlotName {
+  flex: 1;
+  color: $chalk;
+}
+
+.lobbyScreenSlotStatus {
+  color: $grime;
+}
+
+.lobbyScreenSlotReady .lobbyScreenSlotStatus {
+  color: $ghost-bright;
+
+  @include ghost-glow;
+}
+
+.lobbyScreenActions {
+  display: flex;
+  gap: $space-sm;
+}
+
+.lobbyScreenBtn {
+  flex: 1;
+  padding: $space-sm $space-md;
+  color: $chalk;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: rgba($black, 0.6);
+  border: none;
+  transition:
+    background $anim-fast ease,
+    border-color $anim-fast ease,
+    color $anim-fast ease;
+
+  @include pixel-text($font-size-xs);
+  @include pixel-border($grime);
+
+  &:hover {
+    background: rgba($chalk, 0.08);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.3;
+  }
+}
+
+.lobbyScreenBtnName {
+  flex: 0;
+  color: $timeline;
+  border-color: $timeline-dark;
+
+  &:hover {
+    background: rgba($timeline, 0.15);
+    border-color: $timeline;
+  }
+}
+
+.lobbyScreenBtnReady {
+  color: $ghost-bright;
+  border-color: $ghost;
+
+  &:hover {
+    background: rgba($ghost, 0.15);
+  }
+}
+
+.lobbyScreenBtnStart {
+  color: $ghost-bright;
+  border-color: $ghost;
+
+  &:hover {
+    background: rgba($ghost, 0.15);
+  }
+}
+
+.lobbyScreenBtnCancel {
+  color: $warning-bright;
+  border-color: $warning;
+
+  &:hover {
+    background: rgba($warning, 0.15);
+  }
+}
+
+.lobbyScreenCountdown {
+  color: $warning-bright;
+  text-align: center;
+  letter-spacing: 3px;
+  animation: pulse-glow 500ms ease-in-out infinite;
+
+  @include pixel-text($font-size-sm);
+}
