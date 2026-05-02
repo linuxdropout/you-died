@@ -8,8 +8,8 @@ interface Particle {
 }
 
 const GRAVITY = 0.3
-const PARTICLE_COUNT = 10
-const MAX_LIFE = 25
+const PARTICLE_COUNT = 22
+const MAX_LIFE = 40
 
 export class DeathParticles {
   private readonly container: Container
@@ -22,8 +22,8 @@ export class DeathParticles {
   spawn(x: number, y: number) {
     for (let i = 0; i < PARTICLE_COUNT; i++) {
       const angle = (Math.PI * 2 * i) / PARTICLE_COUNT + Math.random() * 0.4
-      const speed = 1.5 + Math.random() * 2.5
-      const size = 1 + Math.random() * 2
+      const speed = 2.5 + Math.random() * 3.5
+      const size = 1 + Math.random() * 3
       const gfx = new Graphics()
       gfx.circle(0, 0, size)
       gfx.fill(0x8b0000)
@@ -32,7 +32,7 @@ export class DeathParticles {
       this.particles.push({
         gfx,
         vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 2,
+        vy: Math.sin(angle) * speed - 3,
         life: MAX_LIFE,
       })
     }

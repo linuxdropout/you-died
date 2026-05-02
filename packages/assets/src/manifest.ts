@@ -7,8 +7,8 @@ export const ANIMATION_META: Record<AnimationName, AnimationMeta> = {
   run:   { name: 'run',   frameCount: 8,  loop: true,  fps: 10, frameSize: { w: 48, h: 48 } },
   jump:  { name: 'jump',  frameCount: 6,  loop: false, fps: 8,  frameSize: { w: 48, h: 48 } },
   dash:  { name: 'dash',  frameCount: 9,  loop: false, fps: 15, frameSize: { w: 48, h: 48 } },
-  slash: { name: 'slash', frameCount: 6,  loop: false, fps: 15, frameSize: { w: 64, h: 64 } },
-  shoot: { name: 'shoot', frameCount: 10, loop: false, fps: 12, frameSize: { w: 48, h: 48 } },
+  slash: { name: 'slash', frameCount: 6,  loop: false, fps: 60, frameSize: { w: 64, h: 64 } },
+  shoot: { name: 'shoot', frameCount: 10, loop: false, fps: 60, frameSize: { w: 48, h: 48 } },
   death: { name: 'death', frameCount: 10, loop: false, fps: 10, frameSize: { w: 48, h: 48 } },
 } as const
 

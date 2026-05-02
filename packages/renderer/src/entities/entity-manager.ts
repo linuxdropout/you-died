@@ -9,7 +9,7 @@ import { ProjectileEntity } from './projectile-entity.js'
 import { SlashEntity } from './slash-entity.js'
 import { GoreEntity } from './gore-entity.js'
 
-const GORE_PER_DEATH = 4
+const GORE_PER_DEATH = 14
 
 export class EntityManager {
   private readonly sprites: SpriteManager
@@ -66,6 +66,7 @@ export class EntityManager {
     this.reconcileProjectiles(frame)
     this.reconcileSlashes(frame)
     this.processGoreEvents(frame)
+    this.updateGore()
   }
 
   private reconcilePlayers(frame: RenderFrame) {
@@ -84,7 +85,7 @@ export class EntityManager {
         this.activePlayers.set(key, entity)
       }
 
-      entity.update(player)
+      entity.update(player, frame.tick)
     }
 
     for (const [key, entity] of this.activePlayers) {
@@ -163,11 +164,17 @@ export class EntityManager {
       for (let i = 0; i < GORE_PER_DEATH; i++) {
         const gore = this.gorePool.acquire()
         const seed = event.tick * 1000 + i
+        const angle = (Math.PI * 2 * i) / GORE_PER_DEATH + Math.sin(seed * 0.73) * 0.5
+        const speed = 2 + (Math.sin(seed * 1.23) * 0.5 + 0.5) * 2.5
+        const vx = Math.cos(angle) * speed
+        const vy = Math.sin(angle) * speed - 3
         gore.init(
           x + (Math.sin(seed * 2.71) * 20),
           y + (Math.sin(seed * 1.41) * 10),
           event.tick,
           seed,
+          vx,
+          vy,
         )
         this.layers.goreLayer.addChild(gore.container)
         this.activeGore.push(gore)
@@ -180,6 +187,12 @@ export class EntityManager {
         this.layers.goreLayer.removeChild(oldest.container)
         this.gorePool.release(oldest)
       }
+    }
+  }
+
+  private updateGore() {
+    for (const gore of this.activeGore) {
+      gore.update()
     }
   }
 

@@ -122,9 +122,10 @@ export class SpriteManager {
     if (!textures) throw new Error('Slash effect animation not found in spritesheet')
     const sprite = new AnimatedSprite(textures)
     sprite.anchor.set(0.5, 0.5)
-    sprite.animationSpeed = 0.25
+    sprite.animationSpeed = 0.667
     sprite.loop = false
     sprite.autoUpdate = false
+    sprite.play()
     return sprite
   }
 }

@@ -15,12 +15,12 @@ export class SlashEntity {
   update(slash: RenderSlash) {
     if (!this.sprite) return
 
-    this.sprite.position.set(
-      slash.pos.x + slash.width / 2,
-      slash.pos.y + slash.height / 2,
-    )
+    this.sprite.position.set(slash.pos.x, slash.pos.y + 8)
     this.sprite.width = slash.width
     this.sprite.height = slash.height
+    if (!slash.facingRight) {
+      this.sprite.scale.x = -this.sprite.scale.x
+    }
     this.container.alpha = slash.isGhost ? 0.5 : 1
 
     this.sprite.update({ deltaTime: 1 } as any)

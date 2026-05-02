@@ -2,6 +2,7 @@ import type { GameEvent, RenderFrame } from '@you-died/sim'
 import type { PlayerId } from '@you-died/protocol'
 import type { LayerManager } from '../layers/layer-manager.js'
 import type { MatchContext, ScreenEvent } from '../types.js'
+import type { SoundManager } from '../audio/sound-manager.js'
 import { ScreenShake } from '../camera/screen-shake.js'
 import { DeathParticles } from './death-particles.js'
 import { RewindEffect } from './rewind-effect.js'
@@ -9,7 +10,7 @@ import { SeverEffect } from './sever-effect.js'
 import { ParadoxEffect } from './paradox-effect.js'
 import { LaunchEffect } from './launch-effect.js'
 
-const SHAKE_DEATH = 6
+const SHAKE_DEATH = 10
 const SHAKE_SEVER = 4
 const SHAKE_PARADOX = 10
 const SHAKE_LAUNCH = 8
@@ -22,12 +23,14 @@ export class VfxController {
   private readonly paradox: ParadoxEffect
   private readonly launch: LaunchEffect
   private readonly context: MatchContext
+  private readonly sound: SoundManager | null
 
   private screenEventCallback: ((event: ScreenEvent) => void) | null = null
   private processedTick = -1
 
-  constructor(layers: LayerManager, context: MatchContext) {
+  constructor(layers: LayerManager, context: MatchContext, sound: SoundManager | null = null) {
     this.context = context
+    this.sound = sound
     this.shake = new ScreenShake()
     this.deathParticles = new DeathParticles(layers.effectLayer)
     this.rewind = new RewindEffect(layers.overlayLayer)
@@ -58,6 +61,8 @@ export class VfxController {
     screenHeight: number,
   ) {
     const isLocal = event.playerId === this.context.localPlayerId
+
+    this.sound?.processGameEvent(event, isLocal)
 
     switch (event.type) {
       case 'death':
