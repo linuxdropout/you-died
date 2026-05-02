@@ -93,6 +93,7 @@ export function handleHeadDeath(state: GameState, playerId: PlayerId, killerId?:
     restored.alive = true
     restored.isGhost = false
     restored.slashTicksRemaining = 0
+    restored.slashCooldownTicks = 0
     restored.shootCooldownTicks = 0
     restored.dashTicksRemaining = 0
     restored.dashCooldownTicks = 0
@@ -103,6 +104,7 @@ export function handleHeadDeath(state: GameState, playerId: PlayerId, killerId?:
     player.vel.x = 0
     player.vel.y = 0
     player.slashTicksRemaining = 0
+    player.slashCooldownTicks = 0
     player.shootCooldownTicks = 0
     player.dashTicksRemaining = 0
     player.dashCooldownTicks = 0
