@@ -18,6 +18,7 @@ export function getRenderableState(state: GameState): RenderFrame {
   }
 
   for (const timeline of state.timelines) {
+    if (timeline.replayComplete) continue
     if (timeline.headEndedAtTick === undefined) continue
     if (timeline.replayOriginTick === undefined || timeline.replayStartTick === undefined) continue
 

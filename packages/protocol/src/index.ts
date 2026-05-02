@@ -17,6 +17,7 @@ export type ClientMessage =
   | { type: 'startCountdown' }
   | { type: 'cancelCountdown' }
   | { type: 'input'; tick: number; input: PlayerInput }
+  | { type: 'stateHash'; tick: number; hash: number }
 
 export type ServerMessage =
   | { type: 'roomState'; players: LobbyPlayer[]; countdownSeconds: number | null }
@@ -37,3 +38,4 @@ export const TICK_RATE = 60
 export const REWIND_SECONDS = 10
 export const WIN_LEAD_SECONDS = 30
 export const MATCH_TIME_LIMIT_SECONDS = 300
+export const HASH_CHECK_INTERVAL_TICKS = 60

@@ -4,6 +4,7 @@ import type { Client } from 'colyseus'
 const { Room } = Colyseus
 import { TICK_RATE } from '@you-died/protocol'
 import type { PlayerInput } from '@you-died/protocol'
+import { hashState } from '@you-died/sim'
 import { MatchController } from './match-controller.js'
 
 export class GameRoom extends Room {
@@ -39,6 +40,15 @@ export class GameRoom extends Room {
 
     this.onMessage('input', (_client: Client, msg: { tick: number; input: PlayerInput }) => {
       this.controller.submitInput(_client.sessionId, msg.tick, msg.input)
+    })
+
+    this.onMessage('stateHash', (client: Client, msg: { tick: number; hash: number }) => {
+      const state = this.controller.getSimState()
+      if (!state || state.tick !== msg.tick) return
+      const serverHash = hashState(state)
+      if (serverHash !== msg.hash) {
+        console.warn(`[desync] tick=${msg.tick} client=${client.sessionId} clientHash=${msg.hash} serverHash=${serverHash}`)
+      }
     })
   }
 

@@ -3,6 +3,7 @@ import { DEFAULT_ARENA } from './arena.ts'
 import { applyMovement, resolvePlayerPlatformCollisions, isOutOfBounds } from './physics.ts'
 import {
   processPlayerActions,
+  updateSlashPositions,
   moveProjectiles,
   checkSlashHits,
   checkProjectileHits,
@@ -61,6 +62,8 @@ export function step(state: GameState, inputs: Record<string, PlayerInput>): Gam
     resolvePlayerPlatformCollisions(player, DEFAULT_ARENA)
   }
 
+  updateSlashPositions(state)
+
   const boundaryDeaths: string[] = []
   for (const playerId of state.config.playerIds) {
     const player = state.players[playerId]
@@ -84,16 +87,22 @@ export function step(state: GameState, inputs: Record<string, PlayerInput>): Gam
     }
   }
 
+  const processedDeaths = new Set<string>()
+
   for (const playerId of boundaryDeaths) {
     state.deaths[playerId] = (state.deaths[playerId] ?? 0) + 1
     handleHeadDeath(state, playerId)
+    processedDeaths.add(playerId)
   }
 
   for (const hit of allHits) {
     if (hit.victimIsHead) {
-      state.kills[hit.attackerId] = (state.kills[hit.attackerId] ?? 0) + 1
-      state.deaths[hit.victimId] = (state.deaths[hit.victimId] ?? 0) + 1
-      handleHeadDeath(state, hit.victimId, hit.attackerId)
+      if (!processedDeaths.has(hit.victimId)) {
+        state.kills[hit.attackerId] = (state.kills[hit.attackerId] ?? 0) + 1
+        state.deaths[hit.victimId] = (state.deaths[hit.victimId] ?? 0) + 1
+        handleHeadDeath(state, hit.victimId, hit.attackerId)
+        processedDeaths.add(hit.victimId)
+      }
     } else {
       handlePastDeath(state, hit.victimId, hit.victimTimelineId, hit.attackerTimelineId)
     }

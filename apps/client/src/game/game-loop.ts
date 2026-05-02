@@ -1,6 +1,6 @@
 import type { PlayerInput, PlayerId } from '@you-died/protocol'
-import { TICK_RATE } from '@you-died/protocol'
-import { createInitialState, step, getRenderableState } from '@you-died/sim'
+import { TICK_RATE, HASH_CHECK_INTERVAL_TICKS } from '@you-died/protocol'
+import { createInitialState, step, getRenderableState, hashState } from '@you-died/sim'
 import type { GameState } from '@you-died/sim'
 import { GameRenderer } from '@you-died/renderer'
 import type { MatchContext, HudData, ScreenEvent } from '@you-died/renderer'
@@ -54,6 +54,9 @@ export function createGameLoop(config: GameLoopConfig): GameLoop {
       const confirmed = confirmedQueue.shift()
       if (confirmed) {
         simState = step(simState, confirmed.inputs)
+        if (simState.tick % HASH_CHECK_INTERVAL_TICKS === 0) {
+          sendMessage(room, { type: 'stateHash', tick: simState.tick, hash: hashState(simState) })
+        }
       }
     }
   }
