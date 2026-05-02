@@ -1,78 +1,69 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react'
 
-export type KillEventKind =
-  | "kill"
-  | "rewind"
-  | "sever"
-  | "paradox"
-  | "launch"
-  | "win";
+export type KillEventKind = 'kill' | 'rewind' | 'sever' | 'paradox' | 'launch' | 'win'
 
 export interface KillEvent {
-  readonly id: string;
-  readonly kind: KillEventKind;
-  readonly tick: number;
-  readonly killer?: string;
-  readonly victim?: string;
-  readonly weapon?: "slash" | "shoot";
-  readonly message?: string;
+  readonly id: string
+  readonly kind: KillEventKind
+  readonly tick: number
+  readonly killer?: string
+  readonly victim?: string
+  readonly weapon?: 'slash' | 'shoot'
+  readonly message?: string
 }
 
 interface KillFeedProps {
-  readonly events: readonly KillEvent[];
-  readonly maxVisible?: number;
+  readonly events: readonly KillEvent[]
+  readonly maxVisible?: number
 }
 
 const WEAPON_GLYPH: Record<string, string> = {
-  slash: "[/]",
-  shoot: "[*]",
-};
+  slash: '[/]',
+  shoot: '[*]',
+}
 
 const KIND_PREFIX: Record<KillEventKind, string> = {
-  kill: "",
-  rewind: "<<",
-  sever: "~!~",
-  paradox: "?!?",
-  launch: ">>>",
-  win: "***",
-};
+  kill: '',
+  rewind: '<<',
+  sever: '~!~',
+  paradox: '?!?',
+  launch: '>>>',
+  win: '***',
+}
 
 const KIND_CLASS: Record<KillEventKind, string> = {
-  kill: "killFeedKill",
-  rewind: "killFeedRewind",
-  sever: "killFeedSever",
-  paradox: "killFeedParadox",
-  launch: "killFeedLaunch",
-  win: "killFeedWin",
-};
+  kill: 'killFeedKill',
+  rewind: 'killFeedRewind',
+  sever: 'killFeedSever',
+  paradox: 'killFeedParadox',
+  launch: 'killFeedLaunch',
+  win: 'killFeedWin',
+}
 
 function formatEvent(event: KillEvent): string {
-  if (event.message != null) return event.message;
+  if (event.message != null) return event.message
 
-  const prefix = KIND_PREFIX[event.kind];
-  const weapon = event.weapon != null ? ` ${WEAPON_GLYPH[event.weapon]} ` : " ";
+  const prefix = KIND_PREFIX[event.kind]
+  const weapon = event.weapon != null ? ` ${WEAPON_GLYPH[event.weapon]} ` : ' '
 
   switch (event.kind) {
-    case "kill":
-      return `${event.killer ?? "?"}${weapon}${event.victim ?? "?"}`;
-    case "rewind":
-      return `${prefix} ${event.victim ?? "?"} REWOUND`;
-    case "sever":
-      return `${prefix} ${event.victim ?? "?"} SEVERED`;
-    case "paradox":
-      return `${prefix} PARADOX ${prefix}`;
-    case "launch":
-      return `${prefix} ${event.victim ?? "?"} LAUNCHED`;
-    case "win":
-      return `${prefix} ${event.killer ?? "?"} WINS ${prefix}`;
+    case 'kill':
+      return `${event.killer ?? '?'}${weapon}${event.victim ?? '?'}`
+    case 'rewind':
+      return `${prefix} ${event.victim ?? '?'} REWOUND`
+    case 'sever':
+      return `${prefix} ${event.victim ?? '?'} SEVERED`
+    case 'paradox':
+      return `${prefix} PARADOX ${prefix}`
+    case 'launch':
+      return `${prefix} ${event.victim ?? '?'} LAUNCHED`
+    case 'win':
+      return `${prefix} ${event.killer ?? '?'} WINS ${prefix}`
   }
 }
 
-export function KillFeed({
-  events,
-  maxVisible = 6,
-}: KillFeedProps): ReactNode {
-  const visible = events.slice(-maxVisible);
+export function KillFeed({ events, maxVisible = 6 }: KillFeedProps): ReactNode {
+  const visible = events.slice(-maxVisible)
 
   return (
     <div className="killFeed">
@@ -86,5 +77,5 @@ export function KillFeed({
         </div>
       ))}
     </div>
-  );
+  )
 }

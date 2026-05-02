@@ -1,4 +1,4 @@
-@use "variables" as *;
+@use 'variables' as *;
 
 @mixin pixel-crisp {
   image-rendering: pixelated;
@@ -19,7 +19,7 @@
   inset: 0;
   z-index: 9999;
   pointer-events: none;
-  content: "";
+  content: '';
   background: repeating-linear-gradient(
     transparent 0,
     transparent 2px,
@@ -67,41 +67,87 @@
 @mixin screen-shake-keyframes {
   @keyframes screen-shake {
     0%,
-    100% { transform: translate(0, 0); }
-    10% { transform: translate(-3px, 1px); }
-    20% { transform: translate(2px, -2px); }
-    30% { transform: translate(-1px, 3px); }
-    40% { transform: translate(3px, -1px); }
-    50% { transform: translate(-2px, 2px); }
-    60% { transform: translate(1px, -3px); }
-    70% { transform: translate(-3px, -1px); }
-    80% { transform: translate(2px, 3px); }
-    90% { transform: translate(-1px, -2px); }
+    100% {
+      transform: translate(0, 0);
+    }
+    10% {
+      transform: translate(-3px, 1px);
+    }
+    20% {
+      transform: translate(2px, -2px);
+    }
+    30% {
+      transform: translate(-1px, 3px);
+    }
+    40% {
+      transform: translate(3px, -1px);
+    }
+    50% {
+      transform: translate(-2px, 2px);
+    }
+    60% {
+      transform: translate(1px, -3px);
+    }
+    70% {
+      transform: translate(-3px, -1px);
+    }
+    80% {
+      transform: translate(2px, 3px);
+    }
+    90% {
+      transform: translate(-1px, -2px);
+    }
   }
 }
 
 @mixin glitch-flicker {
   @keyframes glitch-flicker {
     0%,
-    100% { opacity: 1; }
-    5% { opacity: 0.1; }
-    10% { opacity: 0.9; }
-    15% { opacity: 0.3; }
-    20% { opacity: 1; }
-    50% { opacity: 1; }
-    52% { opacity: 0.4; }
-    54% { opacity: 1; }
+    100% {
+      opacity: 1;
+    }
+    5% {
+      opacity: 0.1;
+    }
+    10% {
+      opacity: 0.9;
+    }
+    15% {
+      opacity: 0.3;
+    }
+    20% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 1;
+    }
+    52% {
+      opacity: 0.4;
+    }
+    54% {
+      opacity: 1;
+    }
   }
 }
 
 @mixin vhs-distort {
   @keyframes vhs-distort {
     0%,
-    100% { clip-path: inset(0 0 0 0); }
-    5% { clip-path: inset(10% 0 80% 0); }
-    10% { clip-path: inset(40% 0 30% 0); }
-    15% { clip-path: inset(80% 0 5% 0); }
-    20% { clip-path: inset(0 0 0 0); }
+    100% {
+      clip-path: inset(0 0 0 0);
+    }
+    5% {
+      clip-path: inset(10% 0 80% 0);
+    }
+    10% {
+      clip-path: inset(40% 0 30% 0);
+    }
+    15% {
+      clip-path: inset(80% 0 5% 0);
+    }
+    20% {
+      clip-path: inset(0 0 0 0);
+    }
   }
 }
 
@@ -116,7 +162,7 @@
   width: 6px;
   height: 6px;
   pointer-events: none;
-  content: "";
+  content: '';
   background: $blood;
   box-shadow:
     2px 0 0 $blood,

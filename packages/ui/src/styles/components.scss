@@ -1,23 +1,23 @@
 // HUD
-@use "../components/hud/GameHud";
-@use "../components/hud/TimelineBar";
-@use "../components/hud/KillFeed";
-@use "../components/hud/MatchTimer";
-@use "../components/hud/PlayerStatus";
+@use '../components/hud/GameHud';
+@use '../components/hud/TimelineBar';
+@use '../components/hud/KillFeed';
+@use '../components/hud/MatchTimer';
+@use '../components/hud/PlayerStatus';
 
 // Overlays
-@use "../components/overlays/DeathSplash";
-@use "../components/overlays/RewindFlash";
-@use "../components/overlays/ParadoxAlert";
-@use "../components/overlays/SeverNotice";
-@use "../components/overlays/WinScreen";
-@use "../components/overlays/ControlHints";
+@use '../components/overlays/DeathSplash';
+@use '../components/overlays/RewindFlash';
+@use '../components/overlays/ParadoxAlert';
+@use '../components/overlays/SeverNotice';
+@use '../components/overlays/WinScreen';
+@use '../components/overlays/ControlHints';
 
 // Lobby
-@use "../components/lobby/Lobby";
-@use "../components/lobby/TitleScreen";
+@use '../components/lobby/Lobby';
+@use '../components/lobby/TitleScreen';
 
 // Screens
-@use "../components/screens/ConnectScreen";
-@use "../components/screens/LobbyScreen";
-@use "../components/screens/EndScreen";
+@use '../components/screens/ConnectScreen';
+@use '../components/screens/LobbyScreen';
+@use '../components/screens/EndScreen';

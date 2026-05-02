@@ -1,5 +1,5 @@
-@use "../../styles/variables" as *;
-@use "../../styles/mixins" as *;
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
 
 .rewindFlash {
   position: fixed;
@@ -41,7 +41,7 @@
   &::after {
     position: absolute;
     inset: 0;
-    content: "";
+    content: '';
     background: inherit;
     filter: blur(4px);
   }

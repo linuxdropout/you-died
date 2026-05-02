@@ -1,5 +1,5 @@
-@use "../../styles/variables" as *;
-@use "../../styles/mixins" as *;
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
 
 .killFeed {
   position: absolute;
@@ -51,7 +51,9 @@
 .killFeedParadox {
   color: $paradox;
   border-left: 2px solid $paradox;
-  animation: slide-in-right $anim-snap ease-out both, glitch-flicker $anim-slow steps(1) both;
+  animation:
+    slide-in-right $anim-snap ease-out both,
+    glitch-flicker $anim-slow steps(1) both;
 
   @include paradox-glow;
 }
@@ -65,7 +67,9 @@
   color: $warning-bright;
   text-transform: uppercase;
   border-left: 2px solid $warning-bright;
-  animation: slide-in-right $anim-snap ease-out both, pulse-glow $anim-crawl ease-in-out infinite;
+  animation:
+    slide-in-right $anim-snap ease-out both,
+    pulse-glow $anim-crawl ease-in-out infinite;
 
   @include pixel-text($font-size-sm);
 }

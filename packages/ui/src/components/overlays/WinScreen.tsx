@@ -1,11 +1,11 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react'
 
 interface WinScreenProps {
-  readonly visible: boolean;
-  readonly winnerName: string;
-  readonly isLocalWinner: boolean;
-  readonly kills: number;
-  readonly deaths: number;
+  readonly visible: boolean
+  readonly winnerName: string
+  readonly isLocalWinner: boolean
+  readonly kills: number
+  readonly deaths: number
 }
 
 export function WinScreen({
@@ -15,24 +15,20 @@ export function WinScreen({
   kills,
   deaths,
 }: WinScreenProps): ReactNode {
-  if (!visible) return null;
+  if (!visible) return null
 
   return (
     <div className="winScreen">
       <div className="winScreenBg" />
       <div className="winScreenContent">
         {isLocalWinner ? (
-          <h1 className="winScreenTitle winScreenTitleVictory">
-            YOU WIN
-          </h1>
+          <h1 className="winScreenTitle winScreenTitleVictory">YOU WIN</h1>
         ) : (
-          <h1 className="winScreenTitle winScreenTitleDefeat">
-            YOU LOSE
-          </h1>
+          <h1 className="winScreenTitle winScreenTitleDefeat">YOU LOSE</h1>
         )}
 
         <p className="winScreenWinner">
-          {isLocalWinner ? "AHEAD OF ALL TIMELINES" : `${winnerName} ESCAPED`}
+          {isLocalWinner ? 'AHEAD OF ALL TIMELINES' : `${winnerName} ESCAPED`}
         </p>
 
         <div className="winScreenStats">
@@ -48,5 +44,5 @@ export function WinScreen({
         </div>
       </div>
     </div>
-  );
+  )
 }

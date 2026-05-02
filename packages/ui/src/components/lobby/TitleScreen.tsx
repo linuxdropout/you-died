@@ -1,10 +1,10 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react'
 
 interface TitleScreenProps {
-  readonly onCreateRoom: () => void;
-  readonly onJoinRoom: (code: string) => void;
-  readonly roomCode: string;
-  readonly onRoomCodeChange: (code: string) => void;
+  readonly onCreateRoom: () => void
+  readonly onJoinRoom: (code: string) => void
+  readonly roomCode: string
+  readonly onRoomCodeChange: (code: string) => void
 }
 
 export function TitleScreen({
@@ -21,8 +21,10 @@ export function TitleScreen({
         <div className="titleScreenLogo">
           <span className="titleScreenPre">PREVIOUSLY ON:</span>
           <h1 className="titleScreenTitle">
-            YOU<br />
-            <span className="titleScreenTitleAccent">FUCKING</span><br />
+            YOU
+            <br />
+            <span className="titleScreenTitleAccent">FUCKING</span>
+            <br />
             DIED
           </h1>
         </div>
@@ -42,13 +44,17 @@ export function TitleScreen({
               className="titleScreenInput"
               placeholder="ROOM CODE"
               value={roomCode}
-              onChange={(e) => { onRoomCodeChange(e.target.value.toUpperCase()); }}
+              onChange={(e) => {
+                onRoomCodeChange(e.target.value.toUpperCase())
+              }}
               maxLength={6}
             />
             <button
               type="button"
               className="titleScreenBtn titleScreenBtnJoin"
-              onClick={() => { onJoinRoom(roomCode); }}
+              onClick={() => {
+                onJoinRoom(roomCode)
+              }}
               disabled={roomCode.length === 0}
             >
               JOIN
@@ -56,9 +62,7 @@ export function TitleScreen({
           </div>
         </div>
 
-        <p className="titleScreenTagline">
-          EVERY HIT KILLS. DEATH REWINDS. PARADOX LAUNCHES.
-        </p>
+        <p className="titleScreenTagline">EVERY HIT KILLS. DEATH REWINDS. PARADOX LAUNCHES.</p>
       </div>
 
       <div className="titleScreenGibDecor">
@@ -67,8 +71,8 @@ export function TitleScreen({
             key={i}
             className="titleScreenGib"
             style={{
-              left: `${8 + (i * 7.5) % 85}%`,
-              top: `${60 + (i * 13) % 35}%`,
+              left: `${8 + ((i * 7.5) % 85)}%`,
+              top: `${60 + ((i * 13) % 35)}%`,
               opacity: 0.1 + (i % 4) * 0.05,
               transform: `rotate(${i * 37}deg)`,
             }}
@@ -76,5 +80,5 @@ export function TitleScreen({
         ))}
       </div>
     </div>
-  );
+  )
 }

@@ -1,15 +1,12 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react'
 
 interface RewindFlashProps {
-  readonly visible: boolean;
-  readonly secondsBack: number;
+  readonly visible: boolean
+  readonly secondsBack: number
 }
 
-export function RewindFlash({
-  visible,
-  secondsBack,
-}: RewindFlashProps): ReactNode {
-  if (!visible) return null;
+export function RewindFlash({ visible, secondsBack }: RewindFlashProps): ReactNode {
+  if (!visible) return null
 
   return (
     <div className="rewindFlash">
@@ -26,9 +23,7 @@ export function RewindFlash({
           />
         ))}
       </div>
-      <div className="rewindFlashCounter">
-        -{secondsBack.toFixed(1)}s
-      </div>
+      <div className="rewindFlashCounter">-{secondsBack.toFixed(1)}s</div>
     </div>
-  );
+  )
 }

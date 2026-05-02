@@ -14,7 +14,13 @@ interface HintItem {
   show: boolean
 }
 
-export function ControlHints({ showMove, showJump, showDash, showShoot, showSlash }: ControlHintsProps): ReactNode {
+export function ControlHints({
+  showMove,
+  showJump,
+  showDash,
+  showShoot,
+  showSlash,
+}: ControlHintsProps): ReactNode {
   if (!showMove && !showJump && !showDash && !showShoot && !showSlash) return null
 
   const items: HintItem[] = [
@@ -27,11 +33,8 @@ export function ControlHints({ showMove, showJump, showDash, showShoot, showSlas
 
   return (
     <div className="controlHints">
-      {items.map(item => (
-        <div
-          key={item.label}
-          className={`controlHint${item.show ? '' : ' controlHintDismissed'}`}
-        >
+      {items.map((item) => (
+        <div key={item.label} className={`controlHint${item.show ? '' : ' controlHintDismissed'}`}>
           <span className="controlHintKey">{item.key}</span>
           <span className="controlHintAction">{item.label}</span>
         </div>

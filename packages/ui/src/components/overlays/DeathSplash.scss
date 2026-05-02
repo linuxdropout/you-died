@@ -1,5 +1,5 @@
-@use "../../styles/variables" as *;
-@use "../../styles/mixins" as *;
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
 
 .deathSplash {
   position: fixed;
@@ -53,7 +53,9 @@
 .deathSplashHint {
   color: $timeline;
   opacity: 0;
-  animation: fade-in $anim-slow ease-out 500ms both, pulse-glow $anim-crawl ease-in-out 500ms infinite;
+  animation:
+    fade-in $anim-slow ease-out 500ms both,
+    pulse-glow $anim-crawl ease-in-out 500ms infinite;
 
   @include pixel-text($font-size-xs);
   @include timeline-glow;

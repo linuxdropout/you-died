@@ -1,5 +1,5 @@
-@use "../../styles/variables" as *;
-@use "../../styles/mixins" as *;
+@use '../../styles/variables' as *;
+@use '../../styles/mixins' as *;
 
 .paradoxAlert {
   position: fixed;
@@ -11,63 +11,103 @@
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  background: rgba($black, 0.5);
+  background: rgba($black, 0.7);
   animation: fade-in $anim-fast ease-out both;
+}
+
+.paradoxAlertVignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at center,
+    rgba($paradox-dim, 0.3) 0%,
+    rgba($black, 0.6) 60%,
+    rgba($black, 0.9) 100%
+  );
+}
+
+.paradoxAlertStatic {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    transparent 0,
+    transparent 2px,
+    rgba($paradox, 0.06) 2px,
+    rgba($paradox, 0.06) 4px
+  );
+  opacity: 0.5;
+  animation: glitch-flicker $anim-slow steps(1) both;
 }
 
 .paradoxAlertGlitch {
   position: relative;
+  z-index: 1;
   animation: glitch-flicker $anim-slow steps(1) both;
 }
 
 .paradoxAlertText {
   color: $paradox-bright;
-  letter-spacing: 6px;
+  letter-spacing: 8px;
   animation: slam-in $anim-med cubic-bezier(0.16, 1, 0.3, 1) both;
 
-  @include pixel-text($font-size-2xl);
-  @include paradox-glow;
+  @include pixel-text($font-size-3xl);
+
+  text-shadow:
+    0 0 6px $paradox,
+    0 0 12px $paradox-dim,
+    0 0 30px rgba($paradox, 0.5);
 }
 
 .paradoxAlertTextGhost {
   position: absolute;
   top: 0;
-  left: 2px;
+  left: 4px;
   color: $paradox;
   opacity: 0.4;
   clip-path: inset(10% 0 70% 0);
   animation: vhs-distort $anim-slow steps(1) infinite;
 
-  @include pixel-text($font-size-2xl);
+  @include pixel-text($font-size-3xl);
 }
 
 .paradoxAlertTextGhost2 {
   position: absolute;
   top: 0;
-  left: -2px;
+  left: -4px;
   color: $ghost-bright;
   opacity: 0.3;
   clip-path: inset(60% 0 10% 0);
   animation: vhs-distort $anim-slow steps(1) 100ms infinite;
 
-  @include pixel-text($font-size-2xl);
+  @include pixel-text($font-size-3xl);
 }
 
 .paradoxAlertSub {
+  position: relative;
+  z-index: 1;
   color: $chalk;
+  letter-spacing: 2px;
   opacity: 0;
   animation: fade-in $anim-med ease-out 200ms both;
 
-  @include pixel-text($font-size-sm);
+  @include pixel-text($font-size-md);
 }
 
-.paradoxAlertRipple {
+.paradoxAlertRipple,
+.paradoxAlertRipple2 {
   position: absolute;
   top: 50%;
   left: 50%;
   width: 20px;
   height: 20px;
+  border: 2px solid rgba($paradox, 0.3);
   border-radius: 50%;
   transform: translate(-50%, -50%);
   animation: paradox-ripple $anim-slow ease-out both;
+}
+
+.paradoxAlertRipple2 {
+  animation-delay: 150ms;
 }
