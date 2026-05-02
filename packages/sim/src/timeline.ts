@@ -162,6 +162,7 @@ export function resolveParadoxes(state: GameState): void {
   let changed = true
   let iterations = 0
   const maxIterations = state.timelines.length * 2
+  const boostedPlayers = new Set<PlayerId>()
 
   while (changed && iterations < maxIterations) {
     changed = false
@@ -197,8 +198,9 @@ export function resolveParadoxes(state: GameState): void {
           }
 
           const player = state.players[timeline.playerId]
-          if (player) {
+          if (player && !boostedPlayers.has(timeline.playerId)) {
             player.timelineOffset += REWIND_TICKS
+            boostedPlayers.add(timeline.playerId)
           }
 
           state.events.push({

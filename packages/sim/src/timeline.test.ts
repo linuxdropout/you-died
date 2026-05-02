@@ -1,6 +1,7 @@
 import type { PlayerInput, PlayerState } from './types.ts'
 import { createInitialState } from './state.ts'
 import { step } from './step.ts'
+import { resolveParadoxes } from './timeline.ts'
 import { REWIND_TICKS, WIN_LEAD_TICKS, PLAYER_WIDTH } from './constants.ts'
 
 const NO_INPUT: PlayerInput = {
@@ -326,5 +327,87 @@ describe('timeline', () => {
     expect(state1.tick).toBe(state2.tick)
     expect(state1.seed).toBe(state2.seed)
     expect(state1.timelines.length).toBe(state2.timelines.length)
+  })
+
+  it('paradox cascade grants at most one offset boost per player', () => {
+    const state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+
+    const p1 = getPlayer(state, 'p1')
+    p1.pos = { x: 640, y: 550 }
+    p1.vel = { x: 0, y: 0 }
+    p1.grounded = true
+
+    const p2 = getPlayer(state, 'p2')
+    p2.pos = { x: 800, y: 550 }
+    p2.vel = { x: 0, y: 0 }
+    p2.grounded = true
+
+    // Simulate a chain of severed timelines for p1:
+    // tl-A severed by tl-B, tl-B severed by tl-C, tl-C severed by tl-D (p2's active timeline)
+    // When tl-D severs tl-C, the cascade should unsever tl-B then tl-A,
+    // but p1 should only get one REWIND_TICKS boost.
+    const tlA = {
+      timelineId: 'p1-tl-a',
+      playerId: 'p1',
+      startTick: 0,
+      snapshots: [],
+      headEndedAtTick: 100,
+      replayOriginTick: 100,
+      replayStartTick: 0,
+      severed: true,
+      severedAtSnapshotTick: 50,
+      severedByTimelineId: 'p1-tl-b',
+      replayComplete: false,
+    }
+    const tlB = {
+      timelineId: 'p1-tl-b',
+      playerId: 'p1',
+      startTick: 100,
+      snapshots: [],
+      headEndedAtTick: 200,
+      replayOriginTick: 200,
+      replayStartTick: 100,
+      severed: true,
+      severedAtSnapshotTick: 150,
+      severedByTimelineId: 'p1-tl-c',
+      replayComplete: false,
+    }
+    const tlC = {
+      timelineId: 'p1-tl-c',
+      playerId: 'p1',
+      startTick: 200,
+      snapshots: [],
+      headEndedAtTick: 300,
+      replayOriginTick: 300,
+      replayStartTick: 200,
+      severed: true,
+      severedAtSnapshotTick: 250,
+      severedByTimelineId: 'p2-tl-d',
+      replayComplete: false,
+    }
+    const tlD = {
+      timelineId: 'p2-tl-d',
+      playerId: 'p2',
+      startTick: 0,
+      snapshots: [],
+      headEndedAtTick: undefined,
+      replayOriginTick: undefined,
+      replayStartTick: undefined,
+      severed: true,
+      severedAtSnapshotTick: 200,
+      severedByTimelineId: undefined as string | undefined,
+      replayComplete: false,
+    }
+
+    state.timelines.push(tlA, tlB, tlC, tlD)
+
+    const offsetBefore = p1.timelineOffset
+
+    resolveParadoxes(state)
+
+    expect(p1.timelineOffset).toBe(offsetBefore + REWIND_TICKS)
+
+    const paradoxEvents = state.events.filter((e) => e.type === 'paradox' && e.playerId === 'p1')
+    expect(paradoxEvents.length).toBeGreaterThanOrEqual(1)
   })
 })
