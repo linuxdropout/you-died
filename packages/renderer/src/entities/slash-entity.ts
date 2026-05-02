@@ -1,4 +1,4 @@
-import { AnimatedSprite, Container } from 'pixi.js'
+import { AnimatedSprite, Container, type Ticker } from 'pixi.js'
 import type { RenderSlash } from '@you-died/sim'
 import type { SpriteManager } from '../sprite-manager.js'
 
@@ -23,7 +23,7 @@ export class SlashEntity {
     }
     this.container.alpha = slash.isGhost ? 0.5 : 1
 
-    this.sprite.update({ deltaTime: 1 } as any)
+    this.sprite.update({ deltaTime: 1 } as unknown as Ticker)
   }
 
   reset() {

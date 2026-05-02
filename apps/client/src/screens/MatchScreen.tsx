@@ -26,7 +26,15 @@ interface Props {
   audioGuard: AudioContextGuard
 }
 
-export function MatchScreen({ room, playerId, seed, playerIds, playerNames, playerColors, audioGuard }: Props) {
+export function MatchScreen({
+  room,
+  playerId,
+  seed,
+  playerIds,
+  playerNames,
+  playerColors,
+  audioGuard,
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const gameLoopRef = useRef<GameLoop | null>(null)
   const [hudData, setHudData] = useState<HudData | null>(null)
@@ -72,7 +80,7 @@ export function MatchScreen({ room, playerId, seed, playerIds, playerNames, play
     const handler = (msg: { tick: number; inputs: Record<string, PlayerInput> }) => {
       loop.pushConfirmedInputs(msg.tick, msg.inputs)
     }
-    const unsub = room.onMessage('inputs', handler)
+    const unsub = room.onMessage('inputs', handler) as () => void
 
     return () => {
       unsub()
@@ -82,7 +90,17 @@ export function MatchScreen({ room, playerId, seed, playerIds, playerNames, play
       canvas.remove()
       stopTimerUrgent()
     }
-  }, [room, playerId, seed, playerIds, playerNames, playerColors, audioGuard, stopTimerUrgent, onFirstUse])
+  }, [
+    room,
+    playerId,
+    seed,
+    playerIds,
+    playerNames,
+    playerColors,
+    audioGuard,
+    stopTimerUrgent,
+    onFirstUse,
+  ])
 
   useEffect(() => {
     if (!hudData) return
@@ -125,19 +143,16 @@ export function MatchScreen({ room, playerId, seed, playerIds, playerNames, play
               {...(screenEvent?.killerName != null ? { killerName: screenEvent.killerName } : {})}
               {...(screenEvent?.weapon != null ? { weapon: screenEvent.weapon } : {})}
             />
-            <RewindFlash
-              visible={screenEvent?.kind === 'rewind'}
-              secondsBack={10}
-            />
-            <ParadoxAlert
-              visible={screenEvent?.kind === 'paradox'}
-            />
-            <SeverNotice
-              visible={screenEvent?.kind === 'sever'}
-            />
+            <RewindFlash visible={screenEvent?.kind === 'rewind'} secondsBack={10} />
+            <ParadoxAlert visible={screenEvent?.kind === 'paradox'} />
+            <SeverNotice visible={screenEvent?.kind === 'sever'} />
             <WinScreen
               visible={screenEvent?.kind === 'win'}
-              winnerName={screenEvent?.winnerId ? (playerNames[screenEvent.winnerId] ?? screenEvent.winnerId) : ''}
+              winnerName={
+                screenEvent?.winnerId
+                  ? (playerNames[screenEvent.winnerId] ?? screenEvent.winnerId)
+                  : ''
+              }
               isLocalWinner={screenEvent?.winnerId === playerId}
               kills={hudData.playerStatuses.find((p) => p.playerId === playerId)?.kills ?? 0}
               deaths={hudData.playerStatuses.find((p) => p.playerId === playerId)?.deaths ?? 0}

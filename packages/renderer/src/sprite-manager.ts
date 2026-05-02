@@ -1,4 +1,4 @@
-import { Assets, AnimatedSprite, Spritesheet } from 'pixi.js'
+import { Assets, AnimatedSprite, Spritesheet, type Ticker } from 'pixi.js'
 import {
   ANIMATION_META,
   PLAYER_COLORS,
@@ -14,7 +14,9 @@ export class PlayerSprite {
 
   constructor(sheet: Spritesheet) {
     this.sheet = sheet
-    const firstAnim = Object.values(sheet.animations)[0]!
+    const anims = Object.values(sheet.animations)
+    const firstAnim = anims[0]
+    if (!firstAnim) throw new Error('Spritesheet has no animations')
     this.sprite = new AnimatedSprite(firstAnim)
     this.sprite.anchor.set(0.5, 1.0)
     this.sprite.autoUpdate = false
@@ -47,7 +49,7 @@ export class PlayerSprite {
   }
 
   update(deltaFrames: number) {
-    this.sprite.update({ deltaTime: deltaFrames } as any)
+    this.sprite.update({ deltaTime: deltaFrames } as unknown as Ticker)
   }
 }
 
@@ -94,7 +96,7 @@ export class SpriteManager {
     await Promise.all(loadPromises)
   }
 
-  createPlayerSprite(color: PlayerColor, ghost: boolean = false): PlayerSprite {
+  createPlayerSprite(color: PlayerColor, ghost = false): PlayerSprite {
     const key = ghost ? 'ghost' : `player-${color}`
     const sheet = this.sheets.get(key)
     if (!sheet) throw new Error(`Spritesheet "${key}" not loaded`)

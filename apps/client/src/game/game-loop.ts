@@ -73,7 +73,10 @@ export function createGameLoop(config: GameLoopConfig): GameLoop {
 
   return {
     async start() {
-      await renderer.init(canvas, `${import.meta.env.BASE_URL}sprites`)
+      const base =
+        (import.meta as unknown as { env: Record<string, string | undefined> }).env['BASE_URL'] ??
+        '/'
+      await renderer.init(canvas, `${base}sprites`)
       if (destroyed) {
         renderer.destroy()
         return

@@ -86,20 +86,20 @@ describe('MatchController', () => {
       controller.addPlayer('p4', 'D')
 
       const state = controller.getLobbyState()
-      const colors = state.map(p => p.color)
+      const colors = state.map((p) => p.color)
       expect(new Set(colors).size).toBe(4)
     })
 
     it('reuses colors when a player leaves', () => {
       controller.addPlayer('p1', 'A')
       controller.addPlayer('p2', 'B')
-      const firstColor = controller.getLobbyState()[0]!.color
+      const firstColor = controller.getLobbyState()[0]?.color
 
       controller.removePlayer('p1')
       controller.addPlayer('p3', 'C')
 
       const state = controller.getLobbyState()
-      const colors = state.map(p => p.color)
+      const colors = state.map((p) => p.color)
       expect(colors).toContain(firstColor)
     })
   })
@@ -231,15 +231,23 @@ describe('MatchController', () => {
       expect(result).not.toBeNull()
       expect(result?.tick).toBe(0)
       expect(result?.inputs['p1']).toEqual({
-        left: false, right: false, jump: false,
-        dash: false, slash: false, shoot: false,
+        left: false,
+        right: false,
+        jump: false,
+        dash: false,
+        slash: false,
+        shoot: false,
       })
     })
 
     it('includes submitted inputs in tick output', () => {
       controller.submitInput('p1', 0, {
-        left: true, right: false, jump: false,
-        dash: false, slash: false, shoot: false,
+        left: true,
+        right: false,
+        jump: false,
+        dash: false,
+        slash: false,
+        shoot: false,
       })
 
       const result = controller.tick()
@@ -326,8 +334,8 @@ describe('MatchController', () => {
       expect(controller.getPhase()).toBe('lobby')
       const state = controller.getLobbyState()
       expect(state).toHaveLength(2)
-      expect(state[0]!.ready).toBe(false)
-      expect(state[1]!.ready).toBe(false)
+      expect(state[0]?.ready).toBe(false)
+      expect(state[1]?.ready).toBe(false)
       expect(controller.countdownSeconds).toBeNull()
     })
 
@@ -341,7 +349,7 @@ describe('MatchController', () => {
       controller.resetToLobby()
 
       expect(controller.getHostId()).toBe('p1')
-      expect(controller.getLobbyState().map(p => p.id)).toEqual(['p1', 'p2'])
+      expect(controller.getLobbyState().map((p) => p.id)).toEqual(['p1', 'p2'])
     })
   })
 })

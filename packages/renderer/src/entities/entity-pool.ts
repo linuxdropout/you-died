@@ -3,7 +3,7 @@ export class EntityPool<T> {
   private readonly factory: () => T
   private readonly resetFn: (item: T) => void
 
-  constructor(factory: () => T, resetFn: (item: T) => void, initialSize: number = 0) {
+  constructor(factory: () => T, resetFn: (item: T) => void, initialSize = 0) {
     this.factory = factory
     this.resetFn = resetFn
     for (let i = 0; i < initialSize; i++) {

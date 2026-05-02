@@ -6,13 +6,40 @@ import { ConnectScreen } from './screens/ConnectScreen'
 import { LobbyScreen } from './screens/LobbyScreen'
 import { MatchScreen } from './screens/MatchScreen'
 import { EndScreen } from './screens/EndScreen'
-import { createClient, createRoom, joinRoom, generateRoomCode, onServerMessage } from './net/connection'
+import {
+  createClient,
+  createRoom,
+  joinRoom,
+  generateRoomCode,
+  onServerMessage,
+} from './net/connection'
 
 type Phase =
   | { type: 'title'; error: string | null }
-  | { type: 'lobby'; room: Room; players: LobbyPlayer[]; countdownSeconds: number | null; roomCode: string; hostId: PlayerId | null }
-  | { type: 'match'; room: Room; playerId: PlayerId; seed: number; playerIds: PlayerId[]; playerNames: Record<PlayerId, string>; playerColors: Record<PlayerId, string> }
-  | { type: 'end'; room: Room; reason: string; winnerId: PlayerId | undefined; playerNames: Record<PlayerId, string> }
+  | {
+      type: 'lobby'
+      room: Room
+      players: LobbyPlayer[]
+      countdownSeconds: number | null
+      roomCode: string
+      hostId: PlayerId | null
+    }
+  | {
+      type: 'match'
+      room: Room
+      playerId: PlayerId
+      seed: number
+      playerIds: PlayerId[]
+      playerNames: Record<PlayerId, string>
+      playerColors: Record<PlayerId, string>
+    }
+  | {
+      type: 'end'
+      room: Room
+      reason: string
+      winnerId: PlayerId | undefined
+      playerNames: Record<PlayerId, string>
+    }
 
 export default function App() {
   const [phase, setPhase] = useState<Phase>({ type: 'title', error: null })
@@ -24,7 +51,13 @@ export default function App() {
         case 'roomState':
           setPhase((prev) =>
             prev.type === 'lobby'
-              ? { ...prev, players: msg.players, countdownSeconds: msg.countdownSeconds, roomCode: msg.roomCode, hostId: msg.hostId }
+              ? {
+                  ...prev,
+                  players: msg.players,
+                  countdownSeconds: msg.countdownSeconds,
+                  roomCode: msg.roomCode,
+                  hostId: msg.hostId,
+                }
               : prev,
           )
           break
@@ -46,7 +79,13 @@ export default function App() {
         case 'matchEnd':
           setPhase((prev) => {
             if (prev.type !== 'match') return prev
-            return { type: 'end', room: prev.room, reason: msg.reason, winnerId: msg.winnerId, playerNames: prev.playerNames }
+            return {
+              type: 'end',
+              room: prev.room,
+              reason: msg.reason,
+              winnerId: msg.winnerId,
+              playerNames: prev.playerNames,
+            }
           })
           break
       }
@@ -59,25 +98,42 @@ export default function App() {
       const code = generateRoomCode()
       const room = await createRoom(client, code)
       setupRoomListeners(room)
-      setPhase({ type: 'lobby', room, players: [], countdownSeconds: null, roomCode: code, hostId: null })
+      setPhase({
+        type: 'lobby',
+        room,
+        players: [],
+        countdownSeconds: null,
+        roomCode: code,
+        hostId: null,
+      })
     } catch {
       setPhase({ type: 'title', error: 'Failed to create room' })
     }
   }, [setupRoomListeners])
 
-  const handleJoinRoom = useCallback(async (code: string) => {
-    try {
-      const client = createClient()
-      const room = await joinRoom(client, code)
-      setupRoomListeners(room)
-      setPhase({ type: 'lobby', room, players: [], countdownSeconds: null, roomCode: code, hostId: null })
-    } catch {
-      setPhase({ type: 'title', error: 'Room not found' })
-    }
-  }, [setupRoomListeners])
+  const handleJoinRoom = useCallback(
+    async (code: string) => {
+      try {
+        const client = createClient()
+        const room = await joinRoom(client, code)
+        setupRoomListeners(room)
+        setPhase({
+          type: 'lobby',
+          room,
+          players: [],
+          countdownSeconds: null,
+          roomCode: code,
+          hostId: null,
+        })
+      } catch {
+        setPhase({ type: 'title', error: 'Room not found' })
+      }
+    },
+    [setupRoomListeners],
+  )
 
   const handleReturnToTitle = useCallback((room: Room) => {
-    room.leave()
+    void room.leave()
     setPhase({ type: 'title', error: null })
   }, [])
 

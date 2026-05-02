@@ -1,7 +1,7 @@
 import { ColorMatrixFilter, type Container } from 'pixi.js'
 
-const DURATION = 45
-const HUE_SPEED = 40
+const DURATION = 60
+const HUE_SPEED = 60
 
 export class ParadoxEffect {
   private readonly target: Container
@@ -16,10 +16,11 @@ export class ParadoxEffect {
   start() {
     this.active = true
     this.timer = DURATION
-    if (!this.target.filters) {
+    const filters = this.target.filters
+    if (filters.length === 0) {
       this.target.filters = [this.filter]
-    } else if (!this.target.filters.includes(this.filter)) {
-      this.target.filters = [...this.target.filters, this.filter]
+    } else if (!filters.includes(this.filter)) {
+      this.target.filters = [...filters, this.filter]
     }
   }
 
@@ -30,7 +31,10 @@ export class ParadoxEffect {
     const progress = 1 - this.timer / DURATION
 
     this.filter.reset()
-    this.filter.hue(Math.sin(this.timer * HUE_SPEED * Math.PI / 180) * 60, false)
+    this.filter.hue(Math.sin((this.timer * HUE_SPEED * Math.PI) / 180) * 60, false)
+    this.filter.saturate(0.5, false)
+    const flashPhase = this.timer > DURATION - 10 ? 1.3 - (DURATION - this.timer) * 0.03 : 1.0
+    this.filter.brightness(flashPhase, false)
     this.filter.alpha = 1 - progress * 0.5
 
     if (this.timer <= 0) {
@@ -41,8 +45,9 @@ export class ParadoxEffect {
   }
 
   private removeFilter() {
-    if (!this.target.filters) return
-    this.target.filters = this.target.filters.filter((f) => f !== this.filter)
+    const filters = this.target.filters
+    if (filters.length === 0) return
+    this.target.filters = filters.filter((f) => f !== this.filter)
     if (this.target.filters.length === 0) this.target.filters = null
   }
 

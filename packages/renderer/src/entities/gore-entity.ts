@@ -18,14 +18,14 @@ export class GoreEntity {
     this.container.cullable = true
   }
 
-  init(x: number, y: number, tick: number, seed: number, vx: number = 0, vy: number = 0) {
+  init(x: number, y: number, tick: number, seed: number, vx = 0, vy = 0) {
     this.spawnTick = tick
 
     const s1 = Math.sin(seed * 13.37) * 0.5 + 0.5
     const s2 = Math.sin(seed * 7.91) * 0.5 + 0.5
     const s3 = Math.sin(seed * 3.14) * 0.5 + 0.5
 
-    const color = GORE_COLORS[Math.floor(s1 * GORE_COLORS.length) % GORE_COLORS.length]!
+    const color = GORE_COLORS[Math.floor(s1 * GORE_COLORS.length) % GORE_COLORS.length] ?? 0x8b0000
     const size = MIN_SIZE + s2 * (MAX_SIZE - MIN_SIZE)
     const rotation = s3 * Math.PI * 2
 

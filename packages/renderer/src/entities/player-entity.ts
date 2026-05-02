@@ -58,8 +58,10 @@ export class PlayerEntity {
     this.sprite.update(1)
 
     if (this.currentGhost) {
-      this.container.position.y += Math.sin(this.frameCount * GHOST_BOB_FREQUENCY) * GHOST_BOB_AMPLITUDE
-      this.container.alpha = GHOST_ALPHA_CENTER + Math.sin(this.frameCount * GHOST_ALPHA_FREQUENCY) * GHOST_ALPHA_RANGE
+      this.container.position.y +=
+        Math.sin(this.frameCount * GHOST_BOB_FREQUENCY) * GHOST_BOB_AMPLITUDE
+      this.container.alpha =
+        GHOST_ALPHA_CENTER + Math.sin(this.frameCount * GHOST_ALPHA_FREQUENCY) * GHOST_ALPHA_RANGE
 
       if (this.frameCount % TRAIL_RECORD_INTERVAL === 0) {
         this.trailPositions.push({ x: player.pos.x, y: player.pos.y })
@@ -70,11 +72,17 @@ export class PlayerEntity {
 
       this.trailGfx.clear()
       for (let i = 0; i < this.trailPositions.length; i++) {
-        const tp = this.trailPositions[i]!
+        const tp = this.trailPositions[i]
+        if (!tp) continue
         const relX = tp.x - player.pos.x
         const relY = tp.y - player.pos.y
         const alpha = 0.15 * ((i + 1) / this.trailPositions.length)
-        this.trailGfx.rect(relX - TRAIL_PLAYER_W / 2, relY - TRAIL_PLAYER_H, TRAIL_PLAYER_W, TRAIL_PLAYER_H)
+        this.trailGfx.rect(
+          relX - TRAIL_PLAYER_W / 2,
+          relY - TRAIL_PLAYER_H,
+          TRAIL_PLAYER_W,
+          TRAIL_PLAYER_H,
+        )
         this.trailGfx.fill({ color: TRAIL_COLOR, alpha })
       }
     }

@@ -1,5 +1,4 @@
 import type { RenderFrame } from '@you-died/sim'
-import type { PlayerColor } from '@you-died/assets'
 import type { SpriteManager } from '../sprite-manager.js'
 import type { LayerManager } from '../layers/layer-manager.js'
 import type { RendererConfig, MatchContext } from '../types.js'
@@ -79,7 +78,7 @@ export class EntityManager {
       let entity = this.activePlayers.get(key)
       if (!entity) {
         entity = this.playerPool.acquire()
-        const color = this.context.playerColors[player.id] ?? 'red' as PlayerColor
+        const color = this.context.playerColors[player.id] ?? 'red'
         entity.attach(this.sprites, color, player.isGhost)
         this.layers.playerLayer.addChild(entity.container)
         this.activePlayers.set(key, entity)
@@ -169,8 +168,8 @@ export class EntityManager {
         const vx = Math.cos(angle) * speed
         const vy = Math.sin(angle) * speed - 3
         gore.init(
-          x + (Math.sin(seed * 2.71) * 20),
-          y + (Math.sin(seed * 1.41) * 10),
+          x + Math.sin(seed * 2.71) * 20,
+          y + Math.sin(seed * 1.41) * 10,
           event.tick,
           seed,
           vx,

@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react'
 import type { InputAction } from '../input/input'
 
-export interface ControlHintsState {
+interface ControlHintsState {
   move: boolean
   jump: boolean
   dash: boolean
@@ -19,7 +19,7 @@ export function useControlHints() {
   })
 
   const onFirstUse = useCallback((action: InputAction) => {
-    setHints(prev => ({ ...prev, [action]: false }))
+    setHints((prev) => ({ ...prev, [action]: false }))
   }, [])
 
   const allDismissed = !hints.move && !hints.jump && !hints.dash && !hints.shoot && !hints.slash

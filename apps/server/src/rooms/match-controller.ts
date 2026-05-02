@@ -1,6 +1,12 @@
 import type { LobbyPlayer, PlayerId, PlayerInput } from '@you-died/protocol'
 import { TICK_RATE, MATCH_TIME_LIMIT_SECONDS, MAX_PLAYERS } from '@you-died/protocol'
-import { createInitialState, step, getTimeoutWinner, hashState, type GameState } from '@you-died/sim'
+import {
+  createInitialState,
+  step,
+  getTimeoutWinner,
+  hashState,
+  type GameState,
+} from '@you-died/sim'
 
 type Phase = 'lobby' | 'match' | 'ended'
 
@@ -36,10 +42,10 @@ export class MatchController {
   addPlayer(id: PlayerId, name: string): boolean {
     if (this.phase !== 'lobby') return false
     if (this.players.size >= MAX_PLAYERS) return false
-    const usedColors = new Set([...this.players.values()].map(p => p.color))
-    const color = COLORS.find(c => !usedColors.has(c)) ?? COLORS[0]!
+    const usedColors = new Set([...this.players.values()].map((p) => p.color))
+    const color = COLORS.find((c) => !usedColors.has(c)) ?? COLORS[0] ?? 'red'
     this.players.set(id, { name, ready: false, color })
-    if (this.hostId === null) this.hostId = id
+    this.hostId ??= id
     return true
   }
 
@@ -169,7 +175,10 @@ export class MatchController {
     return this.seed
   }
 
-  getPlayerMeta(): { playerNames: Record<PlayerId, string>; playerColors: Record<PlayerId, string> } {
+  getPlayerMeta(): {
+    playerNames: Record<PlayerId, string>
+    playerColors: Record<PlayerId, string>
+  } {
     const playerNames: Record<PlayerId, string> = {}
     const playerColors: Record<PlayerId, string> = {}
     for (const [id, entry] of this.players) {
@@ -192,7 +201,11 @@ export class MatchController {
     return null
   }
 
-  getReplayData(): { seed: number; playerIds: PlayerId[]; inputLog: Record<PlayerId, PlayerInput>[] } | null {
+  getReplayData(): {
+    seed: number
+    playerIds: PlayerId[]
+    inputLog: Record<PlayerId, PlayerInput>[]
+  } | null {
     if (this.phase !== 'ended') return null
     return {
       seed: this.seed,

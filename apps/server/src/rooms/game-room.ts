@@ -11,7 +11,7 @@ const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 function generateRoomCode(): string {
   let code = ''
   for (let i = 0; i < ROOM_CODE_LENGTH; i++) {
-    code += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]
+    code += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)] ?? ''
   }
   return code
 }
@@ -60,7 +60,9 @@ export class GameRoom extends Room {
       const serverHash = this.controller.getHashForTick(msg.tick)
       if (serverHash === undefined) return
       if (serverHash !== msg.hash) {
-        console.warn(`[desync] tick=${msg.tick} client=${client.sessionId} clientHash=${msg.hash} serverHash=${serverHash}`)
+        console.warn(
+          `[desync] tick=${msg.tick} client=${client.sessionId} clientHash=${msg.hash} serverHash=${serverHash}`,
+        )
       }
     })
   }
@@ -138,7 +140,7 @@ export class GameRoom extends Room {
 
     void this.lock()
 
-    this.setSimulationInterval(((_deltaTime) => {
+    this.setSimulationInterval((_deltaTime) => {
       const result = this.controller.tick()
       if (!result) return
 
@@ -155,20 +157,24 @@ export class GameRoom extends Room {
         void this.unlock()
         this.broadcastLobbyState()
       }
-    }), 1000 / TICK_RATE)
+    }, 1000 / TICK_RATE)
   }
 
   private logTickEvents() {
     const state = this.controller.getSimState()
     if (!state) return
     for (const event of state.events) {
-      console.log(`[match] tick=${event.tick} ${event.type} player=${event.playerId}${event.killerId ? ` killer=${event.killerId}` : ''}`)
+      console.log(
+        `[match] tick=${event.tick} ${event.type} player=${event.playerId}${event.killerId ? ` killer=${event.killerId}` : ''}`,
+      )
     }
   }
 
   private logReplayData() {
     const replay = this.controller.getReplayData()
     if (!replay) return
-    console.log(`[match] ended — seed=${replay.seed} players=${replay.playerIds.join(',')} ticks=${replay.inputLog.length}`)
+    console.log(
+      `[match] ended — seed=${replay.seed} players=${replay.playerIds.join(',')} ticks=${replay.inputLog.length}`,
+    )
   }
 }

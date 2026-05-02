@@ -17,7 +17,15 @@ interface Props {
   onLeave: () => void
 }
 
-export function LobbyScreen({ room, players, countdownSeconds, roomCode, hostId, audioGuard, onLeave }: Props) {
+export function LobbyScreen({
+  room,
+  players,
+  countdownSeconds,
+  roomCode,
+  hostId,
+  audioGuard,
+  onLeave,
+}: Props) {
   const [name, setName] = useState('')
   const { playClick, playCountdownTick, playMatchStart } = useUiSounds(audioGuard)
   const prevCountdown = useRef<number | null>(null)
@@ -58,27 +66,37 @@ export function LobbyScreen({ room, players, countdownSeconds, roomCode, hostId,
       localPlayerId={localPlayerId}
       isReady={isReady}
       maxPlayers={MAX_PLAYERS}
-      hostId={hostId ?? undefined}
+      {...(hostId != null ? { hostId } : {})}
       countdownSeconds={countdownSeconds}
-      onReady={() => { playClick(); sendMessage(room, { type: 'ready' }) }}
-      onLeave={() => { playClick(); onLeave() }}
-      onStart={() => { playClick(); sendMessage(room, { type: 'startCountdown' }) }}
-      onCancel={() => { playClick(); sendMessage(room, { type: 'cancelCountdown' }) }}
+      onReady={() => {
+        playClick()
+        sendMessage(room, { type: 'ready' })
+      }}
+      onLeave={() => {
+        playClick()
+        onLeave()
+      }}
+      onStart={() => {
+        playClick()
+        sendMessage(room, { type: 'startCountdown' })
+      }}
+      onCancel={() => {
+        playClick()
+        sendMessage(room, { type: 'cancelCountdown' })
+      }}
     >
       <div className="lobbyNameRow">
         <input
           className="lobbyNameInput"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') handleSetName() }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSetName()
+          }}
           placeholder="Your name"
           maxLength={12}
         />
-        <button
-          type="button"
-          className="lobbyBtn lobbyBtnName"
-          onClick={handleSetName}
-        >
+        <button type="button" className="lobbyBtn lobbyBtnName" onClick={handleSetName}>
           SET
         </button>
       </div>

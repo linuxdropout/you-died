@@ -40,7 +40,8 @@ export class DeathParticles {
 
   update() {
     for (let i = this.particles.length - 1; i >= 0; i--) {
-      const p = this.particles[i]!
+      const p = this.particles[i]
+      if (!p) continue
       p.vy += GRAVITY
       p.gfx.position.x += p.vx
       p.gfx.position.y += p.vy
