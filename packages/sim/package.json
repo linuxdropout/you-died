@@ -11,6 +11,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },
+  "dependencies": {
+    "@you-died/protocol": "workspace:*"
+  },
   "devDependencies": {
     "@types/node": "^24.12.2",
     "vitest": "^4.1.4"
