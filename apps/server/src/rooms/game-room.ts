@@ -119,11 +119,28 @@ export class GameRoom extends Room {
 
       this.broadcast('inputs', { tick: result.tick, inputs: result.inputs })
 
+      this.logTickEvents()
+
       const matchEnd = this.controller.isMatchOver()
       if (matchEnd) {
         this.broadcast('matchEnd', matchEnd)
         this.setSimulationInterval()
+        this.logReplayData()
       }
     }), 1000 / TICK_RATE)
+  }
+
+  private logTickEvents() {
+    const state = this.controller.getSimState()
+    if (!state) return
+    for (const event of state.events) {
+      console.log(`[match] tick=${event.tick} ${event.type} player=${event.playerId}${event.killerId ? ` killer=${event.killerId}` : ''}`)
+    }
+  }
+
+  private logReplayData() {
+    const replay = this.controller.getReplayData()
+    if (!replay) return
+    console.log(`[match] ended — seed=${replay.seed} players=${replay.playerIds.join(',')} ticks=${replay.inputLog.length}`)
   }
 }
