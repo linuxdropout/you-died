@@ -36,7 +36,6 @@ export function createGameLoop(config: GameLoopConfig): GameLoop {
   const { seed, playerId, playerIds, playerNames, playerColors, room, canvas } = config
 
   let simState: GameState = createInitialState({ seed, playerIds })
-  let localTick = 0
   const confirmedQueue: ConfirmedTick[] = []
   let simInterval: ReturnType<typeof setInterval> | null = null
   let rafId: number | null = null
@@ -45,12 +44,14 @@ export function createGameLoop(config: GameLoopConfig): GameLoop {
   let initialized = false
   let destroyed = false
 
+  const MAX_CATCHUP_PER_TICK = 3
+
   function simTick(): void {
     const input = captureInput()
-    sendMessage(room, { type: 'input', tick: localTick, input })
-    localTick++
+    sendMessage(room, { type: 'input', tick: simState.tick, input })
 
-    while (confirmedQueue.length > 0) {
+    const steps = Math.min(confirmedQueue.length, MAX_CATCHUP_PER_TICK)
+    for (let i = 0; i < steps; i++) {
       const confirmed = confirmedQueue.shift()
       if (confirmed) {
         simState = step(simState, confirmed.inputs)
