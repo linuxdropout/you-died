@@ -74,11 +74,15 @@ export class HudBridge {
     switch (event.type) {
       case 'death':
         this.deaths.set(event.playerId, (this.deaths.get(event.playerId) ?? 0) + 1)
+        if (event.killerId && event.killerId !== event.playerId) {
+          this.kills.set(event.killerId, (this.kills.get(event.killerId) ?? 0) + 1)
+        }
         this.pushKillEvent({
           id: String(this.nextEventId++),
           kind: 'kill',
           tick: event.tick,
           victim: name,
+          killer: event.killerId ? (this.context.playerNames[event.killerId] ?? event.killerId) : undefined,
         })
         break
 

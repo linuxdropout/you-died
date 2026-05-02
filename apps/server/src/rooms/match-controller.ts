@@ -98,6 +98,7 @@ export class MatchController {
     this.seed = seed
     this.currentTick = 0
     this.pendingInputs.clear()
+    this.inputLog = []
     this.simState = createInitialState({
       seed,
       playerIds: [...this.players.keys()],
@@ -127,6 +128,7 @@ export class MatchController {
     }
 
     this.pendingInputs.delete(this.currentTick)
+    this.inputLog.push(inputs)
     this.simState = step(this.simState, inputs)
 
     const result = { tick: this.currentTick, inputs }
@@ -178,5 +180,18 @@ export class MatchController {
       return { reason: 'timeout', winnerId: getTimeoutWinner(this.simState) }
     }
     return null
+  }
+
+  getReplayData(): { seed: number; playerIds: PlayerId[]; inputLog: Record<PlayerId, PlayerInput>[] } | null {
+    if (this.phase !== 'ended') return null
+    return {
+      seed: this.seed,
+      playerIds: [...this.players.keys()],
+      inputLog: this.inputLog,
+    }
+  }
+
+  getSimState(): GameState | null {
+    return this.simState
   }
 }
