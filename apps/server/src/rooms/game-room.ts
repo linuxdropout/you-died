@@ -56,6 +56,12 @@ export class GameRoom extends Room {
       this.controller.submitInput(_client.sessionId, msg.tick, msg.input)
     })
 
+    this.onMessage('rejoinLobby', () => {
+      if (this.controller.getPhase() === 'lobby') {
+        this.broadcastLobbyState()
+      }
+    })
+
     this.onMessage('stateHash', (client: Client, msg: { tick: number; hash: number }) => {
       const serverHash = this.controller.getHashForTick(msg.tick)
       if (serverHash === undefined) return

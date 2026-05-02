@@ -12,6 +12,7 @@ import {
   joinRoom,
   generateRoomCode,
   onServerMessage,
+  sendMessage,
 } from './net/connection'
 
 type Phase =
@@ -27,6 +28,7 @@ type Phase =
   | {
       type: 'match'
       room: Room
+      roomCode: string
       playerId: PlayerId
       seed: number
       playerIds: PlayerId[]
@@ -36,6 +38,7 @@ type Phase =
   | {
       type: 'end'
       room: Room
+      roomCode: string
       reason: string
       winnerId: PlayerId | undefined
       playerNames: Record<PlayerId, string>
@@ -67,6 +70,7 @@ export default function App() {
               ? {
                   type: 'match',
                   room: prev.room,
+                  roomCode: prev.roomCode,
                   playerId: msg.playerId,
                   seed: msg.seed,
                   playerIds: msg.playerIds,
@@ -82,11 +86,15 @@ export default function App() {
             return {
               type: 'end',
               room: prev.room,
+              roomCode: prev.roomCode,
               reason: msg.reason,
               winnerId: msg.winnerId,
               playerNames: prev.playerNames,
             }
           })
+          break
+        case 'error':
+          setPhase({ type: 'title', error: msg.message })
           break
       }
     })
@@ -139,6 +147,7 @@ export default function App() {
 
   const handlePlayAgain = useCallback((room: Room, roomCode: string) => {
     setPhase({ type: 'lobby', room, players: [], countdownSeconds: null, roomCode, hostId: null })
+    sendMessage(room, { type: 'rejoinLobby' })
   }, [])
 
   switch (phase.type) {
@@ -181,7 +190,7 @@ export default function App() {
           reason={phase.reason}
           winnerId={phase.winnerId}
           playerNames={phase.playerNames}
-          onPlayAgain={() => handlePlayAgain(phase.room, '')}
+          onPlayAgain={() => handlePlayAgain(phase.room, phase.roomCode)}
           onLeave={() => handleReturnToTitle(phase.room)}
         />
       )

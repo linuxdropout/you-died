@@ -78,12 +78,12 @@ export class EntityManager {
       let entity = this.activePlayers.get(key)
       if (!entity) {
         entity = this.playerPool.acquire()
-        const color = this.context.playerColors[player.id] ?? 'red'
-        entity.attach(this.sprites, color, player.isGhost)
         this.layers.playerLayer.addChild(entity.container)
         this.activePlayers.set(key, entity)
       }
 
+      const color = this.context.playerColors[player.id] ?? 'red'
+      entity.attach(this.sprites, color, player.isGhost)
       entity.update(player, frame.tick)
     }
 

@@ -71,6 +71,40 @@ describe('timeline', () => {
     expect(p1After.alive).toBe(true)
     expect(p1After.timelineId).not.toBe(timelineIdBefore)
     expect(p1After.timelineOffset).toBeLessThan(0)
+
+    expect(p1After.pos.x).toBeLessThan(posBeforeKill)
+  })
+
+  it('rewinds position back to where player was REWIND_TICKS ago', () => {
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+
+    const p1 = getPlayer(state, 'p1')
+    const p2 = getPlayer(state, 'p2')
+    p1.pos = { x: 300, y: 550 }
+    p1.vel = { x: 0, y: 0 }
+    p1.grounded = true
+    p2.pos = { x: 300, y: 10000 }
+    p2.vel = { x: 0, y: 0 }
+
+    state = runTicks(state, 100)
+
+    const posAtRewindTarget = getPlayer(state, 'p1').pos.x
+
+    state = runTicks(state, REWIND_TICKS)
+
+    const p1Before = getPlayer(state, 'p1')
+    const p2b = getPlayer(state, 'p2')
+    p2b.pos = { x: p1Before.pos.x + PLAYER_WIDTH + 10, y: p1Before.pos.y }
+    p2b.vel = { x: 0, y: 0 }
+    p2b.grounded = true
+    p2b.facingRight = false
+    p2b.alive = true
+
+    state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
+
+    const p1After = getPlayer(state, 'p1')
+    expect(p1After.alive).toBe(true)
+    expect(p1After.pos.x).toBe(posAtRewindTarget)
   })
 
   it('creates no ghost on head death', () => {

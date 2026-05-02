@@ -18,6 +18,7 @@ export type ClientMessage =
   | { type: 'cancelCountdown' }
   | { type: 'input'; tick: number; input: PlayerInput }
   | { type: 'stateHash'; tick: number; hash: number }
+  | { type: 'rejoinLobby' }
 
 export type ServerMessage =
   | {
@@ -37,6 +38,7 @@ export type ServerMessage =
     }
   | { type: 'inputs'; tick: number; inputs: Record<PlayerId, PlayerInput> }
   | { type: 'matchEnd'; reason: 'timeout' | 'win'; winnerId?: PlayerId | undefined }
+  | { type: 'playerLeft'; playerId: PlayerId }
   | { type: 'error'; message: string }
 
 export interface LobbyPlayer {

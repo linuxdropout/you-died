@@ -27,6 +27,7 @@ export class VfxController {
 
   private screenEventCallback: ((event: ScreenEvent) => void) | null = null
   private processedTick = -1
+  private pendingTimer: ReturnType<typeof setTimeout> | null = null
 
   constructor(layers: LayerManager, context: MatchContext, sound: SoundManager | null = null) {
     this.context = context
@@ -92,7 +93,10 @@ export class VfxController {
       case 'paradox':
         this.paradox.start()
         this.shake.trigger(SHAKE_PARADOX)
-        setTimeout(() => this.shake.trigger(6), 200)
+        this.pendingTimer = setTimeout(() => {
+          this.shake.trigger(6)
+          this.pendingTimer = null
+        }, 200)
         if (isLocal) {
           this.emitScreenEvent({ kind: 'paradox' })
         }
@@ -126,6 +130,10 @@ export class VfxController {
   }
 
   clear() {
+    if (this.pendingTimer !== null) {
+      clearTimeout(this.pendingTimer)
+      this.pendingTimer = null
+    }
     this.shake.reset()
     this.deathParticles.clear()
     this.rewind.reset()

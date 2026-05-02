@@ -18,9 +18,8 @@ export class SlashEntity {
     this.sprite.position.set(slash.pos.x, slash.pos.y + 8)
     this.sprite.width = slash.width
     this.sprite.height = slash.height
-    if (!slash.facingRight) {
-      this.sprite.scale.x = -this.sprite.scale.x
-    }
+    const absX = Math.abs(this.sprite.scale.x)
+    this.sprite.scale.x = slash.facingRight ? absX : -absX
     this.container.alpha = slash.isGhost ? 0.5 : 1
 
     this.sprite.update({ deltaTime: 1 } as unknown as Ticker)

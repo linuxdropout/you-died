@@ -50,6 +50,7 @@ export class SoundManager {
   private prevSlashIds = new Set<number>()
   private prevPlayerStates = new Map<string, PlayerSnapshot>()
   private activeCount = 0
+  private activeTimers: ReturnType<typeof setTimeout>[] = []
   private lastPlayTime = new Map<string, number>()
 
   constructor(guard: AudioContextGuard, localPlayerId: PlayerId) {
@@ -81,9 +82,10 @@ export class SoundManager {
 
   private trackActive(durationMs: number): void {
     this.activeCount++
-    setTimeout(() => {
+    const id = setTimeout(() => {
       this.activeCount--
     }, durationMs)
+    this.activeTimers.push(id)
   }
 
   processGameEvent(event: GameEvent, isLocal: boolean): void {
@@ -235,6 +237,8 @@ export class SoundManager {
 
   clear(): void {
     this.clearTrackingState()
+    for (const id of this.activeTimers) clearTimeout(id)
+    this.activeTimers = []
     this.activeCount = 0
     this.lastPlayTime.clear()
     if (this.masterGain) {
