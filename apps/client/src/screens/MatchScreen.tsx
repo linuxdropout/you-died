@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import type { Room } from 'colyseus.js'
 import type { PlayerId, PlayerInput } from '@you-died/protocol'
-import type { HudData, ScreenEvent } from '@you-died/renderer'
+import type { HudData, ScreenEvent, AudioContextGuard } from '@you-died/renderer'
 import {
   GameHud,
   DeathSplash,
@@ -9,9 +9,12 @@ import {
   ParadoxAlert,
   SeverNotice,
   WinScreen,
+  ControlHints,
 } from '@you-died/ui'
 import { createGameLoop } from '../game/game-loop'
 import type { GameLoop } from '../game/game-loop'
+import { useUiSounds } from '../hooks/use-ui-sounds'
+import { useControlHints } from '../hooks/use-control-hints'
 
 interface Props {
   room: Room
@@ -20,17 +23,27 @@ interface Props {
   playerIds: PlayerId[]
   playerNames: Record<PlayerId, string>
   playerColors: Record<PlayerId, string>
+  audioGuard: AudioContextGuard
 }
 
-export function MatchScreen({ room, playerId, seed, playerIds, playerNames, playerColors }: Props) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+export function MatchScreen({ room, playerId, seed, playerIds, playerNames, playerColors, audioGuard }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null)
   const gameLoopRef = useRef<GameLoop | null>(null)
   const [hudData, setHudData] = useState<HudData | null>(null)
   const [screenEvent, setScreenEvent] = useState<ScreenEvent | null>(null)
+  const { startTimerUrgent, stopTimerUrgent } = useUiSounds(audioGuard)
+  const { hints, onFirstUse, allDismissed } = useControlHints()
+  const urgentStarted = useRef(false)
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+    const container = containerRef.current
+    if (!container) return
+
+    const canvas = document.createElement('canvas')
+    canvas.style.display = 'block'
+    canvas.style.width = '100%'
+    canvas.style.height = '100%'
+    container.appendChild(canvas)
 
     let clearTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -42,6 +55,8 @@ export function MatchScreen({ room, playerId, seed, playerIds, playerNames, play
       playerColors,
       room,
       canvas,
+      audioGuard,
+      onFirstUse,
       onHudUpdate: setHudData,
       onScreenEvent: (event) => {
         setScreenEvent(event)
@@ -64,13 +79,37 @@ export function MatchScreen({ room, playerId, seed, playerIds, playerNames, play
       if (clearTimer) clearTimeout(clearTimer)
       loop.destroy()
       gameLoopRef.current = null
+      canvas.remove()
+      stopTimerUrgent()
     }
-  }, [room, playerId, seed, playerIds, playerNames, playerColors])
+  }, [room, playerId, seed, playerIds, playerNames, playerColors, audioGuard, stopTimerUrgent, onFirstUse])
+
+  useEffect(() => {
+    if (!hudData) return
+    const remaining = Math.max(0, hudData.matchLimitSeconds - hudData.elapsedSeconds)
+    const isUrgent = remaining <= 30 && remaining > 0
+    if (isUrgent && !urgentStarted.current) {
+      urgentStarted.current = true
+      startTimerUrgent()
+    } else if (!isUrgent && urgentStarted.current) {
+      urgentStarted.current = false
+      stopTimerUrgent()
+    }
+  }, [hudData, startTimerUrgent, stopTimerUrgent])
 
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh' }}>
-      <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
+      <div ref={containerRef} style={{ display: 'block', width: '100%', height: '100%' }} />
       <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+        {!allDismissed && (
+          <ControlHints
+            showMove={hints.move}
+            showJump={hints.jump}
+            showDash={hints.dash}
+            showShoot={hints.shoot}
+            showSlash={hints.slash}
+          />
+        )}
         {hudData && (
           <GameHud
             players={hudData.players}

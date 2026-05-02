@@ -1,46 +1,28 @@
+import { useState } from 'react'
+import type { AudioContextGuard } from '@you-died/renderer'
+import { TitleScreen } from '@you-died/ui'
+import { useUiSounds } from '../hooks/use-ui-sounds'
+
 interface Props {
-  onConnect: () => void
+  onCreateRoom: () => void
+  onJoinRoom: (code: string) => void
   error: string | null
+  audioGuard: AudioContextGuard
 }
 
-export function ConnectScreen({ onConnect, error }: Props) {
+export function ConnectScreen({ onCreateRoom, onJoinRoom, error, audioGuard }: Props) {
+  const [roomCode, setRoomCode] = useState('')
+  const { playClick } = useUiSounds(audioGuard)
+
   return (
-    <div className="connectScreen">
-      <div className="connectScreenBg" />
-
-      <div className="connectScreenContent">
-        <span className="connectScreenPre">PREVIOUSLY ON:</span>
-        <h1 className="connectScreenTitle">
-          YOU<br />
-          <span className="connectScreenTitleAccent">FUCKING</span><br />
-          DIED
-        </h1>
-
-        <button
-          type="button"
-          className="connectScreenBtn"
-          onClick={onConnect}
-        >
-          CONNECT
-        </button>
-
-        {error && <p className="connectScreenError">{error}</p>}
-      </div>
-
-      <div className="connectScreenGibDecor">
-        {Array.from({ length: 10 }, (_, i) => (
-          <span
-            key={i}
-            className="connectScreenGib"
-            style={{
-              left: `${8 + (i * 7.5) % 85}%`,
-              top: `${60 + (i * 13) % 35}%`,
-              opacity: 0.1 + (i % 4) * 0.05,
-              transform: `rotate(${i * 37}deg)`,
-            }}
-          />
-        ))}
-      </div>
-    </div>
+    <>
+      <TitleScreen
+        onCreateRoom={() => { playClick(); onCreateRoom() }}
+        onJoinRoom={(code) => { playClick(); onJoinRoom(code) }}
+        roomCode={roomCode}
+        onRoomCodeChange={setRoomCode}
+      />
+      {error && <div className="titleScreenError">{error}</div>}
+    </>
   )
 }

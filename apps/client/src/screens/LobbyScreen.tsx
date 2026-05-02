@@ -1,112 +1,87 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { Room } from 'colyseus.js'
-import type { LobbyPlayer } from '@you-died/protocol'
+import type { LobbyPlayer, PlayerId } from '@you-died/protocol'
+import { MAX_PLAYERS } from '@you-died/protocol'
+import type { AudioContextGuard } from '@you-died/renderer'
+import { Lobby } from '@you-died/ui'
 import { sendMessage } from '../net/connection'
+import { useUiSounds } from '../hooks/use-ui-sounds'
 
 interface Props {
   room: Room
   players: LobbyPlayer[]
   countdownSeconds: number | null
+  roomCode: string
+  hostId: PlayerId | null
+  audioGuard: AudioContextGuard
+  onLeave: () => void
 }
 
-export function LobbyScreen({ room, players, countdownSeconds }: Props) {
+export function LobbyScreen({ room, players, countdownSeconds, roomCode, hostId, audioGuard, onLeave }: Props) {
   const [name, setName] = useState('')
+  const { playClick, playCountdownTick, playMatchStart } = useUiSounds(audioGuard)
+  const prevCountdown = useRef<number | null>(null)
 
-  const allReady = players.length > 0 && players.every((p) => p.ready)
-  const counting = countdownSeconds !== null
+  useEffect(() => {
+    if (countdownSeconds !== null && countdownSeconds !== prevCountdown.current) {
+      if (countdownSeconds <= 0) {
+        playMatchStart()
+      } else {
+        playCountdownTick(countdownSeconds === 1)
+      }
+    }
+    prevCountdown.current = countdownSeconds
+  }, [countdownSeconds, playCountdownTick, playMatchStart])
+
+  const localPlayerId = room.sessionId
+  const localPlayer = players.find((p) => p.id === localPlayerId)
+  const isReady = localPlayer?.ready ?? false
+
+  const uiPlayers = players.map((p) => ({
+    playerId: p.id,
+    name: p.name,
+    ready: p.ready,
+    color: p.color,
+  }))
 
   const handleSetName = () => {
     if (name.trim()) {
+      playClick()
       sendMessage(room, { type: 'setName', name: name.trim() })
     }
   }
 
-  const handleReady = () => {
-    sendMessage(room, { type: 'ready' })
-  }
-
-  const handleStart = () => {
-    sendMessage(room, { type: 'startCountdown' })
-  }
-
-  const handleCancel = () => {
-    sendMessage(room, { type: 'cancelCountdown' })
-  }
-
   return (
-    <div className="lobbyScreen">
-      <div className="lobbyScreenPanel">
-        <div className="lobbyScreenHeader">
-          <h1 className="lobbyScreenTitle">LOBBY</h1>
-        </div>
-
-        <div className="lobbyScreenNameRow">
-          <input
-            className="lobbyScreenInput"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') handleSetName() }}
-            placeholder="Your name"
-            maxLength={12}
-          />
-          <button
-            type="button"
-            className="lobbyScreenBtn lobbyScreenBtnName"
-            onClick={handleSetName}
-          >
-            SET
-          </button>
-        </div>
-
-        <div className="lobbyScreenSlots">
-          {players.map((p) => (
-            <div
-              key={p.id}
-              className={`lobbyScreenSlot${p.ready ? ' lobbyScreenSlotReady' : ''}`}
-            >
-              <span className="lobbyScreenSlotName">{p.name}</span>
-              <span className="lobbyScreenSlotStatus">
-                {p.ready ? 'READY' : '...'}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <div className="lobbyScreenActions">
-          <button
-            type="button"
-            className="lobbyScreenBtn lobbyScreenBtnReady"
-            onClick={handleReady}
-            disabled={counting}
-          >
-            READY
-          </button>
-          {counting ? (
-            <button
-              type="button"
-              className="lobbyScreenBtn lobbyScreenBtnCancel"
-              onClick={handleCancel}
-            >
-              CANCEL ({countdownSeconds})
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="lobbyScreenBtn lobbyScreenBtnStart"
-              onClick={handleStart}
-              disabled={!allReady}
-            >
-              START
-            </button>
-          )}
-        </div>
-
-        {counting && (
-          <div className="lobbyScreenCountdown">
-            STARTING IN {countdownSeconds}...
-          </div>
-        )}
+    <Lobby
+      roomCode={roomCode}
+      players={uiPlayers}
+      localPlayerId={localPlayerId}
+      isReady={isReady}
+      maxPlayers={MAX_PLAYERS}
+      hostId={hostId ?? undefined}
+      countdownSeconds={countdownSeconds}
+      onReady={() => { playClick(); sendMessage(room, { type: 'ready' }) }}
+      onLeave={() => { playClick(); onLeave() }}
+      onStart={() => { playClick(); sendMessage(room, { type: 'startCountdown' }) }}
+      onCancel={() => { playClick(); sendMessage(room, { type: 'cancelCountdown' }) }}
+    >
+      <div className="lobbyNameRow">
+        <input
+          className="lobbyNameInput"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSetName() }}
+          placeholder="Your name"
+          maxLength={12}
+        />
+        <button
+          type="button"
+          className="lobbyBtn lobbyBtnName"
+          onClick={handleSetName}
+        >
+          SET
+        </button>
       </div>
-    </div>
+    </Lobby>
   )
 }
