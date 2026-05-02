@@ -12,6 +12,7 @@ export function getRenderableState(state: GameState): RenderFrame {
       grounded: player.grounded,
       isGhost: player.isGhost,
       isSlashing: player.slashTicksRemaining > 0,
+      isShooting: player.shootTicksRemaining > 0,
       isDashing: player.dashTicksRemaining > 0,
       alive: player.alive,
     })
@@ -40,6 +41,7 @@ export function getRenderableState(state: GameState): RenderFrame {
       grounded: snapshot.state.grounded,
       isGhost,
       isSlashing: snapshot.state.slashTicksRemaining > 0,
+      isShooting: snapshot.state.shootTicksRemaining > 0,
       isDashing: snapshot.state.dashTicksRemaining > 0,
       alive: snapshot.state.alive,
     })
@@ -57,6 +59,7 @@ export function getRenderableState(state: GameState): RenderFrame {
     pos: { ...s.pos },
     width: s.width,
     height: s.height,
+    facingRight: s.offsetX > 0,
     isGhost: s.isGhost,
   }))
 

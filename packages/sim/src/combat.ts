@@ -3,6 +3,7 @@ import {
   PROJECTILE_SPEED,
   PROJECTILE_LIFETIME,
   SHOOT_COOLDOWN,
+  SHOOT_DURATION,
   PROJECTILE_WIDTH,
   PROJECTILE_HEIGHT,
   SLASH_DURATION,
@@ -69,6 +70,7 @@ export function processPlayerActions(
 
   if (input.shoot && player.shootCooldownTicks === 0) {
     player.shootCooldownTicks = SHOOT_COOLDOWN
+    player.shootTicksRemaining = SHOOT_DURATION
     const dir = player.facingRight ? 1 : -1
     state.projectiles.push({
       id: nextId(state),
@@ -86,6 +88,10 @@ export function processPlayerActions(
 
   if (player.shootCooldownTicks > 0) {
     player.shootCooldownTicks--
+  }
+
+  if (player.shootTicksRemaining > 0) {
+    player.shootTicksRemaining--
   }
 }
 

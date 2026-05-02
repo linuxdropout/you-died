@@ -40,6 +40,7 @@ export function createInitialState(config: GameConfig): GameState {
       slashTicksRemaining: 0,
       slashCooldownTicks: 0,
       shootCooldownTicks: 0,
+      shootTicksRemaining: 0,
       alive: true,
       isGhost: false,
       timelineOffset: 0,

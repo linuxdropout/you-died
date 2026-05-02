@@ -37,6 +37,7 @@ export function hashState(state: GameState): number {
     h = fnv1a(h, p.slashTicksRemaining)
     h = fnv1a(h, p.slashCooldownTicks)
     h = fnv1a(h, p.shootCooldownTicks)
+    h = fnv1a(h, p.shootTicksRemaining)
     h = fnv1a(h, p.grounded ? 1 : 0)
     h = fnv1a(h, p.facingRight ? 1 : 0)
   }

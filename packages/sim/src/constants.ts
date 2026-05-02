@@ -17,6 +17,7 @@ export const PLAYER_HEIGHT = 48
 export const PROJECTILE_SPEED = 10
 export const PROJECTILE_LIFETIME = 120
 export const SHOOT_COOLDOWN = 30
+export const SHOOT_DURATION = 10
 export const PROJECTILE_WIDTH = 8
 export const PROJECTILE_HEIGHT = 4
 

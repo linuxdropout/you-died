@@ -24,6 +24,7 @@ export interface PlayerState {
   slashTicksRemaining: number
   slashCooldownTicks: number
   shootCooldownTicks: number
+  shootTicksRemaining: number
   alive: boolean
   isGhost: boolean
   timelineOffset: number
@@ -109,6 +110,7 @@ export interface RenderPlayer {
   grounded: boolean
   isGhost: boolean
   isSlashing: boolean
+  isShooting: boolean
   isDashing: boolean
   alive: boolean
 }
@@ -125,6 +127,7 @@ export interface RenderSlash {
   pos: Vec2
   width: number
   height: number
+  facingRight: boolean
   isGhost: boolean
 }
 
