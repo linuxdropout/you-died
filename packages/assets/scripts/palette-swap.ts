@@ -91,10 +91,10 @@ GHOST_PALETTE[SOURCE_COLORS.head] = '#bde0fe'
 const GHOST_ALPHA = 80
 
 const ANIMATION_SOURCES: Record<string, { file: string; frameSize: number }> = {
-  idle:  { file: 'Idle/Player Idle 48x48.png', frameSize: 48 },
-  run:   { file: 'Run/player run 48x48.png', frameSize: 48 },
-  jump:  { file: 'Jump/player new jump 48x48.png', frameSize: 48 },
-  dash:  { file: 'Dash/dash.png', frameSize: 48 },
+  idle: { file: 'Idle/Player Idle 48x48.png', frameSize: 48 },
+  run: { file: 'Run/player run 48x48.png', frameSize: 48 },
+  jump: { file: 'Jump/player new jump 48x48.png', frameSize: 48 },
+  dash: { file: 'Dash/dash.png', frameSize: 48 },
   slash: { file: 'Sword Attack/player sword atk 64x64.png', frameSize: 64 },
   shoot: { file: 'Shooting (two-handed)/player shoot 2H 48x48.png', frameSize: 48 },
   death: { file: 'Death/Player Death 64x64.png', frameSize: 48 },
@@ -166,9 +166,10 @@ function writePng(filePath: string, png: PNG): void {
   fs.writeFileSync(filePath, buffer)
 }
 
-function combineSheets(
-  sheets: { png: PNG; frameWidth: number; frameHeight: number }[],
-): { png: PNG; layout: { anim: string; x: number; y: number; w: number; h: number; frames: number }[] } {
+function combineSheets(sheets: { png: PNG; frameWidth: number; frameHeight: number }[]): {
+  png: PNG
+  layout: { anim: string; x: number; y: number; w: number; h: number; frames: number }[]
+} {
   const maxFrameWidth = Math.max(...sheets.map((s) => s.frameWidth))
   const totalFrames = sheets.reduce((sum, s) => sum + s.png.width / s.frameWidth, 0)
   const cols = 10

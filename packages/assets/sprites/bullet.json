@@ -68,11 +68,7 @@
     }
   },
   "animations": {
-    "bullet": [
-      "bullet/bullet_0",
-      "bullet/bullet_1",
-      "bullet/bullet_2"
-    ]
+    "bullet": ["bullet/bullet_0", "bullet/bullet_1", "bullet/bullet_2"]
   },
   "meta": {
     "image": "bullet.png",

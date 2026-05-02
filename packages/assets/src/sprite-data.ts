@@ -1,11 +1,4 @@
-export type AnimationName =
-  | 'idle'
-  | 'run'
-  | 'jump'
-  | 'dash'
-  | 'slash'
-  | 'shoot'
-  | 'death'
+export type AnimationName = 'idle' | 'run' | 'jump' | 'dash' | 'slash' | 'shoot' | 'death'
 
 export type PlayerColor = 'red' | 'blue' | 'green' | 'yellow'
 

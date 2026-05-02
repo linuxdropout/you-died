@@ -39,7 +39,13 @@ function generateBullet(): PNG {
 
     for (let dy = 0; dy < coreSize; dy++) {
       for (let dx = 0; dx < coreSize; dx++) {
-        setPixel(png, cx - Math.floor(coreSize / 2) + dx, cy - Math.floor(coreSize / 2) + dy, ...core, 255)
+        setPixel(
+          png,
+          cx - Math.floor(coreSize / 2) + dx,
+          cy - Math.floor(coreSize / 2) + dy,
+          ...core,
+          255,
+        )
       }
     }
 
@@ -74,7 +80,7 @@ function generateSlashEffect(): PNG {
     const ox = f * frameW
     const cx = ox + 16
     const cy = 16
-    const startAngle = -Math.PI * 0.4 + (f * Math.PI * 0.3)
+    const startAngle = -Math.PI * 0.4 + f * Math.PI * 0.3
     const sweep = Math.PI * 0.5
     const radius = 10 + f
     const alpha = Math.round(255 * (1 - f * 0.2))

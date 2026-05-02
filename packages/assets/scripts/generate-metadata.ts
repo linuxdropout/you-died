@@ -22,11 +22,11 @@ interface AnimDef {
 }
 
 const ANIMATIONS: AnimDef[] = [
-  { name: 'idle',  frameCount: 10, frameWidth: 48, frameHeight: 48 },
-  { name: 'run',   frameCount: 8,  frameWidth: 48, frameHeight: 48 },
-  { name: 'jump',  frameCount: 6,  frameWidth: 48, frameHeight: 48 },
-  { name: 'dash',  frameCount: 9,  frameWidth: 48, frameHeight: 48 },
-  { name: 'slash', frameCount: 6,  frameWidth: 64, frameHeight: 64 },
+  { name: 'idle', frameCount: 10, frameWidth: 48, frameHeight: 48 },
+  { name: 'run', frameCount: 8, frameWidth: 48, frameHeight: 48 },
+  { name: 'jump', frameCount: 6, frameWidth: 48, frameHeight: 48 },
+  { name: 'dash', frameCount: 9, frameWidth: 48, frameHeight: 48 },
+  { name: 'slash', frameCount: 6, frameWidth: 64, frameHeight: 64 },
   { name: 'shoot', frameCount: 10, frameWidth: 48, frameHeight: 48 },
   { name: 'death', frameCount: 10, frameWidth: 48, frameHeight: 48 },
 ]
@@ -80,7 +80,12 @@ function generatePlayerSheetJson(variant: string, imageFile: string) {
   }
 }
 
-function generateEffectSheetJson(name: string, imageFile: string, frameWidth: number, frameCount: number) {
+function generateEffectSheetJson(
+  name: string,
+  imageFile: string,
+  frameWidth: number,
+  frameCount: number,
+) {
   const pngPath = path.join(OUT_DIR, imageFile)
   const pngData = PNG.sync.read(fs.readFileSync(pngPath))
 
