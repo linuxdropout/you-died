@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@colyseus/ws-transport": "^0.15.0",
+    "@you-died/protocol": "workspace:*",
+    "@you-died/sim": "workspace:*",
     "colyseus": "^0.15.0"
   },
   "devDependencies": {
