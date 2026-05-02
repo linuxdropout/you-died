@@ -113,6 +113,7 @@ export interface RenderPlayer {
   isShooting: boolean
   isDashing: boolean
   alive: boolean
+  timelineOffset: number
 }
 
 export interface RenderProjectile {

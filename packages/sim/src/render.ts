@@ -1,4 +1,10 @@
-import type { GameState, RenderFrame, RenderPlayer, RenderProjectile, RenderSlash } from './types.ts'
+import type {
+  GameState,
+  RenderFrame,
+  RenderPlayer,
+  RenderProjectile,
+  RenderSlash,
+} from './types.ts'
 
 export function getRenderableState(state: GameState): RenderFrame {
   const players: RenderPlayer[] = []
@@ -15,6 +21,7 @@ export function getRenderableState(state: GameState): RenderFrame {
       isShooting: player.shootTicksRemaining > 0,
       isDashing: player.dashTicksRemaining > 0,
       alive: player.alive,
+      timelineOffset: player.timelineOffset,
     })
   }
 
@@ -31,19 +38,18 @@ export function getRenderableState(state: GameState): RenderFrame {
     if (!snapshot) continue
     if (!snapshot.state.alive) continue
 
-    const isGhost = timeline.severed && playbackTick >= (timeline.severedAtSnapshotTick ?? 0)
-
     players.push({
       id: timeline.playerId,
       timelineId: timeline.timelineId,
       pos: { ...snapshot.state.pos },
       facingRight: snapshot.state.facingRight,
       grounded: snapshot.state.grounded,
-      isGhost,
+      isGhost: true,
       isSlashing: snapshot.state.slashTicksRemaining > 0,
       isShooting: snapshot.state.shootTicksRemaining > 0,
       isDashing: snapshot.state.dashTicksRemaining > 0,
       alive: snapshot.state.alive,
+      timelineOffset: 0,
     })
   }
 

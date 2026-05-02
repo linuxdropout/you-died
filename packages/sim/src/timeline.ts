@@ -30,16 +30,10 @@ export function findCurrentTimeline(
 ): TimelineRecord | undefined {
   const player = state.players[playerId]
   if (!player) return undefined
-  return state.timelines.find(
-    (t) => t.playerId === playerId && t.timelineId === player.timelineId,
-  )
+  return state.timelines.find((t) => t.playerId === playerId && t.timelineId === player.timelineId)
 }
 
-export function recordSnapshot(
-  state: GameState,
-  playerId: PlayerId,
-  input: PlayerInput,
-): void {
+export function recordSnapshot(state: GameState, playerId: PlayerId, input: PlayerInput): void {
   const player = state.players[playerId]
   if (!player) return
 
@@ -115,7 +109,12 @@ export function handleHeadDeath(state: GameState, playerId: PlayerId, killerId?:
     p.timelineOffset -= state.tick - rewindTarget
   }
 
-  state.events.push({ tick: state.tick, type: 'death', playerId, ...(killerId ? { killerId } : {}) })
+  state.events.push({
+    tick: state.tick,
+    type: 'death',
+    playerId,
+    ...(killerId ? { killerId } : {}),
+  })
   state.events.push({ tick: state.tick, type: 'rewind', playerId })
 }
 
@@ -251,7 +250,12 @@ export function processGhostActions(state: GameState): void {
 
 export function checkWinCondition(state: GameState): PlayerId | undefined {
   const playerIds = state.config.playerIds
-  if (playerIds.length < 2) return undefined
+  if (playerIds.length < 2) {
+    const soloId = playerIds[0]
+    const solo = soloId !== undefined ? state.players[soloId] : undefined
+    if (solo?.alive && solo.timelineOffset >= WIN_LEAD_TICKS) return soloId
+    return undefined
+  }
 
   for (const candidateId of playerIds) {
     const candidate = state.players[candidateId]
@@ -303,10 +307,7 @@ export function getTimeoutWinner(state: GameState): PlayerId | undefined {
   return tied ? undefined : bestId
 }
 
-export function createInitialTimeline(
-  state: GameState,
-  playerId: PlayerId,
-): TimelineRecord {
+export function createInitialTimeline(state: GameState, playerId: PlayerId): TimelineRecord {
   const timelineId = generateTimelineId(state, playerId)
 
   const timeline: TimelineRecord = {

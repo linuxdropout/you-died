@@ -135,7 +135,8 @@ describe('timeline', () => {
     expect(p1After.alive).toBe(true)
 
     const oldTimeline = state.timelines.find(
-      (t) => t.playerId === 'p1' && t.headEndedAtTick !== undefined && t.replayOriginTick !== undefined,
+      (t) =>
+        t.playerId === 'p1' && t.headEndedAtTick !== undefined && t.replayOriginTick !== undefined,
     )
     expect(oldTimeline).toBeDefined()
 
@@ -145,7 +146,8 @@ describe('timeline', () => {
       return
 
     const p1Head = getPlayer(state, 'p1')
-    const pastPlaybackTick = oldTimeline.replayStartTick + (state.tick - oldTimeline.replayOriginTick)
+    const pastPlaybackTick =
+      oldTimeline.replayStartTick + (state.tick - oldTimeline.replayOriginTick)
     const pastIndex = pastPlaybackTick - oldTimeline.startTick
     const pastSnapshot = oldTimeline.snapshots[pastIndex]
 
@@ -161,9 +163,7 @@ describe('timeline', () => {
 
     state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
 
-    const severedTimeline = state.timelines.find(
-      (t) => t.playerId === 'p1' && t.severed,
-    )
+    const severedTimeline = state.timelines.find((t) => t.playerId === 'p1' && t.severed)
     expect(severedTimeline).toBeDefined()
     expect(state.events.some((e) => e.type === 'timelineSevered')).toBe(true)
   })
