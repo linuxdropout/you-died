@@ -1,0 +1,32 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    "apps/client": {
+      "project": ["src/**/*.{ts,tsx}", "tests/**/*.ts"]
+    },
+    "apps/server": {
+      "project": ["src/**/*.ts"]
+    },
+    "packages/sim": {
+      "project": ["src/**/*.ts"]
+    },
+    "packages/protocol": {
+      "project": ["src/**/*.ts"]
+    },
+    "packages/renderer": {
+      "project": ["src/**/*.ts"]
+    },
+    "packages/ui": {
+      "project": ["src/**/*.{ts,tsx}"]
+    },
+    "packages/maps": {
+      "project": ["src/**/*.ts"]
+    },
+    "packages/assets": {
+      "project": ["src/**/*.ts"]
+    },
+    "packages/tools": {
+      "project": ["src/**/*.ts"]
+    }
+  }
+}

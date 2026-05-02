@@ -1,0 +1,23 @@
+node_modules
+coverage
+playwright-report
+test-results
+dist
+*.tsbuildinfo
+
+# package-specific output
+apps/client/dist
+apps/server/dist
+
+# environment
+.env
+.env.*
+!.env.example
+
+# editor
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
+.DS_Store
+.codex
