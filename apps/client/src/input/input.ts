@@ -57,10 +57,14 @@ function trackFirstUse(action: InputAction, active: boolean): void {
 }
 
 export function captureInput(): PlayerInput {
-  const dash = keyState.get('ShiftLeft') === true || keyState.get('ShiftRight') === true || keyState.get('Space') === true
-  const slash = keyState.get('KeyZ') === true || keyState.get('KeyJ') === true || mouseState.get(2) === true
-  const shoot = keyState.get('KeyX') === true || keyState.get('KeyK') === true || mouseState.get(0) === true
-
+  const dash =
+    keyState.get('ShiftLeft') === true ||
+    keyState.get('ShiftRight') === true ||
+    keyState.get('Space') === true
+  const slash =
+    keyState.get('KeyZ') === true || keyState.get('KeyJ') === true || mouseState.get(2) === true
+  const shoot =
+    keyState.get('KeyX') === true || keyState.get('KeyK') === true || mouseState.get(0) === true
   const left = keyState.get('ArrowLeft') === true || keyState.get('KeyA') === true
   const right = keyState.get('ArrowRight') === true || keyState.get('KeyD') === true
   const jump = keyState.get('ArrowUp') === true || keyState.get('KeyW') === true

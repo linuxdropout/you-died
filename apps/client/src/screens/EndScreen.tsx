@@ -18,9 +18,7 @@ export function EndScreen({ reason, winnerId, playerNames, onPlayAgain, onLeave 
       <div className="endScreenContent">
         <h1 className="endScreenTitle">MATCH OVER</h1>
         <p className="endScreenReason">{reason}</p>
-        {winnerName !== undefined && (
-          <p className="endScreenWinner">WINNER: {winnerName}</p>
-        )}
+        {winnerName !== undefined && <p className="endScreenWinner">WINNER: {winnerName}</p>}
 
         <div className="endScreenActions">
           <button type="button" className="endScreenBtn" onClick={onPlayAgain}>

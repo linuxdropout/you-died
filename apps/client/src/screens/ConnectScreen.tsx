@@ -17,8 +17,14 @@ export function ConnectScreen({ onCreateRoom, onJoinRoom, error, audioGuard }: P
   return (
     <>
       <TitleScreen
-        onCreateRoom={() => { playClick(); onCreateRoom() }}
-        onJoinRoom={(code) => { playClick(); onJoinRoom(code) }}
+        onCreateRoom={() => {
+          playClick()
+          onCreateRoom()
+        }}
+        onJoinRoom={(code) => {
+          playClick()
+          onJoinRoom(code)
+        }}
         roomCode={roomCode}
         onRoomCodeChange={setRoomCode}
       />
