@@ -20,7 +20,7 @@ export function createApp(port: number) {
     }),
   })
 
-  server.define('game', GameRoom)
+  server.define('game', GameRoom).filterBy(['roomCode'])
 
   return { server, port }
 }

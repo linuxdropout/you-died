@@ -2,17 +2,30 @@ import Colyseus from 'colyseus'
 import type { Client } from 'colyseus'
 
 const { Room } = Colyseus
-import { TICK_RATE } from '@you-died/protocol'
+import { TICK_RATE, ROOM_CODE_LENGTH } from '@you-died/protocol'
 import type { PlayerInput } from '@you-died/protocol'
 import { MatchController } from './match-controller.js'
+
+const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+
+function generateRoomCode(): string {
+  let code = ''
+  for (let i = 0; i < ROOM_CODE_LENGTH; i++) {
+    code += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]
+  }
+  return code
+}
 
 export class GameRoom extends Room {
   private controller = new MatchController()
   private countdownInterval: ReturnType<typeof setInterval> | null = null
+  private roomCode = ''
 
-  override onCreate() {
+  override onCreate(options: { roomCode?: string }) {
     this.maxClients = 4
     this.patchRate = 0
+    this.roomCode = options.roomCode ?? generateRoomCode()
+    void this.setMetadata({ roomCode: this.roomCode })
 
     this.onMessage('setName', (client: Client, msg: { name: string }) => {
       this.controller.setName(client.sessionId, msg.name)
@@ -24,14 +37,16 @@ export class GameRoom extends Room {
       this.broadcastLobbyState()
     })
 
-    this.onMessage('startCountdown', () => {
+    this.onMessage('startCountdown', (client: Client) => {
+      if (client.sessionId !== this.controller.getHostId()) return
       if (this.controller.startCountdown()) {
         this.broadcastLobbyState()
         this.runCountdown()
       }
     })
 
-    this.onMessage('cancelCountdown', () => {
+    this.onMessage('cancelCountdown', (client: Client) => {
+      if (client.sessionId !== this.controller.getHostId()) return
       this.stopCountdown()
       this.controller.cancelCountdown()
       this.broadcastLobbyState()
@@ -79,6 +94,8 @@ export class GameRoom extends Room {
     this.broadcast('roomState', {
       players: this.controller.getLobbyState(),
       countdownSeconds: this.controller.countdownSeconds,
+      roomCode: this.roomCode,
+      hostId: this.controller.getHostId(),
     })
   }
 
@@ -134,6 +151,9 @@ export class GameRoom extends Room {
         this.broadcast('matchEnd', matchEnd)
         this.setSimulationInterval()
         this.logReplayData()
+        this.controller.resetToLobby()
+        void this.unlock()
+        this.broadcastLobbyState()
       }
     }), 1000 / TICK_RATE)
   }

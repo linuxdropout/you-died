@@ -16,7 +16,7 @@ describe('MatchController', () => {
 
       const state = controller.getLobbyState()
       expect(state).toHaveLength(2)
-      expect(state[0]).toEqual({ id: 'p1', name: 'Alice', ready: false })
+      expect(state[0]).toEqual({ id: 'p1', name: 'Alice', ready: false, color: 'red' })
     })
 
     it('rejects players beyond max capacity', () => {
@@ -51,6 +51,56 @@ describe('MatchController', () => {
 
       controller.setReady('p1')
       expect(controller.getLobbyState()[0]?.ready).toBe(false)
+    })
+  })
+
+  describe('host', () => {
+    it('assigns first player as host', () => {
+      controller.addPlayer('p1', 'Alice')
+      controller.addPlayer('p2', 'Bob')
+
+      expect(controller.getHostId()).toBe('p1')
+    })
+
+    it('promotes next player when host leaves', () => {
+      controller.addPlayer('p1', 'Alice')
+      controller.addPlayer('p2', 'Bob')
+      controller.removePlayer('p1')
+
+      expect(controller.getHostId()).toBe('p2')
+    })
+
+    it('sets host to null when all players leave', () => {
+      controller.addPlayer('p1', 'Alice')
+      controller.removePlayer('p1')
+
+      expect(controller.getHostId()).toBeNull()
+    })
+  })
+
+  describe('colors', () => {
+    it('assigns unique colors to players', () => {
+      controller.addPlayer('p1', 'A')
+      controller.addPlayer('p2', 'B')
+      controller.addPlayer('p3', 'C')
+      controller.addPlayer('p4', 'D')
+
+      const state = controller.getLobbyState()
+      const colors = state.map(p => p.color)
+      expect(new Set(colors).size).toBe(4)
+    })
+
+    it('reuses colors when a player leaves', () => {
+      controller.addPlayer('p1', 'A')
+      controller.addPlayer('p2', 'B')
+      const firstColor = controller.getLobbyState()[0]!.color
+
+      controller.removePlayer('p1')
+      controller.addPlayer('p3', 'C')
+
+      const state = controller.getLobbyState()
+      const colors = state.map(p => p.color)
+      expect(colors).toContain(firstColor)
     })
   })
 
@@ -258,6 +308,40 @@ describe('MatchController', () => {
     it('does not report match over before time limit', () => {
       controller.tick()
       expect(controller.isMatchOver()).toBeNull()
+    })
+  })
+
+  describe('resetToLobby', () => {
+    it('transitions back to lobby and unreadies players', () => {
+      controller.addPlayer('p1', 'Alice')
+      controller.addPlayer('p2', 'Bob')
+      controller.setReady('p1')
+      controller.setReady('p2')
+      controller.startMatch(42)
+
+      controller.tick()
+      controller.tick()
+      controller.resetToLobby()
+
+      expect(controller.getPhase()).toBe('lobby')
+      const state = controller.getLobbyState()
+      expect(state).toHaveLength(2)
+      expect(state[0]!.ready).toBe(false)
+      expect(state[1]!.ready).toBe(false)
+      expect(controller.countdownSeconds).toBeNull()
+    })
+
+    it('preserves players and host after reset', () => {
+      controller.addPlayer('p1', 'Alice')
+      controller.addPlayer('p2', 'Bob')
+      controller.setReady('p1')
+      controller.setReady('p2')
+      controller.startMatch(42)
+
+      controller.resetToLobby()
+
+      expect(controller.getHostId()).toBe('p1')
+      expect(controller.getLobbyState().map(p => p.id)).toEqual(['p1', 'p2'])
     })
   })
 })

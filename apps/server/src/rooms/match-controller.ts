@@ -7,7 +7,10 @@ type Phase = 'lobby' | 'match' | 'ended'
 interface PlayerEntry {
   name: string
   ready: boolean
+  color: string
 }
+
+const COLORS = ['red', 'blue', 'green', 'yellow']
 
 const NO_OP_INPUT: PlayerInput = {
   left: false,
@@ -21,6 +24,7 @@ const NO_OP_INPUT: PlayerInput = {
 export class MatchController {
   private phase: Phase = 'lobby'
   private players = new Map<PlayerId, PlayerEntry>()
+  private hostId: PlayerId | null = null
   private simState: GameState | null = null
   private currentTick = 0
   private seed = 0
@@ -32,18 +36,29 @@ export class MatchController {
   addPlayer(id: PlayerId, name: string): boolean {
     if (this.phase !== 'lobby') return false
     if (this.players.size >= MAX_PLAYERS) return false
-    this.players.set(id, { name, ready: false })
+    const usedColors = new Set([...this.players.values()].map(p => p.color))
+    const color = COLORS.find(c => !usedColors.has(c)) ?? COLORS[0]!
+    this.players.set(id, { name, ready: false, color })
+    if (this.hostId === null) this.hostId = id
     return true
   }
 
   removePlayer(id: PlayerId): void {
     this.players.delete(id)
+    if (this.hostId === id) {
+      const next = this.players.keys().next()
+      this.hostId = next.done ? null : next.value
+    }
     if (this.phase === 'lobby') {
       this._countdownSeconds = null
     }
     if (this.phase === 'match' && this.players.size === 0) {
       this.phase = 'ended'
     }
+  }
+
+  getHostId(): PlayerId | null {
+    return this.hostId
   }
 
   setName(id: PlayerId, name: string): void {
@@ -141,7 +156,7 @@ export class MatchController {
   getLobbyState(): LobbyPlayer[] {
     const result: LobbyPlayer[] = []
     for (const [id, entry] of this.players) {
-      result.push({ id, name: entry.name, ready: entry.ready })
+      result.push({ id, name: entry.name, ready: entry.ready, color: entry.color })
     }
     return result
   }
@@ -155,14 +170,11 @@ export class MatchController {
   }
 
   getPlayerMeta(): { playerNames: Record<PlayerId, string>; playerColors: Record<PlayerId, string> } {
-    const COLORS = ['red', 'blue', 'green', 'yellow']
     const playerNames: Record<PlayerId, string> = {}
     const playerColors: Record<PlayerId, string> = {}
-    let i = 0
     for (const [id, entry] of this.players) {
       playerNames[id] = entry.name
-      playerColors[id] = COLORS[i % COLORS.length]!
-      i++
+      playerColors[id] = entry.color
     }
     return { playerNames, playerColors }
   }
@@ -195,5 +207,18 @@ export class MatchController {
 
   getSimState(): GameState | null {
     return this.simState
+  }
+
+  resetToLobby(): void {
+    this.phase = 'lobby'
+    this.simState = null
+    this.currentTick = 0
+    this.latestInputs.clear()
+    this.hashBuffer.clear()
+    this.inputLog = []
+    this._countdownSeconds = null
+    for (const player of this.players.values()) {
+      player.ready = false
+    }
   }
 }
