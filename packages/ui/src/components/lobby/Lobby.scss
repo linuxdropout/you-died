@@ -47,6 +47,9 @@
 }
 
 .lobbyCode {
+  user-select: text;
+  cursor: text;
+
   @include pixel-text($font-size-sm);
   @include timeline-glow;
 
