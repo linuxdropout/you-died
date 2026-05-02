@@ -24,7 +24,7 @@ export class MatchController {
   private simState: GameState | null = null
   private currentTick = 0
   private seed = 0
-  private pendingInputs = new Map<number, Map<PlayerId, PlayerInput>>()
+  private latestInputs = new Map<PlayerId, PlayerInput>()
   private _countdownSeconds: number | null = null
   private inputLog: Record<PlayerId, PlayerInput>[] = []
 
@@ -97,7 +97,7 @@ export class MatchController {
     this.phase = 'match'
     this.seed = seed
     this.currentTick = 0
-    this.pendingInputs.clear()
+    this.latestInputs.clear()
     this.inputLog = []
     this.simState = createInitialState({
       seed,
@@ -106,28 +106,19 @@ export class MatchController {
     return [...this.players.keys()]
   }
 
-  submitInput(playerId: PlayerId, tick: number, input: PlayerInput): void {
+  submitInput(playerId: PlayerId, _tick: number, input: PlayerInput): void {
     if (this.phase !== 'match') return
-    if (tick < this.currentTick || tick > this.currentTick + TICK_RATE * 2) return
-    let tickMap = this.pendingInputs.get(tick)
-    if (!tickMap) {
-      tickMap = new Map()
-      this.pendingInputs.set(tick, tickMap)
-    }
-    tickMap.set(playerId, input)
+    this.latestInputs.set(playerId, input)
   }
 
   tick(): { tick: number; inputs: Record<PlayerId, PlayerInput> } | null {
     if (this.phase !== 'match' || !this.simState) return null
 
     const inputs: Record<PlayerId, PlayerInput> = {}
-    const tickMap = this.pendingInputs.get(this.currentTick)
 
     for (const id of this.players.keys()) {
-      inputs[id] = tickMap?.get(id) ?? NO_OP_INPUT
+      inputs[id] = this.latestInputs.get(id) ?? NO_OP_INPUT
     }
-
-    this.pendingInputs.delete(this.currentTick)
     this.inputLog.push(inputs)
     this.simState = step(this.simState, inputs)
 
