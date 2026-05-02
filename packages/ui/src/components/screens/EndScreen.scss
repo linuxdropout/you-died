@@ -57,3 +57,43 @@
   @include pixel-text($font-size-md);
   @include ghost-glow;
 }
+
+.endScreenActions {
+  display: flex;
+  gap: $space-sm;
+  opacity: 0;
+  animation: fade-in $anim-med ease-out 900ms both;
+}
+
+.endScreenBtn {
+  padding: $space-sm $space-lg;
+  color: $chalk;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: rgba($void, 0.8);
+  transition:
+    background $anim-fast ease,
+    border-color $anim-fast ease;
+
+  @include pixel-text($font-size-xs);
+  @include pixel-border($grime);
+
+  &:hover {
+    background: rgba($chalk, 0.08);
+    border-color: $chalk;
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.endScreenBtnLeave {
+  color: $blood;
+  border-color: $blood-dark;
+
+  &:hover {
+    background: rgba($blood, 0.15);
+    border-color: $blood;
+  }
+}

@@ -53,6 +53,33 @@
   color: $timeline;
 }
 
+.lobbyNameRow {
+  display: flex;
+  gap: $space-sm;
+}
+
+.lobbyNameInput {
+  flex: 1;
+  padding: $space-sm $space-md;
+  color: $chalk;
+  background: rgba($black, 0.6);
+
+  @include pixel-text($font-size-xs);
+  @include pixel-border($grime);
+
+  &::placeholder {
+    color: $grime;
+  }
+
+  &:focus {
+    border-color: $timeline;
+  }
+}
+
+.lobbyBtnName {
+  flex-shrink: 0;
+}
+
 .lobbySlots {
   display: flex;
   flex-direction: column;
@@ -100,6 +127,13 @@
 .lobbySlotLabel {
   font-style: italic;
   color: $grime;
+}
+
+.lobbySlotHost {
+  margin-left: $space-xs;
+  color: $warning-bright;
+
+  @include pixel-text($font-size-2xs);
 }
 
 .lobbySlotStatus {
@@ -154,6 +188,29 @@
 }
 
 .lobbyBtnUnready {
+  color: $warning-bright;
+  border-color: $warning;
+
+  &:hover {
+    background: rgba($warning, 0.15);
+  }
+}
+
+.lobbyBtnStart {
+  color: $timeline-bright;
+  border-color: $timeline;
+
+  &:hover {
+    background: rgba($timeline, 0.15);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.3;
+  }
+}
+
+.lobbyBtnCancel {
   color: $warning-bright;
   border-color: $warning;
 

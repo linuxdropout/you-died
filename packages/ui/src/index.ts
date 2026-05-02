@@ -14,6 +14,7 @@ export { RewindFlash } from "./components/overlays/RewindFlash";
 export { ParadoxAlert } from "./components/overlays/ParadoxAlert";
 export { SeverNotice } from "./components/overlays/SeverNotice";
 export { WinScreen } from "./components/overlays/WinScreen";
+export { ControlHints } from "./components/overlays/ControlHints";
 
 // Lobby
 export { Lobby } from "./components/lobby/Lobby";

@@ -15,6 +15,11 @@ interface LobbyProps {
   readonly maxPlayers: number;
   readonly onReady: () => void;
   readonly onLeave: () => void;
+  readonly hostId?: string;
+  readonly countdownSeconds?: number | null;
+  readonly onStart?: () => void;
+  readonly onCancel?: () => void;
+  readonly children?: ReactNode;
 }
 
 export function Lobby({
@@ -25,8 +30,15 @@ export function Lobby({
   maxPlayers,
   onReady,
   onLeave,
+  hostId,
+  countdownSeconds,
+  onStart,
+  onCancel,
+  children,
 }: LobbyProps): ReactNode {
-  const allReady = players.length >= 2 && players.every((p) => p.ready);
+  const allReady = players.length >= 1 && players.every((p) => p.ready);
+  const isHost = localPlayerId === hostId;
+  const counting = countdownSeconds != null && countdownSeconds > 0;
 
   return (
     <div className="lobby">
@@ -35,6 +47,8 @@ export function Lobby({
           <h1 className="lobbyTitle">LOBBY</h1>
           <span className="lobbyCode">{roomCode}</span>
         </div>
+
+        {children}
 
         <div className="lobbySlots">
           {Array.from({ length: maxPlayers }, (_, i) => {
@@ -48,6 +62,7 @@ export function Lobby({
             }
 
             const isLocal = player.playerId === localPlayerId;
+            const isPlayerHost = player.playerId === hostId;
 
             return (
               <div
@@ -66,6 +81,7 @@ export function Lobby({
                 />
                 <span className="lobbySlotName">
                   {isLocal ? `${player.name} (YOU)` : player.name}
+                  {isPlayerHost && <span className="lobbySlotHost">HOST</span>}
                 </span>
                 <span className="lobbySlotStatus">
                   {player.ready ? "READY" : "..."}
@@ -80,9 +96,29 @@ export function Lobby({
             type="button"
             className={`lobbyBtn ${isReady ? "lobbyBtnUnready" : "lobbyBtnReady"}`}
             onClick={onReady}
+            disabled={counting}
           >
             {isReady ? "UNREADY" : "READY UP"}
           </button>
+          {isHost && counting && onCancel && (
+            <button
+              type="button"
+              className="lobbyBtn lobbyBtnCancel"
+              onClick={onCancel}
+            >
+              CANCEL ({countdownSeconds})
+            </button>
+          )}
+          {isHost && !counting && onStart && (
+            <button
+              type="button"
+              className="lobbyBtn lobbyBtnStart"
+              onClick={onStart}
+              disabled={!allReady}
+            >
+              START
+            </button>
+          )}
           <button
             type="button"
             className="lobbyBtn lobbyBtnLeave"
@@ -92,9 +128,9 @@ export function Lobby({
           </button>
         </div>
 
-        {allReady && (
+        {counting && (
           <div className="lobbyStarting">
-            STARTING...
+            STARTING IN {countdownSeconds}...
           </div>
         )}
       </div>

@@ -171,3 +171,16 @@
     2px 2px 0 $blood-dark,
     -2px 0 0 $gore;
 }
+
+.titleScreenError {
+  position: fixed;
+  right: 0;
+  bottom: $space-2xl;
+  left: 0;
+  z-index: $z-menu + 1;
+  color: $blood-bright;
+  text-align: center;
+  animation: fade-in $anim-med ease-out both;
+
+  @include pixel-text($font-size-xs);
+}

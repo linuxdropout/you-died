@@ -1,0 +1,42 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.controlHints {
+  position: fixed;
+  bottom: 40%;
+  left: 50%;
+  z-index: $z-hud;
+  display: flex;
+  gap: $space-xl;
+  pointer-events: none;
+  transform: translateX(-50%);
+  animation: fade-in $anim-med ease-out both;
+}
+
+.controlHint {
+  display: flex;
+  gap: $space-sm;
+  align-items: center;
+}
+
+.controlHintDismissed {
+  animation: fade-out $anim-med ease-in forwards;
+}
+
+.controlHintKey {
+  padding: $space-xs $space-sm;
+  color: $chalk;
+  white-space: nowrap;
+
+  @include pixel-text($font-size-xs);
+  @include pixel-border($grime);
+  @include panel-bg(0.7);
+}
+
+.controlHintAction {
+  color: $bone;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+
+  @include pixel-text($font-size-xs);
+}
