@@ -209,6 +209,41 @@ describe('timeline', () => {
     expect(state.winner).toBeUndefined()
   })
 
+  it('completed ghost replay frees snapshots', () => {
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+
+    const p1 = getPlayer(state, 'p1')
+    const p2 = getPlayer(state, 'p2')
+    p1.pos = { x: 640, y: 550 }
+    p1.vel = { x: 0, y: 0 }
+    p1.grounded = true
+    p2.pos = { x: 640, y: 10000 }
+    p2.vel = { x: 0, y: 0 }
+
+    state = runTicks(state, 60)
+
+    const p2b = getPlayer(state, 'p2')
+    const p1b = getPlayer(state, 'p1')
+    p2b.pos = { x: p1b.pos.x + PLAYER_WIDTH + 10, y: p1b.pos.y }
+    p2b.vel = { x: 0, y: 0 }
+    p2b.grounded = true
+    p2b.facingRight = false
+    p2b.alive = true
+
+    state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
+
+    const endedTimeline = state.timelines.find(
+      (t) => t.playerId === 'p1' && t.headEndedAtTick !== undefined,
+    )
+    if (!endedTimeline) throw new Error('no ended timeline found')
+    expect(endedTimeline.snapshots.length).toBeGreaterThan(0)
+
+    state = runTicks(state, REWIND_TICKS + 100)
+
+    expect(endedTimeline.replayComplete).toBe(true)
+    expect(endedTimeline.snapshots.length).toBe(0)
+  })
+
   it('determinism holds through death and rewind cycles', () => {
     const runScenario = (): ReturnType<typeof createInitialState> => {
       let state = createInitialState({ seed: 42, playerIds: ['p1', 'p2'] })

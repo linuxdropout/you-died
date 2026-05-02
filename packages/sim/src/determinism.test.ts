@@ -151,4 +151,31 @@ describe('determinism', () => {
 
     expect(stateFingerprint(state1)).toBe(stateFingerprint(state2))
   })
+
+  it('remains deterministic over a full-length match (18000 ticks)', () => {
+    const inputFn = (tick: number): Record<string, PlayerInput> => ({
+      p1: inputWith({
+        right: tick % 7 < 3,
+        left: tick % 7 >= 5,
+        jump: tick % 23 === 0,
+        slash: tick % 19 === 0,
+        shoot: tick % 37 === 0,
+        dash: tick % 41 === 0,
+      }),
+      p2: inputWith({
+        left: tick % 11 < 5,
+        right: tick % 11 >= 8,
+        jump: tick % 29 === 0,
+        slash: tick % 17 === 0,
+        shoot: tick % 31 === 0,
+        dash: tick % 43 === 0,
+      }),
+    })
+
+    const state1 = runSim(42, 18000, inputFn)
+    const state2 = runSim(42, 18000, inputFn)
+
+    expect(stateFingerprint(state1)).toBe(stateFingerprint(state2))
+    expect(state1.tick).toBe(state2.tick)
+  })
 })
