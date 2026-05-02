@@ -40,7 +40,7 @@ COPY packages/ui/package.json packages/ui/package.json
 
 RUN apk add --no-cache python3 make g++ && \
     pnpm install --frozen-lockfile && \
-    pnpm deploy --filter @you-died/server --prod /app/pruned
+    pnpm deploy --filter @you-died/server --prod --legacy /app/pruned
 
 FROM node:24-alpine AS runtime
 
