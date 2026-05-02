@@ -12,6 +12,9 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@you-died/assets": "workspace:*",
+    "@you-died/protocol": "workspace:*",
+    "@you-died/sim": "workspace:*",
     "pixi.js": "^8.9.2"
   },
   "devDependencies": {
