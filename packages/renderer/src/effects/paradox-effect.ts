@@ -16,8 +16,10 @@ export class ParadoxEffect {
   start() {
     this.active = true
     this.timer = DURATION
-    const filters = this.target.filters
-    if (!filters || filters.length === 0) {
+    // PixiJS types claim filters is always an array, but it can be null at runtime
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const filters = this.target.filters ?? []
+    if (filters.length === 0) {
       this.target.filters = [this.filter]
     } else if (!filters.includes(this.filter)) {
       this.target.filters = [...filters, this.filter]
@@ -45,10 +47,11 @@ export class ParadoxEffect {
   }
 
   private removeFilter() {
-    const filters = this.target.filters
-    if (!filters || filters.length === 0) return
-    this.target.filters = filters.filter((f) => f !== this.filter)
-    if (this.target.filters!.length === 0) this.target.filters = null
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const filters = this.target.filters ?? []
+    if (filters.length === 0) return
+    const remaining = filters.filter((f) => f !== this.filter)
+    this.target.filters = remaining.length === 0 ? null : remaining
   }
 
   reset() {
