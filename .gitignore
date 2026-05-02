@@ -21,3 +21,4 @@ apps/server/dist
 .idea
 .DS_Store
 .codex
+*.Zone-Identifier
