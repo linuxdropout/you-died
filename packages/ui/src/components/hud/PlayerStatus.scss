@@ -1,0 +1,61 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.playerStatus {
+  position: absolute;
+  top: $hud-padding;
+  left: $hud-padding;
+  z-index: $z-hud;
+  display: flex;
+  flex-direction: column;
+  gap: $space-tiny;
+}
+
+.playerStatusRow {
+  display: flex;
+  gap: $space-sm;
+  align-items: center;
+  height: $player-slot-height;
+  padding: 0 $space-sm;
+
+  @include pixel-text($font-size-xs);
+  @include panel-bg(0.6);
+}
+
+.playerStatusRowLocal {
+  border-left: 2px solid $chalk;
+}
+
+.playerStatusRowGhost {
+  opacity: 0.5;
+}
+
+.playerStatusRowDead {
+  text-decoration: line-through;
+  text-decoration-color: $blood;
+}
+
+.playerStatusSwatch {
+  display: block;
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+}
+
+.playerStatusName {
+  flex: 1;
+  min-width: 40px;
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.playerStatusKd {
+  color: $bone;
+  opacity: 0.7;
+}
+
+.playerStatusTimelines {
+  color: $timeline-bright;
+  opacity: 0.6;
+}

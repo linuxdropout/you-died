@@ -1,0 +1,48 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.severNotice {
+  position: fixed;
+  top: 30%;
+  right: 0;
+  left: 0;
+  z-index: $z-overlay;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  animation: fade-in $anim-fast ease-out both;
+}
+
+.severNoticeBar {
+  display: flex;
+  gap: $space-md;
+  align-items: center;
+  padding: $space-sm $space-xl;
+  border-right: 3px solid $ghost;
+  border-left: 3px solid $ghost;
+  animation: slide-in-down $anim-snap ease-out both;
+
+  @include panel-bg(0.8);
+}
+
+.severNoticeIcon {
+  color: $ghost-bright;
+
+  @include pixel-text($font-size-md);
+  @include ghost-glow;
+}
+
+.severNoticeText {
+  color: $ghost;
+  letter-spacing: 2px;
+
+  @include pixel-text($font-size-sm);
+  @include ghost-glow;
+}
+
+.severNoticeId {
+  color: $ghost-dim;
+  opacity: 0.6;
+
+  @include pixel-text($font-size-2xs);
+}

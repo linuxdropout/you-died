@@ -1,0 +1,60 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.rewindFlash {
+  position: fixed;
+  inset: 0;
+  z-index: $z-overlay;
+  pointer-events: none;
+  animation: fade-in $anim-fast ease-out both;
+}
+
+.rewindFlashSweep {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to left,
+    transparent 0%,
+    rgba($timeline, 0.15) 40%,
+    rgba($timeline-bright, 0.25) 50%,
+    rgba($timeline, 0.15) 60%,
+    transparent 100%
+  );
+  animation: rewind-sweep $anim-slow ease-in-out both;
+}
+
+.rewindFlashLines {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.rewindFlashLine {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: $timeline-bright;
+  opacity: 0;
+  animation: slide-in-right $anim-snap ease-out both;
+
+  &::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    background: inherit;
+    filter: blur(4px);
+  }
+}
+
+.rewindFlashCounter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  color: $timeline-bright;
+  transform: translate(-50%, -50%);
+  animation: slam-in $anim-med cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @include pixel-text($font-size-xl);
+  @include timeline-glow;
+}

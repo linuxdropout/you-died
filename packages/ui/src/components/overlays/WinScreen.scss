@@ -1,0 +1,90 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.winScreen {
+  position: fixed;
+  inset: 0;
+  z-index: $z-death-screen;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fade-in $anim-med ease-out both;
+}
+
+.winScreenBg {
+  position: absolute;
+  inset: 0;
+  background: rgba($black, 0.9);
+}
+
+.winScreenContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $space-xl;
+  align-items: center;
+}
+
+.winScreenTitle {
+  letter-spacing: 8px;
+  animation: slam-in $anim-med cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  @include pixel-text($font-size-3xl);
+}
+
+.winScreenTitleVictory {
+  color: $warning-bright;
+  text-shadow:
+    0 0 8px $warning,
+    0 0 20px rgba($warning, 0.4);
+}
+
+.winScreenTitleDefeat {
+  color: $blood;
+
+  @include blood-text;
+}
+
+.winScreenWinner {
+  color: $bone;
+  letter-spacing: 2px;
+  opacity: 0;
+  animation: fade-in $anim-med ease-out 300ms both;
+
+  @include pixel-text($font-size-sm);
+}
+
+.winScreenStats {
+  display: flex;
+  gap: $space-lg;
+  align-items: center;
+  opacity: 0;
+  animation: fade-in $anim-med ease-out 600ms both;
+}
+
+.winScreenStat {
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+  align-items: center;
+}
+
+.winScreenStatValue {
+  @include pixel-text($font-size-xl);
+
+  color: $chalk;
+}
+
+.winScreenStatLabel {
+  color: $grime;
+  letter-spacing: 1px;
+
+  @include pixel-text($font-size-2xs);
+}
+
+.winScreenStatDivider {
+  @include pixel-text($font-size-lg);
+
+  color: $grime;
+}

@@ -1,0 +1,26 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.matchTimer {
+  position: absolute;
+  top: $hud-padding;
+  left: 50%;
+  z-index: $z-hud;
+  padding: $space-xs $space-md;
+  transform: translateX(-50%);
+
+  @include panel-bg(0.6);
+}
+
+.matchTimerTime {
+  @include pixel-text($font-size-md);
+
+  color: $bone;
+}
+
+.matchTimerUrgent .matchTimerTime {
+  color: $blood-bright;
+  animation: pulse-glow 500ms ease-in-out infinite;
+
+  @include blood-text;
+}

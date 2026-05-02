@@ -1,0 +1,100 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.timelineBar {
+  position: absolute;
+  right: $hud-padding;
+  bottom: $hud-padding;
+  left: $hud-padding;
+  z-index: $z-hud;
+  padding: $space-sm $space-md;
+
+  @include panel-bg(0.7);
+}
+
+.timelineBarTrack {
+  position: relative;
+  height: 32px;
+  background: rgba($black, 0.5);
+  border: 1px solid $grime;
+}
+
+.timelineBarWinLine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: $warning;
+  box-shadow: 0 0 6px $warning-bright;
+}
+
+.timelineBarWinLabel {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  color: $warning;
+  white-space: nowrap;
+  transform: translateX(-50%);
+
+  @include pixel-text($font-size-2xs);
+}
+
+.timelineBarPlayer {
+  position: absolute;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: $space-tiny;
+  align-items: center;
+  transform: translate(-50%, -50%);
+  transition: left $anim-snap linear;
+}
+
+.timelineBarPip {
+  width: 8px;
+  height: 8px;
+  border: 1px solid $chalk;
+}
+
+.timelineBarPlayerLocal .timelineBarPip {
+  width: 10px;
+  height: 10px;
+  border-width: 2px;
+  box-shadow: 0 0 4px rgba($white, 0.4);
+}
+
+.timelineBarPlayerGhost .timelineBarPip {
+  border-style: dashed;
+  opacity: 0.5;
+}
+
+.timelineBarPlayerDead .timelineBarPip {
+  background: $blood-dark;
+  border-color: $blood;
+}
+
+.timelineBarName {
+  position: absolute;
+  bottom: calc(100% + 1px);
+  white-space: nowrap;
+
+  @include pixel-text($font-size-2xs);
+}
+
+.timelineBarPlayerLocal .timelineBarName {
+  color: $white;
+}
+
+.timelineBarPlayerGhost .timelineBarName {
+  color: $ghost-dim;
+}
+
+.timelineBarOffset {
+  position: absolute;
+  top: calc(100% + 1px);
+  color: $bone;
+  white-space: nowrap;
+  opacity: 0.7;
+
+  @include pixel-text($font-size-2xs);
+}

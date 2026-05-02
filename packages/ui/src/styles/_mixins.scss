@@ -1,0 +1,127 @@
+@use "variables" as *;
+
+@mixin pixel-crisp {
+  image-rendering: pixelated;
+}
+
+@mixin pixel-text($size: $font-size-sm) {
+  font-family: $font-pixel;
+  font-size: $size;
+  line-height: 1.4;
+  color: $chalk;
+  letter-spacing: 0.5px;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+}
+
+@mixin scanlines($opacity: 0.04) {
+  position: absolute;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  content: "";
+  background: repeating-linear-gradient(
+    transparent 0,
+    transparent 2px,
+    rgba($black, $opacity) 2px,
+    rgba($black, $opacity) 4px
+  );
+}
+
+@mixin pixel-border($color: $grime) {
+  border: 2px solid $color;
+  border-radius: 0;
+}
+
+@mixin pixel-inset($color: $grime) {
+  box-shadow:
+    inset 1px 1px 0 rgba($white, 0.06),
+    inset -1px -1px 0 rgba($black, 0.3),
+    0 0 0 1px $color;
+}
+
+@mixin blood-text {
+  text-shadow:
+    0 0 4px $blood-bright,
+    0 2px 8px $blood-dark;
+}
+
+@mixin ghost-glow {
+  text-shadow:
+    0 0 6px $ghost,
+    0 0 12px $ghost-dim;
+}
+
+@mixin timeline-glow {
+  text-shadow:
+    0 0 6px $timeline,
+    0 0 12px $timeline-dark;
+}
+
+@mixin paradox-glow {
+  text-shadow:
+    0 0 6px $paradox,
+    0 0 12px $paradox-dim;
+}
+
+@mixin screen-shake-keyframes {
+  @keyframes screen-shake {
+    0%,
+    100% { transform: translate(0, 0); }
+    10% { transform: translate(-3px, 1px); }
+    20% { transform: translate(2px, -2px); }
+    30% { transform: translate(-1px, 3px); }
+    40% { transform: translate(3px, -1px); }
+    50% { transform: translate(-2px, 2px); }
+    60% { transform: translate(1px, -3px); }
+    70% { transform: translate(-3px, -1px); }
+    80% { transform: translate(2px, 3px); }
+    90% { transform: translate(-1px, -2px); }
+  }
+}
+
+@mixin glitch-flicker {
+  @keyframes glitch-flicker {
+    0%,
+    100% { opacity: 1; }
+    5% { opacity: 0.1; }
+    10% { opacity: 0.9; }
+    15% { opacity: 0.3; }
+    20% { opacity: 1; }
+    50% { opacity: 1; }
+    52% { opacity: 0.4; }
+    54% { opacity: 1; }
+  }
+}
+
+@mixin vhs-distort {
+  @keyframes vhs-distort {
+    0%,
+    100% { clip-path: inset(0 0 0 0); }
+    5% { clip-path: inset(10% 0 80% 0); }
+    10% { clip-path: inset(40% 0 30% 0); }
+    15% { clip-path: inset(80% 0 5% 0); }
+    20% { clip-path: inset(0 0 0 0); }
+  }
+}
+
+@mixin panel-bg($opacity: 0.85) {
+  background: rgba($void, $opacity);
+
+  @include pixel-inset;
+}
+
+@mixin blood-splat {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  pointer-events: none;
+  content: "";
+  background: $blood;
+  box-shadow:
+    2px 0 0 $blood,
+    -2px 2px 0 $blood-dark,
+    4px 2px 0 $gore,
+    0 -2px 0 $blood;
+  opacity: 0.6;
+}

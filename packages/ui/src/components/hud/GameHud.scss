@@ -1,0 +1,12 @@
+@use "../../styles/variables" as *;
+
+.gameHud {
+  position: fixed;
+  inset: 0;
+  z-index: $z-hud;
+  pointer-events: none;
+
+  & > * {
+    pointer-events: auto;
+  }
+}

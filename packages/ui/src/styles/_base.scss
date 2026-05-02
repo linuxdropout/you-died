@@ -1,0 +1,52 @@
+@use "variables" as *;
+@use "mixins" as *;
+@import "https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  @include pixel-crisp;
+}
+
+body {
+  overflow: hidden;
+  font-family: $font-pixel;
+  font-size: $font-size-sm;
+  color: $chalk;
+  cursor: crosshair;
+  user-select: none;
+  background: $black;
+}
+
+body::after {
+  @include scanlines(0.03);
+
+  position: fixed;
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid $timeline;
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: $void;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $grime;
+}

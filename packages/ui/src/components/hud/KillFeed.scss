@@ -1,0 +1,71 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.killFeed {
+  position: absolute;
+  top: $hud-padding;
+  right: $hud-padding;
+  z-index: $z-kill-feed;
+  display: flex;
+  flex-direction: column;
+  gap: $space-tiny;
+  width: $kill-feed-width;
+  pointer-events: none;
+}
+
+.killFeedEntry {
+  padding: $space-xs $space-sm;
+  text-align: right;
+  animation: slide-in-right $anim-snap ease-out both;
+
+  @include pixel-text($font-size-xs);
+  @include panel-bg(0.6);
+}
+
+.killFeedKill {
+  color: $blood;
+  border-left: 2px solid $blood;
+
+  &::before {
+    @include blood-splat;
+
+    top: 2px;
+    right: -3px;
+  }
+}
+
+.killFeedRewind {
+  color: $timeline;
+  border-left: 2px solid $timeline;
+
+  @include timeline-glow;
+}
+
+.killFeedSever {
+  color: $ghost;
+  border-left: 2px solid $ghost;
+
+  @include ghost-glow;
+}
+
+.killFeedParadox {
+  color: $paradox;
+  border-left: 2px solid $paradox;
+  animation: slide-in-right $anim-snap ease-out both, glitch-flicker $anim-slow steps(1) both;
+
+  @include paradox-glow;
+}
+
+.killFeedLaunch {
+  color: $warning-bright;
+  border-left: 2px solid $warning;
+}
+
+.killFeedWin {
+  color: $warning-bright;
+  text-transform: uppercase;
+  border-left: 2px solid $warning-bright;
+  animation: slide-in-right $anim-snap ease-out both, pulse-glow $anim-crawl ease-in-out infinite;
+
+  @include pixel-text($font-size-sm);
+}

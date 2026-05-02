@@ -1,0 +1,204 @@
+@use "../../styles/variables" as *;
+@use "../../styles/mixins" as *;
+
+.lobby {
+  position: fixed;
+  inset: 0;
+  z-index: $z-menu;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $black;
+
+  &::after {
+    @include scanlines(0.05);
+
+    position: fixed;
+  }
+}
+
+.lobbyPanel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: $space-lg;
+  min-width: 360px;
+  max-width: 480px;
+  padding: $space-2xl;
+  border: 2px solid $grime;
+
+  @include panel-bg(0.95);
+}
+
+.lobbyHeader {
+  display: flex;
+  gap: $space-lg;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: $space-md;
+  border-bottom: 1px solid $grime;
+}
+
+.lobbyTitle {
+  color: $chalk;
+  letter-spacing: 4px;
+
+  @include pixel-text($font-size-lg);
+}
+
+.lobbyCode {
+  @include pixel-text($font-size-sm);
+  @include timeline-glow;
+
+  color: $timeline;
+}
+
+.lobbySlots {
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+}
+
+.lobbySlot {
+  display: flex;
+  gap: $space-sm;
+  align-items: center;
+  height: $player-slot-height;
+  padding: 0 $space-sm;
+  background: rgba($black, 0.4);
+  border: 1px solid $grime;
+  transition: border-color $anim-snap ease;
+
+  @include pixel-text($font-size-xs);
+}
+
+.lobbySlotEmpty {
+  border-style: dashed;
+  opacity: 0.3;
+}
+
+.lobbySlotReady {
+  border-color: $ghost;
+}
+
+.lobbySlotLocal {
+  border-left: 2px solid $chalk;
+}
+
+.lobbySlotSwatch {
+  display: block;
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+}
+
+.lobbySlotName {
+  flex: 1;
+  color: $chalk;
+}
+
+.lobbySlotLabel {
+  font-style: italic;
+  color: $grime;
+}
+
+.lobbySlotStatus {
+  color: $ghost-bright;
+
+  @include ghost-glow;
+}
+
+.lobbySlotEmpty .lobbySlotStatus,
+.lobbySlot:not(.lobbySlotReady) .lobbySlotStatus {
+  color: $grime;
+  text-shadow: none;
+}
+
+.lobbyActions {
+  display: flex;
+  gap: $space-sm;
+}
+
+.lobbyBtn {
+  flex: 1;
+  padding: $space-sm $space-md;
+  color: $chalk;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: rgba($black, 0.6);
+  border: none;
+  transition:
+    background $anim-fast ease,
+    border-color $anim-fast ease,
+    color $anim-fast ease;
+
+  @include pixel-text($font-size-xs);
+  @include pixel-border($grime);
+
+  &:hover {
+    background: rgba($chalk, 0.08);
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.lobbyBtnReady {
+  color: $ghost-bright;
+  border-color: $ghost;
+
+  &:hover {
+    background: rgba($ghost, 0.15);
+  }
+}
+
+.lobbyBtnUnready {
+  color: $warning-bright;
+  border-color: $warning;
+
+  &:hover {
+    background: rgba($warning, 0.15);
+  }
+}
+
+.lobbyBtnLeave {
+  flex: 0;
+  color: $blood;
+  border-color: $blood-dark;
+
+  &:hover {
+    background: rgba($blood, 0.15);
+  }
+}
+
+.lobbyStarting {
+  color: $warning-bright;
+  text-align: center;
+  letter-spacing: 3px;
+  animation: pulse-glow 500ms ease-in-out infinite;
+
+  @include pixel-text($font-size-sm);
+}
+
+.lobbyDecoration {
+  position: absolute;
+  right: $space-3xl;
+  bottom: $space-3xl;
+  pointer-events: none;
+  opacity: 0.04;
+}
+
+.lobbyDecoSlash {
+  @include pixel-text(120px);
+
+  color: $chalk;
+}
+
+.lobbyDecoBullet {
+  margin-left: -20px;
+
+  @include pixel-text(80px);
+
+  color: $blood;
+}

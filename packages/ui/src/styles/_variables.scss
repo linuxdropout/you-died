@@ -1,0 +1,72 @@
+// Palette
+$black: #0a0a0a;
+$void: #111113;
+$gutter: #1a1a1e;
+$grime: #2a2a2f;
+$rust: #3d3535;
+$bone: #c8b8a0;
+$chalk: #e8dcc8;
+$white: #f0ece4;
+$blood: #d42020;
+$blood-bright: #ff3838;
+$blood-dark: #6b1010;
+$gore: #8b1a1a;
+$timeline: #3888e8;
+$timeline-bright: #60b0ff;
+$timeline-dark: #1a4480;
+$ghost: #38e888;
+$ghost-bright: #70ffb0;
+$ghost-dim: #1a6838;
+$paradox: #e838e8;
+$paradox-bright: #ff70ff;
+$paradox-dim: #681a68;
+$warning: #e8a838;
+$warning-bright: #ffc860;
+
+// Typography
+$font-pixel: "Press Start 2P", monospace;
+$font-mono: "Courier New", "Consolas", monospace;
+$font-size-2xs: 6px;
+$font-size-xs: 8px;
+$font-size-sm: 10px;
+$font-size-md: 12px;
+$font-size-lg: 16px;
+$font-size-xl: 20px;
+$font-size-2xl: 28px;
+$font-size-3xl: 40px;
+
+// Spacing
+$space-tiny: 2px;
+$space-xs: 4px;
+$space-sm: 8px;
+$space-md: 12px;
+$space-lg: 16px;
+$space-xl: 24px;
+$space-2xl: 32px;
+$space-3xl: 48px;
+
+// Timing
+$tick-rate: 60;
+$rewind-duration: 10s;
+$anim-fast: 80ms;
+$anim-snap: 150ms;
+$anim-med: 300ms;
+$anim-slow: 600ms;
+$anim-crawl: 1200ms;
+
+// Z-layers
+$z-game: 0;
+$z-gore: 10;
+$z-hud: 100;
+$z-overlay: 200;
+$z-kill-feed: 300;
+$z-alert: 400;
+$z-death-screen: 500;
+$z-menu: 600;
+
+// Layout
+$hud-padding: $space-lg;
+$hud-edge-gap: $space-sm;
+$kill-feed-width: 280px;
+$timeline-bar-height: 6px;
+$player-slot-height: 28px;
