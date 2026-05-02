@@ -103,9 +103,7 @@ repo/
     protocol/
     renderer/
     ui/
-    maps/
     assets/
-    tools/
 ```
 
 ---
