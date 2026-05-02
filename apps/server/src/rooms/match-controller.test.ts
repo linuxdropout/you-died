@@ -202,6 +202,26 @@ describe('MatchController', () => {
       expect(controller.tick()?.tick).toBe(1)
       expect(controller.tick()?.tick).toBe(2)
     })
+
+    it('stores state hashes for recent ticks', () => {
+      controller.tick()
+      controller.tick()
+      controller.tick()
+
+      expect(controller.getHashForTick(1)).toBeTypeOf('number')
+      expect(controller.getHashForTick(2)).toBeTypeOf('number')
+      expect(controller.getHashForTick(3)).toBeTypeOf('number')
+      expect(controller.getHashForTick(999)).toBeUndefined()
+    })
+
+    it('prunes old hashes beyond buffer window', () => {
+      for (let i = 0; i < 130; i++) {
+        controller.tick()
+      }
+
+      expect(controller.getHashForTick(1)).toBeUndefined()
+      expect(controller.getHashForTick(130)).toBeTypeOf('number')
+    })
   })
 
   describe('match end', () => {

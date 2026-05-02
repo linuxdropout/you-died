@@ -1,6 +1,6 @@
 import type { LobbyPlayer, PlayerId, PlayerInput } from '@you-died/protocol'
 import { TICK_RATE, MATCH_TIME_LIMIT_SECONDS, MAX_PLAYERS } from '@you-died/protocol'
-import { createInitialState, step, getTimeoutWinner, type GameState } from '@you-died/sim'
+import { createInitialState, step, getTimeoutWinner, hashState, type GameState } from '@you-died/sim'
 
 type Phase = 'lobby' | 'match' | 'ended'
 
@@ -25,6 +25,7 @@ export class MatchController {
   private currentTick = 0
   private seed = 0
   private latestInputs = new Map<PlayerId, PlayerInput>()
+  private hashBuffer = new Map<number, number>()
   private _countdownSeconds: number | null = null
   private inputLog: Record<PlayerId, PlayerInput>[] = []
 
@@ -98,6 +99,7 @@ export class MatchController {
     this.seed = seed
     this.currentTick = 0
     this.latestInputs.clear()
+    this.hashBuffer.clear()
     this.inputLog = []
     this.simState = createInitialState({
       seed,
@@ -121,6 +123,11 @@ export class MatchController {
     }
     this.inputLog.push(inputs)
     this.simState = step(this.simState, inputs)
+
+    this.hashBuffer.set(this.simState.tick, hashState(this.simState))
+    const HASH_BUFFER_SIZE = 120
+    const oldest = this.simState.tick - HASH_BUFFER_SIZE
+    if (oldest >= 0) this.hashBuffer.delete(oldest)
 
     const result = { tick: this.currentTick, inputs }
     this.currentTick++
@@ -180,6 +187,10 @@ export class MatchController {
       playerIds: [...this.players.keys()],
       inputLog: this.inputLog,
     }
+  }
+
+  getHashForTick(tick: number): number | undefined {
+    return this.hashBuffer.get(tick)
   }
 
   getSimState(): GameState | null {
