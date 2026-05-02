@@ -17,7 +17,7 @@ export class ParadoxEffect {
     this.active = true
     this.timer = DURATION
     const filters = this.target.filters
-    if (filters.length === 0) {
+    if (!filters || filters.length === 0) {
       this.target.filters = [this.filter]
     } else if (!filters.includes(this.filter)) {
       this.target.filters = [...filters, this.filter]
@@ -46,9 +46,9 @@ export class ParadoxEffect {
 
   private removeFilter() {
     const filters = this.target.filters
-    if (filters.length === 0) return
+    if (!filters || filters.length === 0) return
     this.target.filters = filters.filter((f) => f !== this.filter)
-    if (this.target.filters.length === 0) this.target.filters = null
+    if (this.target.filters!.length === 0) this.target.filters = null
   }
 
   reset() {
