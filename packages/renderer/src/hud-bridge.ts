@@ -1,7 +1,13 @@
 import type { RenderFrame, GameEvent } from '@you-died/sim'
 import type { PlayerId } from '@you-died/protocol'
 import { TICK_RATE, WIN_LEAD_SECONDS, MATCH_TIME_LIMIT_SECONDS } from '@you-died/protocol'
-import type { MatchContext, HudData, HudTimelinePlayer, HudPlayerStatus, HudKillEvent } from './types.js'
+import type {
+  MatchContext,
+  HudData,
+  HudTimelinePlayer,
+  HudPlayerStatus,
+  HudKillEvent,
+} from './types.js'
 
 export class HudBridge {
   private readonly context: MatchContext
@@ -29,7 +35,7 @@ export class HudBridge {
       players.push({
         playerId: p.id,
         name: this.context.playerNames[p.id] ?? p.id,
-        offsetSeconds: frame.tick / TICK_RATE,
+        offsetSeconds: (frame.tick + p.timelineOffset) / TICK_RATE,
         isGhost: p.isGhost,
         isDead: !p.alive,
         color: this.context.playerColors[p.id] ?? 'red',
@@ -82,7 +88,9 @@ export class HudBridge {
           kind: 'kill',
           tick: event.tick,
           victim: name,
-          ...(event.killerId ? { killer: this.context.playerNames[event.killerId] ?? event.killerId } : {}),
+          ...(event.killerId
+            ? { killer: this.context.playerNames[event.killerId] ?? event.killerId }
+            : {}),
         })
         break
       }

@@ -27,7 +27,7 @@ const COOLDOWNS: Record<string, number> = {
   dash: 50,
   death: 100,
   rewind: 200,
-  sever: 80,
+  sever: 200,
   paradox: 200,
   launch: 150,
   win: 500,
@@ -81,7 +81,9 @@ export class SoundManager {
 
   private trackActive(durationMs: number): void {
     this.activeCount++
-    setTimeout(() => { this.activeCount-- }, durationMs)
+    setTimeout(() => {
+      this.activeCount--
+    }, durationMs)
   }
 
   processGameEvent(event: GameEvent, isLocal: boolean): void {
@@ -106,12 +108,12 @@ export class SoundManager {
       case 'timelineSevered':
         if (!this.canPlay('sever')) return
         playSever(ctx, dest, noise, vol)
-        this.trackActive(200)
+        this.trackActive(700)
         break
       case 'paradox':
         if (!this.canPlay('paradox')) return
         playParadox(ctx, dest, noise, vol)
-        this.trackActive(450)
+        this.trackActive(900)
         break
       case 'futureLaunch':
         if (!this.canPlay('launch')) return
@@ -155,7 +157,12 @@ export class SoundManager {
     this.prevProjectileIds = currentIds
   }
 
-  private detectNewSlashes(ctx: AudioContext, dest: AudioNode, noise: AudioBuffer, frame: RenderFrame): void {
+  private detectNewSlashes(
+    ctx: AudioContext,
+    dest: AudioNode,
+    noise: AudioBuffer,
+    frame: RenderFrame,
+  ): void {
     const currentIds = new Set<number>()
     for (const slash of frame.slashes) {
       currentIds.add(slash.id)
@@ -170,7 +177,12 @@ export class SoundManager {
     this.prevSlashIds = currentIds
   }
 
-  private detectPlayerTransitions(ctx: AudioContext, dest: AudioNode, noise: AudioBuffer, frame: RenderFrame): void {
+  private detectPlayerTransitions(
+    ctx: AudioContext,
+    dest: AudioNode,
+    noise: AudioBuffer,
+    frame: RenderFrame,
+  ): void {
     const currentStates = new Map<string, PlayerSnapshot>()
 
     for (const player of frame.players) {

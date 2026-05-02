@@ -11,7 +11,7 @@ import { ParadoxEffect } from './paradox-effect.js'
 import { LaunchEffect } from './launch-effect.js'
 
 const SHAKE_DEATH = 10
-const SHAKE_SEVER = 4
+const SHAKE_SEVER = 8
 const SHAKE_PARADOX = 10
 const SHAKE_LAUNCH = 8
 
@@ -92,6 +92,7 @@ export class VfxController {
       case 'paradox':
         this.paradox.start()
         this.shake.trigger(SHAKE_PARADOX)
+        setTimeout(() => this.shake.trigger(6), 200)
         if (isLocal) {
           this.emitScreenEvent({ kind: 'paradox' })
         }

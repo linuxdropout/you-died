@@ -7,7 +7,11 @@ export function createNoiseBuffer(ctx: AudioContext): AudioBuffer {
   return buffer
 }
 
-function noiseSource(ctx: AudioContext, noise: AudioBuffer, duration: number): AudioBufferSourceNode {
+function noiseSource(
+  ctx: AudioContext,
+  noise: AudioBuffer,
+  duration: number,
+): AudioBufferSourceNode {
   const src = ctx.createBufferSource()
   src.buffer = noise
   src.start(ctx.currentTime)
@@ -19,14 +23,23 @@ function scheduleCleanup(_ctx: AudioContext, nodes: AudioNode[], duration: numbe
   const t = duration * 1000 + 100
   setTimeout(() => {
     for (const n of nodes) {
-      try { n.disconnect() } catch { /* already disconnected */ }
+      try {
+        n.disconnect()
+      } catch {
+        /* already disconnected */
+      }
     }
   }, t)
 }
 
 // --- Player action sounds ---
 
-export function playSlashSwing(ctx: AudioContext, dest: AudioNode, noise: AudioBuffer, volume: number): void {
+export function playSlashSwing(
+  ctx: AudioContext,
+  dest: AudioNode,
+  noise: AudioBuffer,
+  volume: number,
+): void {
   const t = ctx.currentTime
   const src = noiseSource(ctx, noise, 0.08)
   const bp = ctx.createBiquadFilter()
@@ -70,7 +83,12 @@ export function playJump(ctx: AudioContext, dest: AudioNode, volume: number): vo
   scheduleCleanup(ctx, [osc, gain], 0.12)
 }
 
-export function playLand(ctx: AudioContext, dest: AudioNode, noise: AudioBuffer, volume: number): void {
+export function playLand(
+  ctx: AudioContext,
+  dest: AudioNode,
+  noise: AudioBuffer,
+  volume: number,
+): void {
   const t = ctx.currentTime
   const src = noiseSource(ctx, noise, 0.03)
   const lp = ctx.createBiquadFilter()
@@ -83,7 +101,12 @@ export function playLand(ctx: AudioContext, dest: AudioNode, noise: AudioBuffer,
   scheduleCleanup(ctx, [src, lp, gain], 0.06)
 }
 
-export function playDash(ctx: AudioContext, dest: AudioNode, noise: AudioBuffer, volume: number): void {
+export function playDash(
+  ctx: AudioContext,
+  dest: AudioNode,
+  noise: AudioBuffer,
+  volume: number,
+): void {
   const t = ctx.currentTime
   const osc = ctx.createOscillator()
   osc.type = 'sawtooth'
@@ -102,7 +125,12 @@ export function playDash(ctx: AudioContext, dest: AudioNode, noise: AudioBuffer,
 
 // --- Game event sounds ---
 
-export function playDeath(ctx: AudioContext, dest: AudioNode, noise: AudioBuffer, volume: number): void {
+export function playDeath(
+  ctx: AudioContext,
+  dest: AudioNode,
+  noise: AudioBuffer,
+  volume: number,
+): void {
   const t = ctx.currentTime
   const src = noiseSource(ctx, noise, 0.3)
   const lp = ctx.createBiquadFilter()
@@ -148,65 +176,165 @@ export function playRewind(ctx: AudioContext, dest: AudioNode, volume: number): 
   scheduleCleanup(ctx, [osc, lfo, lfoGain, gain], 0.55)
 }
 
-export function playSever(ctx: AudioContext, dest: AudioNode, noise: AudioBuffer, volume: number): void {
+export function playSever(
+  ctx: AudioContext,
+  dest: AudioNode,
+  noise: AudioBuffer,
+  volume: number,
+): void {
   const t = ctx.currentTime
+  const nodes: AudioNode[] = []
+
+  // Layer 1: crack transient (0-80ms)
+  const crack = noiseSource(ctx, noise, 0.08)
+  const crackBp = ctx.createBiquadFilter()
+  crackBp.type = 'bandpass'
+  crackBp.frequency.value = 2500
+  crackBp.Q.value = 2
+  const crackGain = ctx.createGain()
+  crackGain.gain.setValueAtTime(0.5 * volume, t)
+  crackGain.gain.exponentialRampToValueAtTime(0.001, t + 0.08)
+  crack.connect(crackBp).connect(crackGain).connect(dest)
+  nodes.push(crack, crackBp, crackGain)
+
+  // Layer 2: tonal shatter (0-400ms) - detuned squares sweeping down
   const osc1 = ctx.createOscillator()
   osc1.type = 'square'
-  osc1.frequency.value = 300
+  osc1.frequency.setValueAtTime(600, t)
+  osc1.frequency.exponentialRampToValueAtTime(80, t + 0.4)
   const osc2 = ctx.createOscillator()
   osc2.type = 'square'
-  osc2.frequency.value = 307
-  const src = noiseSource(ctx, noise, 0.08)
-  const noiseGain = ctx.createGain()
-  noiseGain.gain.setValueAtTime(0.3 * volume, t)
-  noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.08)
-  const gain = ctx.createGain()
-  gain.gain.setValueAtTime(0.25 * volume, t)
-  gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15)
-  osc1.connect(gain)
-  osc2.connect(gain)
-  src.connect(noiseGain)
-  gain.connect(dest)
-  noiseGain.connect(dest)
+  osc2.frequency.setValueAtTime(608, t)
+  osc2.frequency.exponentialRampToValueAtTime(82, t + 0.4)
+  const shatterGain = ctx.createGain()
+  shatterGain.gain.setValueAtTime(0.4 * volume, t)
+  shatterGain.gain.exponentialRampToValueAtTime(0.001, t + 0.4)
+  osc1.connect(shatterGain)
+  osc2.connect(shatterGain)
+  shatterGain.connect(dest)
   osc1.start(t)
-  osc1.stop(t + 0.15)
+  osc1.stop(t + 0.4)
   osc2.start(t)
-  osc2.stop(t + 0.15)
-  scheduleCleanup(ctx, [osc1, osc2, src, noiseGain, gain], 0.2)
+  osc2.stop(t + 0.4)
+  nodes.push(osc1, osc2, shatterGain)
+
+  // Layer 3: ring-out resonance (100-600ms)
+  const ring = ctx.createOscillator()
+  ring.type = 'sine'
+  ring.frequency.setValueAtTime(200, t + 0.1)
+  ring.frequency.exponentialRampToValueAtTime(60, t + 0.6)
+  const ringGain = ctx.createGain()
+  ringGain.gain.setValueAtTime(0.001, t)
+  ringGain.gain.linearRampToValueAtTime(0.15 * volume, t + 0.12)
+  ringGain.gain.exponentialRampToValueAtTime(0.001, t + 0.6)
+  ring.connect(ringGain).connect(dest)
+  ring.start(t + 0.1)
+  ring.stop(t + 0.6)
+  nodes.push(ring, ringGain)
+
+  // Layer 4: metallic ping (0-200ms)
+  const ping = ctx.createOscillator()
+  ping.type = 'triangle'
+  ping.frequency.setValueAtTime(1200, t)
+  ping.frequency.exponentialRampToValueAtTime(400, t + 0.2)
+  const pingGain = ctx.createGain()
+  pingGain.gain.setValueAtTime(0.1 * volume, t)
+  pingGain.gain.exponentialRampToValueAtTime(0.001, t + 0.2)
+  ping.connect(pingGain).connect(dest)
+  ping.start(t)
+  ping.stop(t + 0.2)
+  nodes.push(ping, pingGain)
+
+  scheduleCleanup(ctx, nodes, 0.7)
 }
 
-export function playParadox(ctx: AudioContext, dest: AudioNode, noise: AudioBuffer, volume: number): void {
+export function playParadox(
+  ctx: AudioContext,
+  dest: AudioNode,
+  noise: AudioBuffer,
+  volume: number,
+): void {
   const t = ctx.currentTime
-  const osc = ctx.createOscillator()
-  osc.type = 'square'
-  osc.frequency.value = 100
+  const nodes: AudioNode[] = []
+
+  // Layer 1: impact crack (0-100ms)
+  const crack = noiseSource(ctx, noise, 0.1)
+  const crackBp = ctx.createBiquadFilter()
+  crackBp.type = 'bandpass'
+  crackBp.frequency.value = 3000
+  crackBp.Q.value = 3
+  const crackGain = ctx.createGain()
+  crackGain.gain.setValueAtTime(0.5 * volume, t)
+  crackGain.gain.exponentialRampToValueAtTime(0.001, t + 0.1)
+  crack.connect(crackBp).connect(crackGain).connect(dest)
+  nodes.push(crack, crackBp, crackGain)
+
+  // Layer 2: dissonant chord (0-500ms) - three detuned sawtooths with stutter
+  const chordFreqs = [150, 189, 225]
   const stutter = ctx.createOscillator()
   stutter.type = 'square'
-  stutter.frequency.value = 30
+  stutter.frequency.value = 15
   const stutterGain = ctx.createGain()
-  stutterGain.gain.value = 0.5
+  stutterGain.gain.value = 0.4
   stutter.connect(stutterGain)
-  const oscGain = ctx.createGain()
-  oscGain.gain.setValueAtTime(0.35 * volume, t)
-  oscGain.gain.exponentialRampToValueAtTime(0.001, t + 0.4)
-  stutterGain.connect(oscGain.gain)
-  osc.connect(oscGain)
-  const src = noiseSource(ctx, noise, 0.35)
+  stutter.start(t)
+  stutter.stop(t + 0.6)
+  nodes.push(stutter, stutterGain)
+  for (const freq of chordFreqs) {
+    const osc = ctx.createOscillator()
+    osc.type = 'sawtooth'
+    osc.frequency.setValueAtTime(freq, t)
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.5, t + 0.5)
+    const gain = ctx.createGain()
+    gain.gain.setValueAtTime(0.15 * volume, t)
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5)
+    stutterGain.connect(gain.gain)
+    osc.connect(gain).connect(dest)
+    osc.start(t)
+    osc.stop(t + 0.5)
+    nodes.push(osc, gain)
+  }
+
+  // Layer 3: sub-bass drop (200-800ms)
+  const sub = ctx.createOscillator()
+  sub.type = 'sine'
+  sub.frequency.setValueAtTime(80, t + 0.2)
+  sub.frequency.exponentialRampToValueAtTime(30, t + 0.8)
+  const subGain = ctx.createGain()
+  subGain.gain.setValueAtTime(0.001, t)
+  subGain.gain.linearRampToValueAtTime(0.25 * volume, t + 0.25)
+  subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.8)
+  sub.connect(subGain).connect(dest)
+  sub.start(t + 0.2)
+  sub.stop(t + 0.8)
+  nodes.push(sub, subGain)
+
+  // Layer 4: high sweep (0-400ms) - descending sci-fi whine
+  const sweep = ctx.createOscillator()
+  sweep.type = 'sine'
+  sweep.frequency.setValueAtTime(2000, t)
+  sweep.frequency.exponentialRampToValueAtTime(500, t + 0.4)
+  const sweepGain = ctx.createGain()
+  sweepGain.gain.setValueAtTime(0.08 * volume, t)
+  sweepGain.gain.exponentialRampToValueAtTime(0.001, t + 0.4)
+  sweep.connect(sweepGain).connect(dest)
+  sweep.start(t)
+  sweep.stop(t + 0.4)
+  nodes.push(sweep, sweepGain)
+
+  // Layer 5: noise sweep (0-600ms)
+  const src = noiseSource(ctx, noise, 0.6)
   const noiseLp = ctx.createBiquadFilter()
   noiseLp.type = 'lowpass'
-  noiseLp.frequency.setValueAtTime(1500, t)
-  noiseLp.frequency.exponentialRampToValueAtTime(200, t + 0.35)
+  noiseLp.frequency.setValueAtTime(3000, t)
+  noiseLp.frequency.exponentialRampToValueAtTime(100, t + 0.6)
   const noiseGain = ctx.createGain()
-  noiseGain.gain.setValueAtTime(0.25 * volume, t)
-  noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.4)
-  src.connect(noiseLp).connect(noiseGain)
-  oscGain.connect(dest)
-  noiseGain.connect(dest)
-  osc.start(t)
-  osc.stop(t + 0.4)
-  stutter.start(t)
-  stutter.stop(t + 0.4)
-  scheduleCleanup(ctx, [osc, stutter, stutterGain, oscGain, src, noiseLp, noiseGain], 0.45)
+  noiseGain.gain.setValueAtTime(0.2 * volume, t)
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.6)
+  src.connect(noiseLp).connect(noiseGain).connect(dest)
+  nodes.push(src, noiseLp, noiseGain)
+
+  scheduleCleanup(ctx, nodes, 0.9)
 }
 
 export function playLaunch(ctx: AudioContext, dest: AudioNode, volume: number): void {
@@ -281,7 +409,12 @@ export function playClick(ctx: AudioContext, dest: AudioNode, volume: number): v
   scheduleCleanup(ctx, [osc, gain], 0.05)
 }
 
-export function playCountdownTick(ctx: AudioContext, dest: AudioNode, volume: number, final: boolean): void {
+export function playCountdownTick(
+  ctx: AudioContext,
+  dest: AudioNode,
+  volume: number,
+  final: boolean,
+): void {
   const t = ctx.currentTime
   const osc = ctx.createOscillator()
   osc.type = 'sine'

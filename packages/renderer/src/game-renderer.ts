@@ -101,11 +101,21 @@ export class GameRenderer {
   }
 
   renderFrame(frame: RenderFrame) {
-    if (!this.layers || !this.entities || !this.camera || !this.vfx || !this.hudBridge || !this.context) return
+    if (
+      !this.layers ||
+      !this.entities ||
+      !this.camera ||
+      !this.vfx ||
+      !this.hudBridge ||
+      !this.context
+    )
+      return
 
     this.entities.update(frame)
 
-    const localPlayer = frame.players.find((p) => p.id === this.context?.localPlayerId && !p.isGhost)
+    const localPlayer = frame.players.find(
+      (p) => p.id === this.context?.localPlayerId && !p.isGhost,
+    )
     if (localPlayer) {
       this.camera.setTarget(localPlayer.pos.x, localPlayer.pos.y)
     }
