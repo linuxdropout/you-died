@@ -1,6 +1,6 @@
 export type AnimationName = 'idle' | 'run' | 'jump' | 'dash' | 'slash' | 'shoot' | 'death'
 
-export type PlayerColor = 'red' | 'blue' | 'green' | 'yellow'
+export type PlayerColor = 'red' | 'blue' | 'green' | 'yellow' | 'purple' | 'orange' | 'pink' | 'cyan' | 'white' | 'brown' | 'lime' | 'teal'
 
 export interface AnimationMeta {
   readonly name: AnimationName

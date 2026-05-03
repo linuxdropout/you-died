@@ -2,6 +2,7 @@ import type { PlayerInput, PlayerState } from './types.ts'
 import { createInitialState } from './state.ts'
 import { step } from './step.ts'
 import { SLASH_DURATION, SLASH_COOLDOWN, PROJECTILE_LIFETIME, PLAYER_WIDTH } from './constants.ts'
+import { DEFAULT_ARENA } from './arena.ts'
 
 const NO_INPUT: PlayerInput = {
   left: false,
@@ -54,7 +55,7 @@ function placePlayersFarApart(state: ReturnType<typeof createInitialState>): voi
 
 describe('combat', () => {
   it('slash kills an adjacent player', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
     placePlayersAdjacent(state)
 
     state = step(state, { p1: inputWith({ slash: true }), p2: NO_INPUT })
@@ -64,7 +65,7 @@ describe('combat', () => {
   })
 
   it('slash misses a distant player', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
     placePlayersFarApart(state)
 
     for (let i = 0; i < SLASH_DURATION + 2; i++) {
@@ -76,7 +77,7 @@ describe('combat', () => {
   })
 
   it('projectile kills a distant player', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     const p2 = getPlayer(state, 'p2')
@@ -102,7 +103,7 @@ describe('combat', () => {
   })
 
   it('projectile expires after its lifetime', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
     placePlayersFarApart(state)
 
     const p2 = getPlayer(state, 'p2')
@@ -119,7 +120,7 @@ describe('combat', () => {
   })
 
   it('one hit kills — no health bars', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
     placePlayersAdjacent(state)
 
     state = step(state, { p1: inputWith({ slash: true }), p2: NO_INPUT })
@@ -129,7 +130,7 @@ describe('combat', () => {
   })
 
   it('slash has a cooldown between uses', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
     placePlayersFarApart(state)
 
     state = step(state, { p1: inputWith({ slash: true }), p2: NO_INPUT })
@@ -151,7 +152,7 @@ describe('combat', () => {
   })
 
   it('slash hitbox follows the player during movement', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
     placePlayersFarApart(state)
 
     const p1 = getPlayer(state, 'p1')
@@ -169,7 +170,7 @@ describe('combat', () => {
   })
 
   it('ghost projectile from severed timeline can hit own current head', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     const p2 = getPlayer(state, 'p2')
@@ -228,7 +229,7 @@ describe('combat', () => {
   })
 
   it('boundary death and slash death in same tick do not double-rewind', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     const p2 = getPlayer(state, 'p2')

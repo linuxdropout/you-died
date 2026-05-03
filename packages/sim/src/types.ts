@@ -1,4 +1,5 @@
 import type { PlayerId, TimelineId, PlayerInput } from '@you-died/protocol'
+import type { Arena } from './arena.ts'
 
 export type { PlayerId, TimelineId, PlayerInput }
 
@@ -10,6 +11,7 @@ export interface Vec2 {
 export interface GameConfig {
   seed: number
   playerIds: PlayerId[]
+  arena: Arena
 }
 
 export interface PlayerState {
@@ -25,9 +27,11 @@ export interface PlayerState {
   slashCooldownTicks: number
   shootCooldownTicks: number
   shootTicksRemaining: number
+  airJumpsRemaining: number
+  jumpHeld: boolean
   alive: boolean
   isGhost: boolean
-  timelineOffset: number
+  ticks: number
   invulTicksRemaining: number
 }
 

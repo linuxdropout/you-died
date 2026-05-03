@@ -87,6 +87,8 @@
   display: flex;
   flex-direction: column;
   gap: $space-xs;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .lobbySlot {
@@ -137,6 +139,44 @@
   color: $warning-bright;
 
   @include pixel-text($font-size-2xs);
+}
+
+.lobbySlotBot {
+  margin-left: $space-xs;
+  color: $timeline-bright;
+
+  @include pixel-text($font-size-2xs);
+}
+
+.lobbySlotAddBot {
+  width: 100%;
+  color: $grime;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: none;
+  border: none;
+  transition: color $anim-fast ease;
+
+  @include pixel-text($font-size-2xs);
+
+  &:hover {
+    color: $timeline-bright;
+  }
+}
+
+.lobbySlotRemoveBot {
+  flex-shrink: 0;
+  padding: 0 $space-xs;
+  color: $blood;
+  cursor: pointer;
+  background: none;
+  border: none;
+
+  @include pixel-text($font-size-2xs);
+
+  &:hover {
+    color: $blood-bright;
+  }
 }
 
 .lobbySlotStatus {

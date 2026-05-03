@@ -1,6 +1,6 @@
 import { Container, Graphics } from 'pixi.js'
 
-const ARENA_CENTER_Y = 480
+const DEFAULT_ARENA_CENTER_Y = 480
 const DRAW_HALF = 4000
 
 function seededStars(count: number, w: number, h: number, gfx: Graphics) {
@@ -19,8 +19,10 @@ export class ParallaxBackground {
   private readonly layers: { gfx: Container; scrollFactor: number }[] = []
   private prevW = 0
   private prevH = 0
+  private arenaCenterY = DEFAULT_ARENA_CENTER_Y
 
-  init(stage: Container, scale: number) {
+  init(stage: Container, scale: number, arenaHeight?: number) {
+    this.arenaCenterY = arenaHeight != null ? Math.round(arenaHeight * 2 / 3) : DEFAULT_ARENA_CENTER_Y
     stage.addChildAt(this.container, 0)
     this.container.addChild(this.skyGfx)
 
@@ -94,7 +96,7 @@ export class ParallaxBackground {
     }
 
     for (const { gfx, scrollFactor } of this.layers) {
-      const yShift = -(cameraY - ARENA_CENTER_Y) * scale * scrollFactor * 0.3
+      const yShift = -(cameraY - this.arenaCenterY) * scale * scrollFactor * 0.3
       gfx.position.set(
         screenWidth / 2 - cameraX * scale * scrollFactor,
         screenHeight + yShift,

@@ -21,7 +21,7 @@ export function getRenderableState(state: GameState): RenderFrame {
       isShooting: player.shootTicksRemaining > 0,
       isDashing: player.dashTicksRemaining > 0,
       alive: player.alive,
-      timelineOffset: player.timelineOffset,
+      timelineOffset: player.ticks,
       isInvulnerable: player.invulTicksRemaining > 0,
     })
   }

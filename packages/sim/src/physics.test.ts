@@ -25,7 +25,7 @@ function getPlayer(state: ReturnType<typeof createInitialState>, id: string): Pl
 
 describe('physics', () => {
   it('applies gravity to airborne players', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
     const startY = getPlayer(state, 'p1').pos.y
 
     for (let i = 0; i < 10; i++) {
@@ -37,7 +37,7 @@ describe('physics', () => {
   })
 
   it('lands player on a platform', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     const platform = DEFAULT_ARENA.platforms[0] ?? { x: 0, y: 0, width: 0, height: 0 }
@@ -55,7 +55,7 @@ describe('physics', () => {
   })
 
   it('moves player horizontally', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     const platform = DEFAULT_ARENA.platforms[0] ?? { x: 0, y: 0, width: 0, height: 0 }
@@ -76,7 +76,7 @@ describe('physics', () => {
   })
 
   it('jumps when grounded', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     const platform = DEFAULT_ARENA.platforms[0] ?? { x: 0, y: 0, width: 0, height: 0 }
@@ -99,8 +99,73 @@ describe('physics', () => {
     expect(rising.pos.y).toBeLessThan(peakY)
   })
 
+  it('allows a double jump while airborne', () => {
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
+
+    const p1 = getPlayer(state, 'p1')
+    const platform = DEFAULT_ARENA.platforms[0] ?? { x: 0, y: 0, width: 0, height: 0 }
+    p1.pos.x = platform.x + platform.width / 2
+    p1.pos.y = platform.y
+    p1.grounded = true
+    p1.vel.y = 0
+
+    state = step(state, { p1: inputWith({ jump: true }), p2: NO_INPUT })
+    const afterFirstJump = getPlayer(state, 'p1')
+    expect(afterFirstJump.grounded).toBe(false)
+    expect(afterFirstJump.airJumpsRemaining).toBe(1)
+
+    // Release jump for one tick
+    state = step(state, { p1: NO_INPUT, p2: NO_INPUT })
+    // Let gravity slow us for a few ticks
+    for (let i = 0; i < 5; i++) {
+      state = step(state, { p1: NO_INPUT, p2: NO_INPUT })
+    }
+    const beforeDoubleJump = getPlayer(state, 'p1')
+    const yBeforeDoubleJump = beforeDoubleJump.pos.y
+
+    // Press jump again while airborne
+    state = step(state, { p1: inputWith({ jump: true }), p2: NO_INPUT })
+    const afterDoubleJump = getPlayer(state, 'p1')
+    expect(afterDoubleJump.airJumpsRemaining).toBe(0)
+    expect(afterDoubleJump.vel.y).toBeLessThan(0)
+
+    // Verify upward movement
+    for (let i = 0; i < 3; i++) {
+      state = step(state, { p1: NO_INPUT, p2: NO_INPUT })
+    }
+    const rising = getPlayer(state, 'p1')
+    expect(rising.pos.y).toBeLessThan(yBeforeDoubleJump)
+  })
+
+  it('does not allow triple jump', () => {
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
+
+    const p1 = getPlayer(state, 'p1')
+    const platform = DEFAULT_ARENA.platforms[0] ?? { x: 0, y: 0, width: 0, height: 0 }
+    p1.pos.x = platform.x + platform.width / 2
+    p1.pos.y = platform.y
+    p1.grounded = true
+    p1.vel.y = 0
+
+    // First jump
+    state = step(state, { p1: inputWith({ jump: true }), p2: NO_INPUT })
+    state = step(state, { p1: NO_INPUT, p2: NO_INPUT })
+    // Second jump
+    state = step(state, { p1: inputWith({ jump: true }), p2: NO_INPUT })
+    state = step(state, { p1: NO_INPUT, p2: NO_INPUT })
+
+    // Third jump attempt — should have no air jumps left
+    const beforeThird = getPlayer(state, 'p1')
+    const velBefore = beforeThird.vel.y
+
+    state = step(state, { p1: inputWith({ jump: true }), p2: NO_INPUT })
+    const afterThird = getPlayer(state, 'p1')
+    // vel.y should not have been reset to JUMP_VELOCITY
+    expect(afterThird.vel.y).not.toBeLessThan(velBefore)
+  })
+
   it('kills player when falling out of bounds', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     p1.pos.y = DEFAULT_ARENA.killBoundary - 10
@@ -116,7 +181,7 @@ describe('physics', () => {
   })
 
   it('applies gravity consistently across ticks', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
     const startY = getPlayer(state, 'p1').pos.y
 
     const ticks = 20

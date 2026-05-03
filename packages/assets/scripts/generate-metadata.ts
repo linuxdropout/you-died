@@ -4,7 +4,7 @@ import { PNG } from 'pngjs'
 
 const OUT_DIR = path.resolve(import.meta.dirname, '../sprites')
 
-const PLAYER_COLORS = ['red', 'blue', 'green', 'yellow'] as const
+const PLAYER_COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan', 'white', 'brown', 'lime', 'teal'] as const
 
 interface FrameDef {
   name: string

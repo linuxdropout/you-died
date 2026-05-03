@@ -8,6 +8,7 @@ export const GRAVITY = 0.55
 export const MAX_FALL_SPEED = 12
 export const MOVE_SPEED = 4
 export const JUMP_VELOCITY = -10
+export const MAX_AIR_JUMPS = 1
 export const DASH_SPEED = 14
 export const DASH_DURATION = 8
 export const DASH_COOLDOWN = 30

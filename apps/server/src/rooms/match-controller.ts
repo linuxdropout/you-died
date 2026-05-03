@@ -1,10 +1,12 @@
 import type { LobbyPlayer, PlayerId, PlayerInput } from '@you-died/protocol'
-import { TICK_RATE, MATCH_TIME_LIMIT_SECONDS, MAX_PLAYERS } from '@you-died/protocol'
+import { TICK_RATE, MATCH_TIME_LIMIT_SECONDS, MAX_PLAYERS, BOT_ID_PREFIX } from '@you-died/protocol'
+import { generateBotInput } from './bot-ai.js'
 import {
   createInitialState,
   step,
   getTimeoutWinner,
   hashState,
+  selectArena,
   type GameState,
 } from '@you-died/sim'
 
@@ -14,9 +16,10 @@ interface PlayerEntry {
   name: string
   ready: boolean
   color: string
+  isBot: boolean
 }
 
-const COLORS = ['red', 'blue', 'green', 'yellow']
+const COLORS = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan', 'white', 'brown', 'lime', 'teal']
 
 const NO_OP_INPUT: PlayerInput = {
   left: false,
@@ -38,28 +41,56 @@ export class MatchController {
   private hashBuffer = new Map<number, number>()
   private _countdownSeconds: number | null = null
   private inputLog: Record<PlayerId, PlayerInput>[] = []
+  private nextBotIndex = 0
 
   addPlayer(id: PlayerId, name: string): boolean {
     if (this.phase !== 'lobby') return false
     if (this.players.size >= MAX_PLAYERS) return false
     const usedColors = new Set([...this.players.values()].map((p) => p.color))
     const color = COLORS.find((c) => !usedColors.has(c)) ?? COLORS[0] ?? 'red'
-    this.players.set(id, { name, ready: false, color })
+    this.players.set(id, { name, ready: false, color, isBot: false })
     this.hostId ??= id
     return true
+  }
+
+  addBot(): PlayerId | null {
+    if (this.phase !== 'lobby') return null
+    if (this.players.size >= MAX_PLAYERS) return null
+    const id: PlayerId = `${BOT_ID_PREFIX}${this.nextBotIndex++}`
+    const usedColors = new Set([...this.players.values()].map((p) => p.color))
+    const color = COLORS.find((c) => !usedColors.has(c)) ?? COLORS[0] ?? 'red'
+    this.players.set(id, { name: `Bot ${this.nextBotIndex}`, ready: true, color, isBot: true })
+    return id
+  }
+
+  removeBot(id: PlayerId): void {
+    const entry = this.players.get(id)
+    if (!entry?.isBot) return
+    this.players.delete(id)
+    if (this.phase === 'lobby') {
+      this._countdownSeconds = null
+    }
   }
 
   removePlayer(id: PlayerId): void {
     this.players.delete(id)
     if (this.hostId === id) {
-      const next = this.players.keys().next()
-      this.hostId = next.done ? null : next.value
+      this.hostId = null
+      for (const [candidateId, entry] of this.players) {
+        if (!entry.isBot) {
+          this.hostId = candidateId
+          break
+        }
+      }
     }
     if (this.phase === 'lobby') {
       this._countdownSeconds = null
     }
-    if (this.phase === 'match' && this.players.size === 0) {
-      this.phase = 'ended'
+    if (this.phase === 'match') {
+      const hasHumans = [...this.players.values()].some((p) => !p.isBot)
+      if (!hasHumans) {
+        this.phase = 'ended'
+      }
     }
   }
 
@@ -75,10 +106,9 @@ export class MatchController {
   setReady(id: PlayerId): void {
     if (this.phase !== 'lobby') return
     const player = this.players.get(id)
-    if (player) {
-      player.ready = !player.ready
-      if (!player.ready) this._countdownSeconds = null
-    }
+    if (!player || player.isBot) return
+    player.ready = !player.ready
+    if (!player.ready) this._countdownSeconds = null
   }
 
   canStart(): boolean {
@@ -122,11 +152,10 @@ export class MatchController {
     this.latestInputs.clear()
     this.hashBuffer.clear()
     this.inputLog = []
-    this.simState = createInitialState({
-      seed,
-      playerIds: [...this.players.keys()],
-    })
-    return [...this.players.keys()]
+    const playerIds = [...this.players.keys()]
+    const arena = selectArena(seed, playerIds.length)
+    this.simState = createInitialState({ seed, playerIds, arena })
+    return playerIds
   }
 
   submitInput(playerId: PlayerId, _tick: number, input: PlayerInput): void {
@@ -136,6 +165,8 @@ export class MatchController {
 
   tick(): { tick: number; inputs: Record<PlayerId, PlayerInput> } | null {
     if (this.phase !== 'match' || !this.simState) return null
+
+    this.updateBotInputs()
 
     const inputs: Record<PlayerId, PlayerInput> = {}
 
@@ -162,7 +193,7 @@ export class MatchController {
   getLobbyState(): LobbyPlayer[] {
     const result: LobbyPlayer[] = []
     for (const [id, entry] of this.players) {
-      result.push({ id, name: entry.name, ready: entry.ready, color: entry.color })
+      result.push({ id, name: entry.name, ready: entry.ready, color: entry.color, isBot: entry.isBot })
     }
     return result
   }
@@ -231,7 +262,15 @@ export class MatchController {
     this.inputLog = []
     this._countdownSeconds = null
     for (const player of this.players.values()) {
-      player.ready = false
+      player.ready = player.isBot
+    }
+  }
+
+  private updateBotInputs(): void {
+    if (!this.simState) return
+    for (const [id, entry] of this.players) {
+      if (!entry.isBot) continue
+      this.latestInputs.set(id, generateBotInput(this.simState, id, this.currentTick, this.seed))
     }
   }
 }

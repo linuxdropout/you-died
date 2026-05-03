@@ -5,6 +5,7 @@ export interface LobbyPlayer {
   readonly name: string
   readonly ready: boolean
   readonly color: string
+  readonly isBot: boolean
 }
 
 interface LobbyProps {
@@ -19,6 +20,8 @@ interface LobbyProps {
   readonly countdownSeconds?: number | null
   readonly onStart?: () => void
   readonly onCancel?: () => void
+  readonly onAddBot?: () => void
+  readonly onRemoveBot?: (playerId: string) => void
   readonly children?: ReactNode
 }
 
@@ -34,6 +37,8 @@ export function Lobby({
   countdownSeconds,
   onStart,
   onCancel,
+  onAddBot,
+  onRemoveBot,
   children,
 }: LobbyProps): ReactNode {
   const allReady = players.length >= 1 && players.every((p) => p.ready)
@@ -56,7 +61,13 @@ export function Lobby({
             if (player == null) {
               return (
                 <div key={i} className="lobbySlot lobbySlotEmpty">
-                  <span className="lobbySlotLabel">WAITING...</span>
+                  {isHost && !counting && onAddBot ? (
+                    <button type="button" className="lobbySlotAddBot" onClick={onAddBot}>
+                      + BOT
+                    </button>
+                  ) : (
+                    <span className="lobbySlotLabel">WAITING...</span>
+                  )}
                 </div>
               )
             }
@@ -79,8 +90,18 @@ export function Lobby({
                 <span className="lobbySlotName">
                   {isLocal ? `${player.name} (YOU)` : player.name}
                   {isPlayerHost && <span className="lobbySlotHost">HOST</span>}
+                  {player.isBot && <span className="lobbySlotBot">BOT</span>}
                 </span>
                 <span className="lobbySlotStatus">{player.ready ? 'READY' : '...'}</span>
+                {isHost && player.isBot && !counting && onRemoveBot && (
+                  <button
+                    type="button"
+                    className="lobbySlotRemoveBot"
+                    onClick={() => onRemoveBot(player.playerId)}
+                  >
+                    ×
+                  </button>
+                )}
               </div>
             )
           })}

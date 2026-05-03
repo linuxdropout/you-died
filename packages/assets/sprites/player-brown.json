@@ -1,6 +1,6 @@
 {
   "frames": {
-    "player-blue/idle_0": {
+    "player-brown/idle_0": {
       "frame": {
         "x": 0,
         "y": 0,
@@ -22,7 +22,7 @@
         "y": 1
       }
     },
-    "player-blue/idle_1": {
+    "player-brown/idle_1": {
       "frame": {
         "x": 64,
         "y": 0,
@@ -44,7 +44,7 @@
         "y": 1
       }
     },
-    "player-blue/idle_2": {
+    "player-brown/idle_2": {
       "frame": {
         "x": 128,
         "y": 0,
@@ -66,7 +66,7 @@
         "y": 1
       }
     },
-    "player-blue/idle_3": {
+    "player-brown/idle_3": {
       "frame": {
         "x": 192,
         "y": 0,
@@ -88,7 +88,7 @@
         "y": 1
       }
     },
-    "player-blue/idle_4": {
+    "player-brown/idle_4": {
       "frame": {
         "x": 256,
         "y": 0,
@@ -110,7 +110,7 @@
         "y": 1
       }
     },
-    "player-blue/idle_5": {
+    "player-brown/idle_5": {
       "frame": {
         "x": 320,
         "y": 0,
@@ -132,7 +132,7 @@
         "y": 1
       }
     },
-    "player-blue/idle_6": {
+    "player-brown/idle_6": {
       "frame": {
         "x": 384,
         "y": 0,
@@ -154,7 +154,7 @@
         "y": 1
       }
     },
-    "player-blue/idle_7": {
+    "player-brown/idle_7": {
       "frame": {
         "x": 448,
         "y": 0,
@@ -176,7 +176,7 @@
         "y": 1
       }
     },
-    "player-blue/idle_8": {
+    "player-brown/idle_8": {
       "frame": {
         "x": 512,
         "y": 0,
@@ -198,7 +198,7 @@
         "y": 1
       }
     },
-    "player-blue/idle_9": {
+    "player-brown/idle_9": {
       "frame": {
         "x": 576,
         "y": 0,
@@ -220,7 +220,7 @@
         "y": 1
       }
     },
-    "player-blue/run_0": {
+    "player-brown/run_0": {
       "frame": {
         "x": 0,
         "y": 64,
@@ -242,7 +242,7 @@
         "y": 1
       }
     },
-    "player-blue/run_1": {
+    "player-brown/run_1": {
       "frame": {
         "x": 64,
         "y": 64,
@@ -264,7 +264,7 @@
         "y": 1
       }
     },
-    "player-blue/run_2": {
+    "player-brown/run_2": {
       "frame": {
         "x": 128,
         "y": 64,
@@ -286,7 +286,7 @@
         "y": 1
       }
     },
-    "player-blue/run_3": {
+    "player-brown/run_3": {
       "frame": {
         "x": 192,
         "y": 64,
@@ -308,7 +308,7 @@
         "y": 1
       }
     },
-    "player-blue/run_4": {
+    "player-brown/run_4": {
       "frame": {
         "x": 256,
         "y": 64,
@@ -330,7 +330,7 @@
         "y": 1
       }
     },
-    "player-blue/run_5": {
+    "player-brown/run_5": {
       "frame": {
         "x": 320,
         "y": 64,
@@ -352,7 +352,7 @@
         "y": 1
       }
     },
-    "player-blue/run_6": {
+    "player-brown/run_6": {
       "frame": {
         "x": 384,
         "y": 64,
@@ -374,7 +374,7 @@
         "y": 1
       }
     },
-    "player-blue/run_7": {
+    "player-brown/run_7": {
       "frame": {
         "x": 448,
         "y": 64,
@@ -396,7 +396,7 @@
         "y": 1
       }
     },
-    "player-blue/jump_0": {
+    "player-brown/jump_0": {
       "frame": {
         "x": 512,
         "y": 64,
@@ -418,7 +418,7 @@
         "y": 1
       }
     },
-    "player-blue/jump_1": {
+    "player-brown/jump_1": {
       "frame": {
         "x": 576,
         "y": 64,
@@ -440,7 +440,7 @@
         "y": 1
       }
     },
-    "player-blue/jump_2": {
+    "player-brown/jump_2": {
       "frame": {
         "x": 0,
         "y": 128,
@@ -462,7 +462,7 @@
         "y": 1
       }
     },
-    "player-blue/jump_3": {
+    "player-brown/jump_3": {
       "frame": {
         "x": 64,
         "y": 128,
@@ -484,7 +484,7 @@
         "y": 1
       }
     },
-    "player-blue/jump_4": {
+    "player-brown/jump_4": {
       "frame": {
         "x": 128,
         "y": 128,
@@ -506,7 +506,7 @@
         "y": 1
       }
     },
-    "player-blue/jump_5": {
+    "player-brown/jump_5": {
       "frame": {
         "x": 192,
         "y": 128,
@@ -528,7 +528,7 @@
         "y": 1
       }
     },
-    "player-blue/dash_0": {
+    "player-brown/dash_0": {
       "frame": {
         "x": 256,
         "y": 128,
@@ -550,7 +550,7 @@
         "y": 1
       }
     },
-    "player-blue/dash_1": {
+    "player-brown/dash_1": {
       "frame": {
         "x": 320,
         "y": 128,
@@ -572,7 +572,7 @@
         "y": 1
       }
     },
-    "player-blue/dash_2": {
+    "player-brown/dash_2": {
       "frame": {
         "x": 384,
         "y": 128,
@@ -594,7 +594,7 @@
         "y": 1
       }
     },
-    "player-blue/dash_3": {
+    "player-brown/dash_3": {
       "frame": {
         "x": 448,
         "y": 128,
@@ -616,7 +616,7 @@
         "y": 1
       }
     },
-    "player-blue/dash_4": {
+    "player-brown/dash_4": {
       "frame": {
         "x": 512,
         "y": 128,
@@ -638,7 +638,7 @@
         "y": 1
       }
     },
-    "player-blue/dash_5": {
+    "player-brown/dash_5": {
       "frame": {
         "x": 576,
         "y": 128,
@@ -660,7 +660,7 @@
         "y": 1
       }
     },
-    "player-blue/dash_6": {
+    "player-brown/dash_6": {
       "frame": {
         "x": 0,
         "y": 192,
@@ -682,7 +682,7 @@
         "y": 1
       }
     },
-    "player-blue/dash_7": {
+    "player-brown/dash_7": {
       "frame": {
         "x": 64,
         "y": 192,
@@ -704,7 +704,7 @@
         "y": 1
       }
     },
-    "player-blue/dash_8": {
+    "player-brown/dash_8": {
       "frame": {
         "x": 128,
         "y": 192,
@@ -726,7 +726,7 @@
         "y": 1
       }
     },
-    "player-blue/slash_0": {
+    "player-brown/slash_0": {
       "frame": {
         "x": 192,
         "y": 192,
@@ -748,7 +748,7 @@
         "y": 1
       }
     },
-    "player-blue/slash_1": {
+    "player-brown/slash_1": {
       "frame": {
         "x": 256,
         "y": 192,
@@ -770,7 +770,7 @@
         "y": 1
       }
     },
-    "player-blue/slash_2": {
+    "player-brown/slash_2": {
       "frame": {
         "x": 320,
         "y": 192,
@@ -792,7 +792,7 @@
         "y": 1
       }
     },
-    "player-blue/slash_3": {
+    "player-brown/slash_3": {
       "frame": {
         "x": 384,
         "y": 192,
@@ -814,7 +814,7 @@
         "y": 1
       }
     },
-    "player-blue/slash_4": {
+    "player-brown/slash_4": {
       "frame": {
         "x": 448,
         "y": 192,
@@ -836,7 +836,7 @@
         "y": 1
       }
     },
-    "player-blue/slash_5": {
+    "player-brown/slash_5": {
       "frame": {
         "x": 512,
         "y": 192,
@@ -858,7 +858,7 @@
         "y": 1
       }
     },
-    "player-blue/shoot_0": {
+    "player-brown/shoot_0": {
       "frame": {
         "x": 576,
         "y": 192,
@@ -880,7 +880,7 @@
         "y": 1
       }
     },
-    "player-blue/shoot_1": {
+    "player-brown/shoot_1": {
       "frame": {
         "x": 0,
         "y": 256,
@@ -902,7 +902,7 @@
         "y": 1
       }
     },
-    "player-blue/shoot_2": {
+    "player-brown/shoot_2": {
       "frame": {
         "x": 64,
         "y": 256,
@@ -924,7 +924,7 @@
         "y": 1
       }
     },
-    "player-blue/shoot_3": {
+    "player-brown/shoot_3": {
       "frame": {
         "x": 128,
         "y": 256,
@@ -946,7 +946,7 @@
         "y": 1
       }
     },
-    "player-blue/shoot_4": {
+    "player-brown/shoot_4": {
       "frame": {
         "x": 192,
         "y": 256,
@@ -968,7 +968,7 @@
         "y": 1
       }
     },
-    "player-blue/shoot_5": {
+    "player-brown/shoot_5": {
       "frame": {
         "x": 256,
         "y": 256,
@@ -990,7 +990,7 @@
         "y": 1
       }
     },
-    "player-blue/shoot_6": {
+    "player-brown/shoot_6": {
       "frame": {
         "x": 320,
         "y": 256,
@@ -1012,7 +1012,7 @@
         "y": 1
       }
     },
-    "player-blue/shoot_7": {
+    "player-brown/shoot_7": {
       "frame": {
         "x": 384,
         "y": 256,
@@ -1034,7 +1034,7 @@
         "y": 1
       }
     },
-    "player-blue/shoot_8": {
+    "player-brown/shoot_8": {
       "frame": {
         "x": 448,
         "y": 256,
@@ -1056,7 +1056,7 @@
         "y": 1
       }
     },
-    "player-blue/shoot_9": {
+    "player-brown/shoot_9": {
       "frame": {
         "x": 512,
         "y": 256,
@@ -1078,7 +1078,7 @@
         "y": 1
       }
     },
-    "player-blue/death_0": {
+    "player-brown/death_0": {
       "frame": {
         "x": 576,
         "y": 256,
@@ -1100,7 +1100,7 @@
         "y": 1
       }
     },
-    "player-blue/death_1": {
+    "player-brown/death_1": {
       "frame": {
         "x": 0,
         "y": 320,
@@ -1122,7 +1122,7 @@
         "y": 1
       }
     },
-    "player-blue/death_2": {
+    "player-brown/death_2": {
       "frame": {
         "x": 64,
         "y": 320,
@@ -1144,7 +1144,7 @@
         "y": 1
       }
     },
-    "player-blue/death_3": {
+    "player-brown/death_3": {
       "frame": {
         "x": 128,
         "y": 320,
@@ -1166,7 +1166,7 @@
         "y": 1
       }
     },
-    "player-blue/death_4": {
+    "player-brown/death_4": {
       "frame": {
         "x": 192,
         "y": 320,
@@ -1188,7 +1188,7 @@
         "y": 1
       }
     },
-    "player-blue/death_5": {
+    "player-brown/death_5": {
       "frame": {
         "x": 256,
         "y": 320,
@@ -1210,7 +1210,7 @@
         "y": 1
       }
     },
-    "player-blue/death_6": {
+    "player-brown/death_6": {
       "frame": {
         "x": 320,
         "y": 320,
@@ -1232,7 +1232,7 @@
         "y": 1
       }
     },
-    "player-blue/death_7": {
+    "player-brown/death_7": {
       "frame": {
         "x": 384,
         "y": 320,
@@ -1254,7 +1254,7 @@
         "y": 1
       }
     },
-    "player-blue/death_8": {
+    "player-brown/death_8": {
       "frame": {
         "x": 448,
         "y": 320,
@@ -1276,7 +1276,7 @@
         "y": 1
       }
     },
-    "player-blue/death_9": {
+    "player-brown/death_9": {
       "frame": {
         "x": 512,
         "y": 320,
@@ -1301,81 +1301,81 @@
   },
   "animations": {
     "idle": [
-      "player-blue/idle_0",
-      "player-blue/idle_1",
-      "player-blue/idle_2",
-      "player-blue/idle_3",
-      "player-blue/idle_4",
-      "player-blue/idle_5",
-      "player-blue/idle_6",
-      "player-blue/idle_7",
-      "player-blue/idle_8",
-      "player-blue/idle_9"
+      "player-brown/idle_0",
+      "player-brown/idle_1",
+      "player-brown/idle_2",
+      "player-brown/idle_3",
+      "player-brown/idle_4",
+      "player-brown/idle_5",
+      "player-brown/idle_6",
+      "player-brown/idle_7",
+      "player-brown/idle_8",
+      "player-brown/idle_9"
     ],
     "run": [
-      "player-blue/run_0",
-      "player-blue/run_1",
-      "player-blue/run_2",
-      "player-blue/run_3",
-      "player-blue/run_4",
-      "player-blue/run_5",
-      "player-blue/run_6",
-      "player-blue/run_7"
+      "player-brown/run_0",
+      "player-brown/run_1",
+      "player-brown/run_2",
+      "player-brown/run_3",
+      "player-brown/run_4",
+      "player-brown/run_5",
+      "player-brown/run_6",
+      "player-brown/run_7"
     ],
     "jump": [
-      "player-blue/jump_0",
-      "player-blue/jump_1",
-      "player-blue/jump_2",
-      "player-blue/jump_3",
-      "player-blue/jump_4",
-      "player-blue/jump_5"
+      "player-brown/jump_0",
+      "player-brown/jump_1",
+      "player-brown/jump_2",
+      "player-brown/jump_3",
+      "player-brown/jump_4",
+      "player-brown/jump_5"
     ],
     "dash": [
-      "player-blue/dash_0",
-      "player-blue/dash_1",
-      "player-blue/dash_2",
-      "player-blue/dash_3",
-      "player-blue/dash_4",
-      "player-blue/dash_5",
-      "player-blue/dash_6",
-      "player-blue/dash_7",
-      "player-blue/dash_8"
+      "player-brown/dash_0",
+      "player-brown/dash_1",
+      "player-brown/dash_2",
+      "player-brown/dash_3",
+      "player-brown/dash_4",
+      "player-brown/dash_5",
+      "player-brown/dash_6",
+      "player-brown/dash_7",
+      "player-brown/dash_8"
     ],
     "slash": [
-      "player-blue/slash_0",
-      "player-blue/slash_1",
-      "player-blue/slash_2",
-      "player-blue/slash_3",
-      "player-blue/slash_4",
-      "player-blue/slash_5"
+      "player-brown/slash_0",
+      "player-brown/slash_1",
+      "player-brown/slash_2",
+      "player-brown/slash_3",
+      "player-brown/slash_4",
+      "player-brown/slash_5"
     ],
     "shoot": [
-      "player-blue/shoot_0",
-      "player-blue/shoot_1",
-      "player-blue/shoot_2",
-      "player-blue/shoot_3",
-      "player-blue/shoot_4",
-      "player-blue/shoot_5",
-      "player-blue/shoot_6",
-      "player-blue/shoot_7",
-      "player-blue/shoot_8",
-      "player-blue/shoot_9"
+      "player-brown/shoot_0",
+      "player-brown/shoot_1",
+      "player-brown/shoot_2",
+      "player-brown/shoot_3",
+      "player-brown/shoot_4",
+      "player-brown/shoot_5",
+      "player-brown/shoot_6",
+      "player-brown/shoot_7",
+      "player-brown/shoot_8",
+      "player-brown/shoot_9"
     ],
     "death": [
-      "player-blue/death_0",
-      "player-blue/death_1",
-      "player-blue/death_2",
-      "player-blue/death_3",
-      "player-blue/death_4",
-      "player-blue/death_5",
-      "player-blue/death_6",
-      "player-blue/death_7",
-      "player-blue/death_8",
-      "player-blue/death_9"
+      "player-brown/death_0",
+      "player-brown/death_1",
+      "player-brown/death_2",
+      "player-brown/death_3",
+      "player-brown/death_4",
+      "player-brown/death_5",
+      "player-brown/death_6",
+      "player-brown/death_7",
+      "player-brown/death_8",
+      "player-brown/death_9"
     ]
   },
   "meta": {
-    "image": "player-blue.png",
+    "image": "player-brown.png",
     "format": "RGBA8888",
     "size": {
       "w": 640,

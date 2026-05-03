@@ -41,7 +41,7 @@ export class EntityManager {
     this.playerPool = new EntityPool(
       () => new PlayerEntity(),
       (e) => e.reset(),
-      8,
+      24,
     )
     this.projectilePool = new EntityPool(
       () => new ProjectileEntity(),

@@ -1,10 +1,12 @@
 import type { PlayerId } from '@you-died/protocol'
 import type { PlayerColor } from '@you-died/assets'
+import type { Arena } from '@you-died/sim'
 
 export interface MatchContext {
   readonly localPlayerId: PlayerId
   readonly playerColors: Record<PlayerId, PlayerColor>
   readonly playerNames: Record<PlayerId, string>
+  readonly arena: Arena
 }
 
 export interface RendererConfig {

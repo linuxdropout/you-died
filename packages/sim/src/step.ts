@@ -1,5 +1,4 @@
 import type { GameState, PlayerInput } from './types.ts'
-import { DEFAULT_ARENA } from './arena.ts'
 import { applyMovement, resolvePlayerPlatformCollisions, isOutOfBounds } from './physics.ts'
 import {
   processPlayerActions,
@@ -8,7 +7,9 @@ import {
   checkSlashHits,
   checkProjectileHits,
   decayEntities,
+  rectsOverlap,
 } from './combat.ts'
+import { PROJECTILE_WIDTH, PROJECTILE_HEIGHT } from './constants.ts'
 import {
   recordSnapshot,
   handleHeadDeath,
@@ -28,6 +29,8 @@ const NO_INPUT: PlayerInput = {
 
 export function step(state: GameState, inputs: Record<string, PlayerInput>): GameState {
   if (state.winner !== undefined) return state
+
+  const arena = state.config.arena
 
   state.events = []
 
@@ -57,10 +60,24 @@ export function step(state: GameState, inputs: Record<string, PlayerInput>): Gam
 
   moveProjectiles(state)
 
+  state.projectiles = state.projectiles.filter((proj) => {
+    const pLeft = proj.pos.x - PROJECTILE_WIDTH / 2
+    const pRight = proj.pos.x + PROJECTILE_WIDTH / 2
+    const pTop = proj.pos.y - PROJECTILE_HEIGHT / 2
+    const pBottom = proj.pos.y + PROJECTILE_HEIGHT / 2
+    for (const wall of arena.platforms) {
+      if (!wall.isWall) continue
+      if (rectsOverlap(pLeft, pTop, pRight, pBottom, wall.x, wall.y, wall.x + wall.width, wall.y + wall.height)) {
+        return false
+      }
+    }
+    return true
+  })
+
   for (const playerId of state.config.playerIds) {
     const player = state.players[playerId]
     if (!player?.alive) continue
-    resolvePlayerPlatformCollisions(player, DEFAULT_ARENA)
+    resolvePlayerPlatformCollisions(player, arena)
   }
 
   updateSlashPositions(state)
@@ -69,7 +86,7 @@ export function step(state: GameState, inputs: Record<string, PlayerInput>): Gam
   for (const playerId of state.config.playerIds) {
     const player = state.players[playerId]
     if (!player?.alive) continue
-    if (isOutOfBounds(player, DEFAULT_ARENA)) {
+    if (isOutOfBounds(player, arena)) {
       player.alive = false
       boundaryDeaths.push(playerId)
     }

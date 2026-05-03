@@ -1,6 +1,7 @@
 import type { GameState, PlayerInput } from './types.ts'
 import { createInitialState } from './state.ts'
 import { step } from './step.ts'
+import { DEFAULT_ARENA } from './arena.ts'
 
 const NO_INPUT: PlayerInput = {
   left: false,
@@ -20,7 +21,7 @@ function runSim(
   ticks: number,
   inputFn: (tick: number) => Record<string, PlayerInput>,
 ): GameState {
-  let state = createInitialState({ seed, playerIds: ['p1', 'p2'] })
+  let state = createInitialState({ seed, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
   for (let i = 0; i < ticks; i++) {
     state = step(state, inputFn(state.tick))
   }
@@ -31,7 +32,7 @@ function stateFingerprint(state: GameState): string {
   const players = state.config.playerIds.map((id) => {
     const p = state.players[id]
     if (!p) return `${id}:missing`
-    return `${id}:${p.pos.x.toFixed(6)},${p.pos.y.toFixed(6)},${p.vel.x.toFixed(6)},${p.vel.y.toFixed(6)},${p.alive},${p.timelineOffset},${p.facingRight},${p.grounded}`
+    return `${id}:${p.pos.x.toFixed(6)},${p.pos.y.toFixed(6)},${p.vel.x.toFixed(6)},${p.vel.y.toFixed(6)},${p.alive},${p.ticks},${p.facingRight},${p.grounded}`
   })
   return [
     `tick=${state.tick}`,
@@ -88,8 +89,8 @@ describe('determinism', () => {
       p2: tick % 15 < 8 ? inputWith({ left: true, shoot: true }) : inputWith({ right: true }),
     })
 
-    let state1 = createInitialState({ seed: 99, playerIds: ['p1', 'p2'] })
-    let state2 = createInitialState({ seed: 99, playerIds: ['p1', 'p2'] })
+    let state1 = createInitialState({ seed: 99, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
+    let state2 = createInitialState({ seed: 99, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     for (let i = 0; i < 200; i++) {
       const inputs = inputFn(state1.tick)

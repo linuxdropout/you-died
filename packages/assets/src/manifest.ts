@@ -5,7 +5,7 @@ import type {
   SpriteAssetManifest,
 } from './sprite-data.js'
 
-export const PLAYER_COLORS: readonly PlayerColor[] = ['red', 'blue', 'green', 'yellow'] as const
+export const PLAYER_COLORS: readonly PlayerColor[] = ['red', 'blue', 'green', 'yellow', 'purple', 'orange', 'pink', 'cyan', 'white', 'brown', 'lime', 'teal'] as const
 
 export const ANIMATION_META: Record<AnimationName, AnimationMeta> = {
   idle: { name: 'idle', frameCount: 10, loop: true, fps: 8, frameSize: { w: 48, h: 48 } },
@@ -24,6 +24,14 @@ export function getAssetManifest(basePath: string): SpriteAssetManifest {
       blue: { sheet: `${basePath}/player-blue.json` },
       green: { sheet: `${basePath}/player-green.json` },
       yellow: { sheet: `${basePath}/player-yellow.json` },
+      purple: { sheet: `${basePath}/player-purple.json` },
+      orange: { sheet: `${basePath}/player-orange.json` },
+      pink: { sheet: `${basePath}/player-pink.json` },
+      cyan: { sheet: `${basePath}/player-cyan.json` },
+      white: { sheet: `${basePath}/player-white.json` },
+      brown: { sheet: `${basePath}/player-brown.json` },
+      lime: { sheet: `${basePath}/player-lime.json` },
+      teal: { sheet: `${basePath}/player-teal.json` },
     },
     ghost: `${basePath}/ghost.json`,
     effects: {

@@ -19,6 +19,8 @@ export type ClientMessage =
   | { type: 'input'; tick: number; input: PlayerInput }
   | { type: 'stateHash'; tick: number; hash: number }
   | { type: 'rejoinLobby' }
+  | { type: 'addBot' }
+  | { type: 'removeBot'; playerId: PlayerId }
 
 export type ServerMessage =
   | {
@@ -46,10 +48,17 @@ export interface LobbyPlayer {
   name: string
   ready: boolean
   color: string
+  isBot: boolean
+}
+
+export const BOT_ID_PREFIX = 'bot-'
+
+export function isBotId(id: PlayerId): boolean {
+  return id.startsWith(BOT_ID_PREFIX)
 }
 
 export const MIN_PLAYERS = 1
-export const MAX_PLAYERS = 4
+export const MAX_PLAYERS = 12
 export const TICK_RATE = 60
 export const REWIND_SECONDS = 10
 export const WIN_LEAD_SECONDS = 30

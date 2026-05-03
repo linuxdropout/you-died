@@ -31,7 +31,7 @@ export function hashState(state: GameState): number {
     h = hashFloat(h, p.vel.y)
     h = fnv1a(h, p.alive ? 1 : 0)
     h = fnv1a(h, p.isGhost ? 1 : 0)
-    h = fnv1a(h, p.timelineOffset)
+    h = fnv1a(h, p.ticks)
     h = fnv1a(h, p.dashTicksRemaining)
     h = fnv1a(h, p.dashCooldownTicks)
     h = fnv1a(h, p.slashTicksRemaining)

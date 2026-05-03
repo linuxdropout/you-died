@@ -52,6 +52,7 @@ export function LobbyScreen({
     name: p.name,
     ready: p.ready,
     color: p.color,
+    isBot: p.isBot,
   }))
 
   const handleSetName = () => {
@@ -85,6 +86,14 @@ export function LobbyScreen({
       onCancel={() => {
         playClick()
         sendMessage(room, { type: 'cancelCountdown' })
+      }}
+      onAddBot={() => {
+        playClick()
+        sendMessage(room, { type: 'addBot' })
+      }}
+      onRemoveBot={(playerId) => {
+        playClick()
+        sendMessage(room, { type: 'removeBot', playerId })
       }}
     >
       <div className="lobbyNameRow">

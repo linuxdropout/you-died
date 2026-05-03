@@ -2,7 +2,7 @@ import Colyseus from 'colyseus'
 import type { Client } from 'colyseus'
 
 const { Room } = Colyseus
-import { TICK_RATE, ROOM_CODE_LENGTH } from '@you-died/protocol'
+import { TICK_RATE, ROOM_CODE_LENGTH, MAX_PLAYERS } from '@you-died/protocol'
 import type { PlayerInput } from '@you-died/protocol'
 import { MatchController } from './match-controller.js'
 
@@ -22,7 +22,7 @@ export class GameRoom extends Room {
   private roomCode = ''
 
   override onCreate(options: { roomCode?: string }) {
-    this.maxClients = 4
+    this.maxClients = MAX_PLAYERS
     this.patchRate = 0
     this.roomCode = options.roomCode ?? generateRoomCode()
     void this.setMetadata({ roomCode: this.roomCode })
@@ -60,6 +60,19 @@ export class GameRoom extends Room {
       if (this.controller.getPhase() === 'lobby') {
         this.broadcastLobbyState()
       }
+    })
+
+    this.onMessage('addBot', (client: Client) => {
+      if (client.sessionId !== this.controller.getHostId()) return
+      if (this.controller.addBot() !== null) {
+        this.broadcastLobbyState()
+      }
+    })
+
+    this.onMessage('removeBot', (client: Client, msg: { playerId: string }) => {
+      if (client.sessionId !== this.controller.getHostId()) return
+      this.controller.removeBot(msg.playerId)
+      this.broadcastLobbyState()
     })
 
     this.onMessage('stateHash', (client: Client, msg: { tick: number; hash: number }) => {

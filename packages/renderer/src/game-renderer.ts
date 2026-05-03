@@ -1,5 +1,5 @@
 import { Application, Graphics } from 'pixi.js'
-import { type RenderFrame, DEFAULT_ARENA } from '@you-died/sim'
+import type { RenderFrame } from '@you-died/sim'
 import { SpriteManager } from './sprite-manager.js'
 import { LayerManager } from './layers/layer-manager.js'
 import { EntityManager } from './entities/entity-manager.js'
@@ -68,7 +68,7 @@ export class GameRenderer {
     this.layers.root.scale.set(this.config.pixelScale)
 
     this.parallax = new ParallaxBackground()
-    this.parallax.init(this.app.stage, this.config.pixelScale)
+    this.parallax.init(this.app.stage, this.config.pixelScale, context.arena.height)
 
     this.app.stage.addChild(this.layers.root)
 
@@ -86,12 +86,13 @@ export class GameRenderer {
   }
 
   private drawArena() {
-    if (!this.layers) return
+    if (!this.layers || !this.context) return
 
-    drawPlatforms(this.layers.background, DEFAULT_ARENA.platforms)
+    const arena = this.context.arena
+    drawPlatforms(this.layers.background, arena.platforms)
 
     const killLine = new Graphics()
-    killLine.rect(0, DEFAULT_ARENA.killBoundary, DEFAULT_ARENA.width, 2)
+    killLine.rect(0, arena.killBoundary, arena.width, 2)
     killLine.fill({ color: 0xff0000, alpha: 0.3 })
     this.layers.background.addChild(killLine)
   }

@@ -1,6 +1,6 @@
 import type { PlayerInput, PlayerId } from '@you-died/protocol'
 import { TICK_RATE, HASH_CHECK_INTERVAL_TICKS } from '@you-died/protocol'
-import { createInitialState, step, getRenderableState, hashState } from '@you-died/sim'
+import { createInitialState, step, getRenderableState, hashState, selectArena } from '@you-died/sim'
 import type { GameState } from '@you-died/sim'
 import { GameRenderer, AudioContextGuard } from '@you-died/renderer'
 import type { MatchContext, HudData, ScreenEvent } from '@you-died/renderer'
@@ -38,7 +38,8 @@ interface ConfirmedTick {
 export function createGameLoop(config: GameLoopConfig): GameLoop {
   const { seed, playerId, playerIds, playerNames, playerColors, room, canvas } = config
 
-  let simState: GameState = createInitialState({ seed, playerIds })
+  const arena = selectArena(seed, playerIds.length)
+  let simState: GameState = createInitialState({ seed, playerIds, arena })
   const confirmedQueue: ConfirmedTick[] = []
   let simInterval: ReturnType<typeof setInterval> | null = null
   let rafId: number | null = null
@@ -87,6 +88,7 @@ export function createGameLoop(config: GameLoopConfig): GameLoop {
         localPlayerId: playerId,
         playerColors: playerColors as Record<PlayerId, PlayerColor>,
         playerNames,
+        arena,
       }
       renderer.startMatch(context)
 

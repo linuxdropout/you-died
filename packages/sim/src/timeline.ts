@@ -139,7 +139,7 @@ export function handleHeadDeath(state: GameState, playerId: PlayerId, killerId?:
 
   const p = state.players[playerId]
   if (p) {
-    p.timelineOffset -= state.tick - localRewindTarget
+    p.ticks -= state.tick - localRewindTarget
   }
 
   state.events.push({
@@ -230,7 +230,7 @@ export function resolveParadoxes(state: GameState): void {
 
           const player = state.players[timeline.playerId]
           if (player && !boostedPlayers.has(timeline.playerId)) {
-            player.timelineOffset += REWIND_TICKS
+            player.ticks += REWIND_TICKS
             boostedPlayers.add(timeline.playerId)
           }
 
@@ -289,7 +289,7 @@ export function checkWinCondition(state: GameState): PlayerId | undefined {
   if (playerIds.length < 2) {
     const soloId = playerIds[0]
     const solo = soloId !== undefined ? state.players[soloId] : undefined
-    if (solo?.alive && solo.timelineOffset >= WIN_LEAD_TICKS) return soloId
+    if (solo?.alive && solo.ticks >= WIN_LEAD_TICKS) return soloId
     return undefined
   }
 
@@ -304,7 +304,7 @@ export function checkWinCondition(state: GameState): PlayerId | undefined {
       const other = state.players[otherId]
       if (!other) continue
 
-      if (candidate.timelineOffset - other.timelineOffset < WIN_LEAD_TICKS) {
+      if (candidate.ticks - other.ticks < WIN_LEAD_TICKS) {
         isAhead = false
         break
       }

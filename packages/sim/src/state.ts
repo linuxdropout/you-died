@@ -1,6 +1,6 @@
 import type { GameConfig, GameState, PlayerState } from './types.ts'
-import { DEFAULT_ARENA } from './arena.ts'
 import { createInitialTimeline } from './timeline.ts'
+import { MAX_AIR_JUMPS } from './constants.ts'
 
 export function createInitialState(config: GameConfig): GameState {
   const state: GameState = {
@@ -22,7 +22,7 @@ export function createInitialState(config: GameConfig): GameState {
     const playerId = config.playerIds[i]
     if (!playerId) continue
 
-    const spawn = DEFAULT_ARENA.spawnPoints[i % DEFAULT_ARENA.spawnPoints.length]
+    const spawn = config.arena.spawnPoints[i % config.arena.spawnPoints.length]
     if (!spawn) continue
 
     const timeline = createInitialTimeline(state, playerId)
@@ -41,9 +41,11 @@ export function createInitialState(config: GameConfig): GameState {
       slashCooldownTicks: 0,
       shootCooldownTicks: 0,
       shootTicksRemaining: 0,
+      airJumpsRemaining: MAX_AIR_JUMPS,
+      jumpHeld: false,
       alive: true,
       isGhost: false,
-      timelineOffset: 0,
+      ticks: 0,
       invulTicksRemaining: 0,
     }
 

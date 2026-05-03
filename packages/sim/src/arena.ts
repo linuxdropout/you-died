@@ -5,6 +5,7 @@ export interface Platform {
   y: number
   width: number
   height: number
+  isWall?: boolean
 }
 
 export interface Arena {

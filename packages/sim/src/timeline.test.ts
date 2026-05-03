@@ -3,6 +3,7 @@ import { createInitialState } from './state.ts'
 import { step } from './step.ts'
 import { resolveParadoxes } from './timeline.ts'
 import { REWIND_TICKS, WIN_LEAD_TICKS, PLAYER_WIDTH, INVUL_TICKS } from './constants.ts'
+import { DEFAULT_ARENA } from './arena.ts'
 
 const NO_INPUT: PlayerInput = {
   left: false,
@@ -39,7 +40,7 @@ function runTicks(
 
 describe('timeline', () => {
   it('rewinds player on head death', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     const p2 = getPlayer(state, 'p2')
@@ -71,13 +72,13 @@ describe('timeline', () => {
     const p1After = getPlayer(state, 'p1')
     expect(p1After.alive).toBe(true)
     expect(p1After.timelineId).not.toBe(timelineIdBefore)
-    expect(p1After.timelineOffset).toBeLessThan(0)
+    expect(p1After.ticks).toBeLessThan(0)
 
     expect(p1After.pos.x).not.toBe(posBeforeKill)
   })
 
   it('rewinds position back to where player was REWIND_TICKS ago', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     const p2 = getPlayer(state, 'p2')
@@ -109,7 +110,7 @@ describe('timeline', () => {
   })
 
   it('creates no ghost on head death', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     p1.pos = { x: 640, y: 550 }
@@ -140,7 +141,7 @@ describe('timeline', () => {
   })
 
   it('severs timeline on past self death', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     p1.pos = { x: 640, y: 550 }
@@ -204,7 +205,7 @@ describe('timeline', () => {
   })
 
   it('win condition triggers when a player is far enough ahead', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     const p2 = getPlayer(state, 'p2')
@@ -215,8 +216,8 @@ describe('timeline', () => {
     p2.vel = { x: 0, y: 0 }
     p2.grounded = true
 
-    p1.timelineOffset = WIN_LEAD_TICKS + 100
-    p2.timelineOffset = 0
+    p1.ticks = WIN_LEAD_TICKS + 100
+    p2.ticks = 0
 
     state = step(state, { p1: NO_INPUT, p2: NO_INPUT })
 
@@ -225,7 +226,7 @@ describe('timeline', () => {
   })
 
   it('win condition does not trigger when lead is insufficient', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     const p2 = getPlayer(state, 'p2')
@@ -236,8 +237,8 @@ describe('timeline', () => {
     p2.vel = { x: 0, y: 0 }
     p2.grounded = true
 
-    p1.timelineOffset = WIN_LEAD_TICKS - 100
-    p2.timelineOffset = 0
+    p1.ticks = WIN_LEAD_TICKS - 100
+    p2.ticks = 0
 
     state = step(state, { p1: NO_INPUT, p2: NO_INPUT })
 
@@ -245,7 +246,7 @@ describe('timeline', () => {
   })
 
   it('ghost replays loop instead of completing', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     const p2 = getPlayer(state, 'p2')
@@ -282,7 +283,7 @@ describe('timeline', () => {
 
   it('determinism holds through death and rewind cycles', () => {
     const runScenario = (): ReturnType<typeof createInitialState> => {
-      let state = createInitialState({ seed: 42, playerIds: ['p1', 'p2'] })
+      let state = createInitialState({ seed: 42, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
       const p1 = getPlayer(state, 'p1')
       const p2 = getPlayer(state, 'p2')
@@ -324,14 +325,14 @@ describe('timeline', () => {
     expect(p1a.pos.x).toBe(p1b.pos.x)
     expect(p1a.pos.y).toBe(p1b.pos.y)
     expect(p1a.timelineId).toBe(p1b.timelineId)
-    expect(p1a.timelineOffset).toBe(p1b.timelineOffset)
+    expect(p1a.ticks).toBe(p1b.ticks)
     expect(state1.tick).toBe(state2.tick)
     expect(state1.seed).toBe(state2.seed)
     expect(state1.timelines.length).toBe(state2.timelines.length)
   })
 
   it('paradox cascade grants at most one offset boost per player', () => {
-    const state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    const state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     p1.pos = { x: 640, y: 550 }
@@ -402,18 +403,18 @@ describe('timeline', () => {
 
     state.timelines.push(tlA, tlB, tlC, tlD)
 
-    const offsetBefore = p1.timelineOffset
+    const offsetBefore = p1.ticks
 
     resolveParadoxes(state)
 
-    expect(p1.timelineOffset).toBe(offsetBefore + REWIND_TICKS)
+    expect(p1.ticks).toBe(offsetBefore + REWIND_TICKS)
 
     const paradoxEvents = state.events.filter((e) => e.type === 'paradox' && e.playerId === 'p1')
     expect(paradoxEvents.length).toBeGreaterThanOrEqual(1)
   })
 
   it('spawn invulnerability prevents immediate combat death', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     const p2 = getPlayer(state, 'p2')
@@ -459,7 +460,7 @@ describe('timeline', () => {
   })
 
   it('invulnerability expires after INVUL_TICKS', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     const p2 = getPlayer(state, 'p2')
@@ -502,7 +503,7 @@ describe('timeline', () => {
   })
 
   it('cross-timeline rewind restores position from before current timeline', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
     const p2 = getPlayer(state, 'p2')
