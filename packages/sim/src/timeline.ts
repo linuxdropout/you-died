@@ -7,7 +7,7 @@ import type {
   TimelineRecord,
   TimelineSnapshot,
 } from './types.ts'
-import { REWIND_TICKS, WIN_LEAD_TICKS } from './constants.ts'
+import { REWIND_TICKS, WIN_LEAD_TICKS, INVUL_TICKS } from './constants.ts'
 import { nextSeed } from './rng.ts'
 import { processPlayerActions } from './combat.ts'
 
@@ -48,6 +48,25 @@ export function recordSnapshot(state: GameState, playerId: PlayerId, input: Play
   timeline.snapshots.push(snapshot)
 }
 
+function findSnapshotInPreviousTimeline(
+  state: GameState,
+  playerId: PlayerId,
+  targetTick: number,
+): TimelineSnapshot | undefined {
+  for (const timeline of state.timelines) {
+    if (timeline.playerId !== playerId) continue
+    if (timeline.headEndedAtTick === undefined) continue
+    const firstSnap = timeline.snapshots[0]
+    if (!firstSnap) continue
+    const firstTick = firstSnap.tick
+    const index = targetTick - firstTick
+    if (index < 0 || index >= timeline.snapshots.length) continue
+    const snapshot = timeline.snapshots[index]
+    if (snapshot) return snapshot
+  }
+  return undefined
+}
+
 export function handleHeadDeath(state: GameState, playerId: PlayerId, killerId?: PlayerId): void {
   const player = state.players[playerId]
   if (!player) return
@@ -56,13 +75,23 @@ export function handleHeadDeath(state: GameState, playerId: PlayerId, killerId?:
   if (!currentTimeline) return
   if (currentTimeline.headEndedAtTick !== undefined) return
 
-  const rewindTarget = Math.max(currentTimeline.startTick, state.tick - REWIND_TICKS)
-  const snapshotIndex = rewindTarget - currentTimeline.startTick
-  const snapshot = currentTimeline.snapshots[snapshotIndex]
+  const localRewindTarget = Math.max(currentTimeline.startTick, state.tick - REWIND_TICKS)
+  const fullRewindTarget = Math.max(0, state.tick - REWIND_TICKS)
+
+  let snapshot: TimelineSnapshot | undefined
+  if (fullRewindTarget < currentTimeline.startTick) {
+    snapshot = findSnapshotInPreviousTimeline(state, playerId, fullRewindTarget)
+  }
+  if (!snapshot) {
+    const localIndex = localRewindTarget - currentTimeline.startTick
+    if (localIndex >= 0 && localIndex < currentTimeline.snapshots.length) {
+      snapshot = currentTimeline.snapshots[localIndex]
+    }
+  }
 
   currentTimeline.headEndedAtTick = state.tick
   currentTimeline.replayOriginTick = state.tick
-  currentTimeline.replayStartTick = rewindTarget
+  currentTimeline.replayStartTick = localRewindTarget
 
   const newTimelineId = generateTimelineId(state, playerId)
 
@@ -86,6 +115,7 @@ export function handleHeadDeath(state: GameState, playerId: PlayerId, killerId?:
     restored.timelineId = newTimelineId
     restored.alive = true
     restored.isGhost = false
+    restored.invulTicksRemaining = INVUL_TICKS
     restored.slashTicksRemaining = 0
     restored.slashCooldownTicks = 0
     restored.shootCooldownTicks = 0
@@ -96,6 +126,7 @@ export function handleHeadDeath(state: GameState, playerId: PlayerId, killerId?:
   } else {
     player.timelineId = newTimelineId
     player.alive = true
+    player.invulTicksRemaining = INVUL_TICKS
     player.vel.x = 0
     player.vel.y = 0
     player.slashTicksRemaining = 0
@@ -108,7 +139,7 @@ export function handleHeadDeath(state: GameState, playerId: PlayerId, killerId?:
 
   const p = state.players[playerId]
   if (p) {
-    p.timelineOffset -= state.tick - rewindTarget
+    p.timelineOffset -= state.tick - localRewindTarget
   }
 
   state.events.push({
@@ -228,14 +259,15 @@ export function processGhostActions(state: GameState): void {
     if (timeline.replayOriginTick === undefined || timeline.replayStartTick === undefined) continue
 
     const playbackTick = timeline.replayStartTick + (state.tick - timeline.replayOriginTick)
-    const index = playbackTick - timeline.startTick
-    if (index < 0 || index >= timeline.snapshots.length) {
-      if (index >= timeline.snapshots.length) {
-        timeline.replayComplete = true
-        timeline.snapshots = []
-      }
+    const rawIndex = playbackTick - timeline.startTick
+    if (rawIndex < 0) continue
+    const rewindStartIndex = timeline.replayStartTick - timeline.startTick
+    const windowLength = timeline.snapshots.length - rewindStartIndex
+    if (windowLength <= 0) {
+      timeline.replayComplete = true
       continue
     }
+    const index = rewindStartIndex + ((rawIndex - rewindStartIndex) % windowLength)
 
     const snapshot = timeline.snapshots[index]
     if (!snapshot) continue

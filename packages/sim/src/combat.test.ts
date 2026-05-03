@@ -210,6 +210,7 @@ describe('combat', () => {
     p1Rewound.pos = { x: projX + projVelX * 8, y: 550 }
     p1Rewound.vel = { x: 0, y: 0 }
     p1Rewound.grounded = true
+    p1Rewound.invulTicksRemaining = 0
 
     for (let i = 0; i < 20; i++) {
       state = step(state, { p1: NO_INPUT, p2: NO_INPUT })

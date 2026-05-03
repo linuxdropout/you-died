@@ -16,6 +16,14 @@ export class Camera {
     this.config = config
   }
 
+  get worldX() {
+    return this.currentX
+  }
+
+  get worldY() {
+    return this.currentY
+  }
+
   setTarget(x: number, y: number) {
     this.targetX = x
     this.targetY = y

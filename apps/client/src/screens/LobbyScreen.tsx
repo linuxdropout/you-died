@@ -6,6 +6,7 @@ import type { AudioContextGuard } from '@you-died/renderer'
 import { Lobby } from '@you-died/ui'
 import { sendMessage } from '../net/connection'
 import { useUiSounds } from '../hooks/use-ui-sounds'
+import { useMusic } from '../hooks/use-music'
 
 interface Props {
   room: Room
@@ -29,6 +30,7 @@ export function LobbyScreen({
   const [name, setName] = useState('')
   const { playClick, playCountdownTick, playMatchStart } = useUiSounds(audioGuard)
   const prevCountdown = useRef<number | null>(null)
+  useMusic(audioGuard, 'lobby')
 
   useEffect(() => {
     if (countdownSeconds !== null && countdownSeconds !== prevCountdown.current) {

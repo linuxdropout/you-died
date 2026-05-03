@@ -28,6 +28,7 @@ export interface PlayerState {
   alive: boolean
   isGhost: boolean
   timelineOffset: number
+  invulTicksRemaining: number
 }
 
 export interface Projectile {
@@ -114,6 +115,7 @@ export interface RenderPlayer {
   isDashing: boolean
   alive: boolean
   timelineOffset: number
+  isInvulnerable: boolean
 }
 
 export interface RenderProjectile {

@@ -22,6 +22,7 @@ export function getRenderableState(state: GameState): RenderFrame {
       isDashing: player.dashTicksRemaining > 0,
       alive: player.alive,
       timelineOffset: player.timelineOffset,
+      isInvulnerable: player.invulTicksRemaining > 0,
     })
   }
 
@@ -31,8 +32,11 @@ export function getRenderableState(state: GameState): RenderFrame {
     if (timeline.replayOriginTick === undefined || timeline.replayStartTick === undefined) continue
 
     const playbackTick = timeline.replayStartTick + (state.tick - timeline.replayOriginTick)
-    const index = playbackTick - timeline.startTick
-    if (index < 0 || index >= timeline.snapshots.length) continue
+    const rawIndex = playbackTick - timeline.startTick
+    const rewindStartIndex = timeline.replayStartTick - timeline.startTick
+    const windowLength = timeline.snapshots.length - rewindStartIndex
+    if (rawIndex < 0 || windowLength <= 0) continue
+    const index = rewindStartIndex + ((rawIndex - rewindStartIndex) % windowLength)
 
     const snapshot = timeline.snapshots[index]
     if (!snapshot) continue
@@ -50,6 +54,7 @@ export function getRenderableState(state: GameState): RenderFrame {
       isDashing: snapshot.state.dashTicksRemaining > 0,
       alive: snapshot.state.alive,
       timelineOffset: 0,
+      isInvulnerable: false,
     })
   }
 

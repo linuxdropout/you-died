@@ -68,7 +68,7 @@ export class HudBridge {
 
   private accumulateEvents(frame: RenderFrame) {
     for (const event of frame.events) {
-      if (event.tick <= this.processedTick) continue
+      if (event.tick < this.processedTick) continue
       this.processEvent(event)
     }
     this.processedTick = frame.tick

@@ -2,6 +2,7 @@ import { TICK_RATE, REWIND_SECONDS, WIN_LEAD_SECONDS } from '@you-died/protocol'
 
 export const REWIND_TICKS = TICK_RATE * REWIND_SECONDS
 export const WIN_LEAD_TICKS = TICK_RATE * WIN_LEAD_SECONDS
+export const INVUL_TICKS = TICK_RATE
 
 export const GRAVITY = 0.55
 export const MAX_FALL_SPEED = 12
@@ -26,3 +27,5 @@ export const SLASH_COOLDOWN = 18
 export const SLASH_WIDTH = 48
 export const SLASH_HEIGHT = 40
 export const SLASH_OFFSET_X = 28
+
+export const MAX_GHOST_TIMELINES = 100

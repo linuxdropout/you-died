@@ -49,7 +49,7 @@ export class VfxController {
     this.processedTick = frame.tick
 
     for (const event of frame.events) {
-      if (event.tick !== frame.tick) continue
+      if (event.tick !== frame.tick - 1) continue
       const pos = findEventPosition(frame, event.playerId)
       this.dispatchEvent(event, pos, screenWidth, screenHeight)
     }

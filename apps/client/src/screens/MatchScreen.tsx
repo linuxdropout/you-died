@@ -15,6 +15,7 @@ import { createGameLoop } from '../game/game-loop'
 import type { GameLoop } from '../game/game-loop'
 import { useUiSounds } from '../hooks/use-ui-sounds'
 import { useControlHints } from '../hooks/use-control-hints'
+import { useMusic } from '../hooks/use-music'
 
 interface Props {
   room: Room
@@ -42,6 +43,7 @@ export function MatchScreen({
   const { startTimerUrgent, stopTimerUrgent } = useUiSounds(audioGuard)
   const { hints, onFirstUse, allDismissed } = useControlHints()
   const urgentStarted = useRef(false)
+  useMusic(audioGuard, 'battle')
 
   useEffect(() => {
     const container = containerRef.current

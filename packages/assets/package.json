@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json --noEmit",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "generate": "tsx scripts/palette-swap.ts && tsx scripts/generate-effects.ts && tsx scripts/generate-metadata.ts"
+    "generate": "tsx scripts/palette-swap.ts && tsx scripts/generate-effects.ts && tsx scripts/generate-metadata.ts && tsx scripts/generate-backgrounds.ts"
   },
   "devDependencies": {
     "pngjs": "^7.0.0",

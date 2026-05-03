@@ -44,6 +44,7 @@ export function createInitialState(config: GameConfig): GameState {
       alive: true,
       isGhost: false,
       timelineOffset: 0,
+      invulTicksRemaining: 0,
     }
 
     state.players[playerId] = player

@@ -63,7 +63,7 @@ export class SoundManager {
     if (!this.guard.ready) return null
     if (!this.masterGain) {
       this.masterGain = ctx.createGain()
-      this.masterGain.gain.value = 0.7
+      this.masterGain.gain.value = 1.0
       this.masterGain.connect(ctx.destination)
     }
     this.noiseBuffer ??= createNoiseBuffer(ctx)

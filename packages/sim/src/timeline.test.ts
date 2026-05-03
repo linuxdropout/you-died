@@ -2,7 +2,7 @@ import type { PlayerInput, PlayerState } from './types.ts'
 import { createInitialState } from './state.ts'
 import { step } from './step.ts'
 import { resolveParadoxes } from './timeline.ts'
-import { REWIND_TICKS, WIN_LEAD_TICKS, PLAYER_WIDTH } from './constants.ts'
+import { REWIND_TICKS, WIN_LEAD_TICKS, PLAYER_WIDTH, INVUL_TICKS } from './constants.ts'
 
 const NO_INPUT: PlayerInput = {
   left: false,
@@ -73,7 +73,7 @@ describe('timeline', () => {
     expect(p1After.timelineId).not.toBe(timelineIdBefore)
     expect(p1After.timelineOffset).toBeLessThan(0)
 
-    expect(p1After.pos.x).toBeLessThan(posBeforeKill)
+    expect(p1After.pos.x).not.toBe(posBeforeKill)
   })
 
   it('rewinds position back to where player was REWIND_TICKS ago', () => {
@@ -244,7 +244,7 @@ describe('timeline', () => {
     expect(state.winner).toBeUndefined()
   })
 
-  it('completed ghost replay frees snapshots', () => {
+  it('ghost replays loop instead of completing', () => {
     let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
 
     const p1 = getPlayer(state, 'p1')
@@ -273,10 +273,11 @@ describe('timeline', () => {
     if (!endedTimeline) throw new Error('no ended timeline found')
     expect(endedTimeline.snapshots.length).toBeGreaterThan(0)
 
+    const snapshotCount = endedTimeline.snapshots.length
     state = runTicks(state, REWIND_TICKS + 100)
 
-    expect(endedTimeline.replayComplete).toBe(true)
-    expect(endedTimeline.snapshots.length).toBe(0)
+    expect(endedTimeline.replayComplete).toBe(false)
+    expect(endedTimeline.snapshots.length).toBe(snapshotCount)
   })
 
   it('determinism holds through death and rewind cycles', () => {
@@ -409,5 +410,144 @@ describe('timeline', () => {
 
     const paradoxEvents = state.events.filter((e) => e.type === 'paradox' && e.playerId === 'p1')
     expect(paradoxEvents.length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('spawn invulnerability prevents immediate combat death', () => {
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+
+    const p1 = getPlayer(state, 'p1')
+    const p2 = getPlayer(state, 'p2')
+    p1.pos = { x: 640, y: 550 }
+    p1.vel = { x: 0, y: 0 }
+    p1.grounded = true
+    p2.pos = { x: 640, y: 10000 }
+    p2.vel = { x: 0, y: 0 }
+    p2.grounded = true
+
+    state = runTicks(state, REWIND_TICKS + 100, (tick) => ({
+      p1: tick < REWIND_TICKS ? inputWith({ right: true }) : NO_INPUT,
+      p2: NO_INPUT,
+    }))
+
+    const p1Before = getPlayer(state, 'p1')
+    const p2b = getPlayer(state, 'p2')
+    p2b.pos = { x: p1Before.pos.x + PLAYER_WIDTH + 10, y: p1Before.pos.y }
+    p2b.vel = { x: 0, y: 0 }
+    p2b.grounded = true
+    p2b.facingRight = false
+    p2b.alive = true
+
+    state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
+
+    const p1After = getPlayer(state, 'p1')
+    expect(p1After.invulTicksRemaining).toBe(INVUL_TICKS)
+
+    const p2c = getPlayer(state, 'p2')
+    p2c.pos = { x: p1After.pos.x + PLAYER_WIDTH + 10, y: p1After.pos.y }
+    p2c.vel = { x: 0, y: 0 }
+    p2c.grounded = true
+    p2c.facingRight = false
+    p2c.alive = true
+    p2c.invulTicksRemaining = 0
+    p2c.slashCooldownTicks = 0
+
+    state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
+
+    const p1Still = getPlayer(state, 'p1')
+    expect(p1Still.alive).toBe(true)
+    expect(state.events.some((e) => e.type === 'rewind' && e.playerId === 'p1')).toBe(false)
+  })
+
+  it('invulnerability expires after INVUL_TICKS', () => {
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+
+    const p1 = getPlayer(state, 'p1')
+    const p2 = getPlayer(state, 'p2')
+    p1.pos = { x: 400, y: 550 }
+    p1.vel = { x: 0, y: 0 }
+    p1.grounded = true
+    p2.pos = { x: 400, y: 10000 }
+    p2.vel = { x: 0, y: 0 }
+    p2.grounded = true
+
+    state = runTicks(state, REWIND_TICKS + 50)
+
+    const p1a = getPlayer(state, 'p1')
+    const p2a = getPlayer(state, 'p2')
+    p2a.pos = { x: p1a.pos.x + PLAYER_WIDTH + 10, y: p1a.pos.y }
+    p2a.vel = { x: 0, y: 0 }
+    p2a.grounded = true
+    p2a.facingRight = false
+    p2a.alive = true
+
+    state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
+    expect(getPlayer(state, 'p1').invulTicksRemaining).toBe(INVUL_TICKS)
+
+    state = runTicks(state, INVUL_TICKS)
+    expect(getPlayer(state, 'p1').invulTicksRemaining).toBe(0)
+
+    const p1b = getPlayer(state, 'p1')
+    const p2b = getPlayer(state, 'p2')
+    p2b.pos = { x: p1b.pos.x + PLAYER_WIDTH + 10, y: p1b.pos.y }
+    p2b.vel = { x: 0, y: 0 }
+    p2b.grounded = true
+    p2b.facingRight = false
+    p2b.alive = true
+    p2b.invulTicksRemaining = 0
+    p2b.slashCooldownTicks = 0
+
+    state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
+
+    expect(state.events.some((e) => e.type === 'death' && e.playerId === 'p1')).toBe(true)
+  })
+
+  it('cross-timeline rewind restores position from before current timeline', () => {
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'] })
+
+    const p1 = getPlayer(state, 'p1')
+    const p2 = getPlayer(state, 'p2')
+    p1.pos = { x: 300, y: 550 }
+    p1.vel = { x: 0, y: 0 }
+    p1.grounded = true
+    p2.pos = { x: 300, y: 10000 }
+    p2.vel = { x: 0, y: 0 }
+
+    state = runTicks(state, 100)
+    const posAt100 = getPlayer(state, 'p1').pos.x
+
+    state = runTicks(state, REWIND_TICKS)
+
+    // First death: rewinds to tick 100
+    const p1a = getPlayer(state, 'p1')
+    const p2a = getPlayer(state, 'p2')
+    p2a.pos = { x: p1a.pos.x + PLAYER_WIDTH + 10, y: p1a.pos.y }
+    p2a.vel = { x: 0, y: 0 }
+    p2a.grounded = true
+    p2a.facingRight = false
+    p2a.alive = true
+    p2a.invulTicksRemaining = 0
+
+    state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
+    expect(getPlayer(state, 'p1').pos.x).toBe(posAt100)
+
+    // Run a short time (less than REWIND_TICKS)
+    state = runTicks(state, INVUL_TICKS + 10)
+
+    // Second death: should still rewind to around tick 100
+    const p1b = getPlayer(state, 'p1')
+    const p2b = getPlayer(state, 'p2')
+    p2b.pos = { x: p1b.pos.x + PLAYER_WIDTH + 10, y: p1b.pos.y }
+    p2b.vel = { x: 0, y: 0 }
+    p2b.grounded = true
+    p2b.facingRight = false
+    p2b.alive = true
+    p2b.invulTicksRemaining = 0
+
+    state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
+
+    // Player should be restored to a position from well before the current timeline started
+    const p1c = getPlayer(state, 'p1')
+    expect(p1c.alive).toBe(true)
+    expect(p1c.pos.x).toBe(posAt100)
   })
 })

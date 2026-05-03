@@ -16,6 +16,9 @@ export type {
   RenderSlash,
 } from './types.ts'
 
+export type { Platform } from './arena.ts'
+export { DEFAULT_ARENA } from './arena.ts'
+
 export { createInitialState } from './state.ts'
 export { step } from './step.ts'
 export { getRenderableState } from './render.ts'

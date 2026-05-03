@@ -34,6 +34,7 @@ export function step(state: GameState, inputs: Record<string, PlayerInput>): Gam
   for (const playerId of state.config.playerIds) {
     const player = state.players[playerId]
     if (!player?.alive) continue
+    if (player.invulTicksRemaining > 0) player.invulTicksRemaining--
     const input = inputs[playerId] ?? NO_INPUT
     recordSnapshot(state, playerId, input)
   }

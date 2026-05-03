@@ -1,5 +1,5 @@
 import { Application, Graphics } from 'pixi.js'
-import type { RenderFrame } from '@you-died/sim'
+import { type RenderFrame, DEFAULT_ARENA } from '@you-died/sim'
 import { SpriteManager } from './sprite-manager.js'
 import { LayerManager } from './layers/layer-manager.js'
 import { EntityManager } from './entities/entity-manager.js'
@@ -8,6 +8,8 @@ import { VfxController } from './effects/vfx-controller.js'
 import { HudBridge } from './hud-bridge.js'
 import { AudioContextGuard } from './audio/audio-context-guard.js'
 import { SoundManager } from './audio/sound-manager.js'
+import { ParallaxBackground } from './parallax/parallax-background.js'
+import { drawPlatforms } from './parallax/platform-renderer.js'
 import {
   DEFAULT_RENDERER_CONFIG,
   type MatchContext,
@@ -25,6 +27,7 @@ export class GameRenderer {
   private vfx: VfxController | null = null
   private hudBridge: HudBridge | null = null
   private sound: SoundManager | null = null
+  private parallax: ParallaxBackground | null = null
   private readonly audioGuard: AudioContextGuard
   private config: RendererConfig = DEFAULT_RENDERER_CONFIG
   private context: MatchContext | null = null
@@ -63,6 +66,10 @@ export class GameRenderer {
 
     this.layers = new LayerManager()
     this.layers.root.scale.set(this.config.pixelScale)
+
+    this.parallax = new ParallaxBackground()
+    this.parallax.init(this.app.stage, this.config.pixelScale)
+
     this.app.stage.addChild(this.layers.root)
 
     this.entities = new EntityManager(this.sprites, this.layers, context, this.config)
@@ -80,24 +87,13 @@ export class GameRenderer {
 
   private drawArena() {
     if (!this.layers) return
-    const gfx = new Graphics()
 
-    const platforms = [
-      { x: 200, y: 550, width: 880, height: 32 },
-      { x: 100, y: 475, width: 240, height: 24 },
-      { x: 940, y: 475, width: 240, height: 24 },
-      { x: 480, y: 400, width: 320, height: 24 },
-    ]
+    drawPlatforms(this.layers.background, DEFAULT_ARENA.platforms)
 
-    for (const p of platforms) {
-      gfx.rect(p.x, p.y, p.width, p.height)
-      gfx.fill({ color: 0x444466 })
-    }
-
-    gfx.rect(0, 800, 1280, 2)
-    gfx.fill({ color: 0xff0000, alpha: 0.3 })
-
-    this.layers.background.addChild(gfx)
+    const killLine = new Graphics()
+    killLine.rect(0, DEFAULT_ARENA.killBoundary, DEFAULT_ARENA.width, 2)
+    killLine.fill({ color: 0xff0000, alpha: 0.3 })
+    this.layers.background.addChild(killLine)
   }
 
   renderFrame(frame: RenderFrame) {
@@ -127,6 +123,14 @@ export class GameRenderer {
     this.camera.setShakeOffset(this.vfx.shake.offsetX, this.vfx.shake.offsetY)
     this.camera.update(this.app.screen.width, this.app.screen.height)
 
+    this.parallax?.updateCamera(
+      this.camera.worldX,
+      this.camera.worldY,
+      this.app.screen.width,
+      this.app.screen.height,
+      this.config.pixelScale,
+    )
+
     const hudData = this.hudBridge.processFrame(frame)
     this.hudCallback?.(hudData)
   }
@@ -136,6 +140,7 @@ export class GameRenderer {
     this.vfx?.clear()
     this.hudBridge?.reset()
     this.sound?.clear()
+    this.parallax?.destroy()
     if (this.layers) {
       this.app.stage.removeChild(this.layers.root)
       this.layers.destroy()
@@ -146,6 +151,7 @@ export class GameRenderer {
     this.vfx = null
     this.hudBridge = null
     this.sound = null
+    this.parallax = null
     this.context = null
   }
 

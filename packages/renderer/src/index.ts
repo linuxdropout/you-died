@@ -2,6 +2,7 @@ export { GameRenderer } from './game-renderer.js'
 export { SpriteManager, PlayerSprite } from './sprite-manager.js'
 export { LayerManager } from './layers/layer-manager.js'
 export { AudioContextGuard } from './audio/audio-context-guard.js'
+export { MusicEngine } from './audio/music-engine.js'
 export { DEFAULT_RENDERER_CONFIG } from './types.js'
 export type {
   MatchContext,

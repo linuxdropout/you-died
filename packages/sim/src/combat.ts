@@ -132,6 +132,7 @@ export function checkSlashHits(state: GameState): HitResult[] {
 
     for (const player of Object.values(state.players)) {
       if (!player.alive) continue
+      if (player.invulTicksRemaining > 0) continue
       if (player.id === slash.ownerId && player.timelineId === slash.ownerTimelineId) continue
       if (player.isGhost && !slash.isGhost) continue
       if (player.isGhost) continue
@@ -160,14 +161,16 @@ export function checkSlashHits(state: GameState): HitResult[] {
         continue
 
       const playbackTick = timeline.replayStartTick + (state.tick - timeline.replayOriginTick)
-      const index = playbackTick - timeline.startTick
-      if (index < 0 || index >= timeline.snapshots.length) continue
+      const rawIndex = playbackTick - timeline.startTick
+      const rewindStartIndex = timeline.replayStartTick - timeline.startTick
+      const windowLength = timeline.snapshots.length - rewindStartIndex
+      if (rawIndex < 0 || windowLength <= 0) continue
+      const index = rewindStartIndex + ((rawIndex - rewindStartIndex) % windowLength)
       const snapshot = timeline.snapshots[index]
       if (!snapshot) continue
       if (!snapshot.state.alive) continue
 
-      if (slash.ownerId === timeline.playerId && slash.ownerTimelineId === timeline.timelineId)
-        continue
+      if (slash.ownerId === timeline.playerId) continue
       if (snapshot.state.isGhost) continue
 
       const pLeft = snapshot.state.pos.x - PLAYER_WIDTH / 2
@@ -204,6 +207,7 @@ export function checkProjectileHits(state: GameState): HitResult[] {
 
     for (const player of Object.values(state.players)) {
       if (!player.alive) continue
+      if (player.invulTicksRemaining > 0) continue
       if (player.id === proj.ownerId && player.timelineId === proj.ownerTimelineId) continue
       if (player.isGhost && !proj.isGhost) continue
       if (player.isGhost) continue
@@ -236,14 +240,16 @@ export function checkProjectileHits(state: GameState): HitResult[] {
         continue
 
       const playbackTick = timeline.replayStartTick + (state.tick - timeline.replayOriginTick)
-      const index = playbackTick - timeline.startTick
-      if (index < 0 || index >= timeline.snapshots.length) continue
+      const rawIndex = playbackTick - timeline.startTick
+      const rewindStartIndex = timeline.replayStartTick - timeline.startTick
+      const windowLength = timeline.snapshots.length - rewindStartIndex
+      if (rawIndex < 0 || windowLength <= 0) continue
+      const index = rewindStartIndex + ((rawIndex - rewindStartIndex) % windowLength)
       const snapshot = timeline.snapshots[index]
       if (!snapshot) continue
       if (!snapshot.state.alive) continue
 
-      if (proj.ownerId === timeline.playerId && proj.ownerTimelineId === timeline.timelineId)
-        continue
+      if (proj.ownerId === timeline.playerId) continue
       if (snapshot.state.isGhost) continue
 
       const plLeft = snapshot.state.pos.x - PLAYER_WIDTH / 2
