@@ -27,8 +27,8 @@ export function ControlHints({
     { key: 'WASD', label: 'MOVE', show: showMove },
     { key: 'W', label: 'JUMP', show: showJump },
     { key: 'SPACE', label: 'DASH', show: showDash },
-    { key: 'LMB', label: 'SHOOT', show: showShoot },
-    { key: 'RMB', label: 'SLASH', show: showSlash },
+    { key: '.', label: 'SHOOT', show: showShoot },
+    { key: ',', label: 'SLASH', show: showSlash },
   ]
 
   return (
