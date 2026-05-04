@@ -17,7 +17,7 @@ function buildParadoxTargetSet(state: GameState): Set<PlayerId> {
     if (timeline.killedByPlayerId === timeline.playerId) continue
     const killer = state.players[timeline.killedByPlayerId]
     if (!killer?.alive) continue
-    targets.add(timeline.playerId)
+    targets.add(timeline.killedByPlayerId)
   }
   return targets
 }
@@ -43,6 +43,7 @@ export function getRenderableState(state: GameState): RenderFrame {
       isStunned: player.stunTicksRemaining > 0,
       isPastSelf: false,
       isParadoxTarget: paradoxTargets.has(player.id),
+      hasParadoxAura: player.paradoxAuraTicksRemaining > 0,
       shootCooldownRatio: player.shootCooldownTicks / SHOOT_COOLDOWN,
     })
   }
@@ -77,6 +78,7 @@ export function getRenderableState(state: GameState): RenderFrame {
       isStunned: false,
       isPastSelf: true,
       isParadoxTarget: paradoxTargets.has(timeline.playerId),
+      hasParadoxAura: false,
       shootCooldownRatio: 0,
     })
   }

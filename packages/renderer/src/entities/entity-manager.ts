@@ -94,7 +94,10 @@ export class EntityManager {
 
       const color = this.context.playerColors[player.id] ?? 'red'
       entity.attach(this.sprites, color, visualGhost)
-      entity.update(player, frame.tick)
+      const renderPlayer = player.id === localId
+        ? { ...player, isParadoxTarget: false }
+        : player
+      entity.update(renderPlayer, frame.tick)
     }
 
     for (const [key, entity] of this.activePlayers) {
@@ -160,9 +163,9 @@ export class EntityManager {
 
   private processGoreEvents(frame: RenderFrame) {
     for (const event of frame.events) {
-      if (event.type !== 'death') continue
+      if (event.type !== 'death' && event.type !== 'ghostExpire' && event.type !== 'timelineSevered') continue
 
-      const eventKey = `${event.tick}-${event.playerId}`
+      const eventKey = `${event.type}-${event.tick}-${event.playerId}`
       if (this.knownGoreEvents.has(eventKey)) continue
       this.knownGoreEvents.add(eventKey)
 

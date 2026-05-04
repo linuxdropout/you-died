@@ -35,6 +35,10 @@ const PARADOX_TARGET_COLOR = 0xffaa00
 const PARADOX_TARGET_FREQUENCY = 0.06
 const PARADOX_DIAMOND_SIZE = 4
 
+const PARADOX_AURA_COLOR = 0x44aaff
+const PARADOX_AURA_PULSE_FREQUENCY = 0.08
+const PARADOX_AURA_RADIUS = 30
+
 export class PlayerEntity {
   readonly container = new Container()
   private sprite: PlayerSprite | null = null
@@ -159,6 +163,15 @@ export class PlayerEntity {
       this.overlayGfx.lineTo(-PARADOX_DIAMOND_SIZE, dy)
       this.overlayGfx.closePath()
       this.overlayGfx.fill({ color: PARADOX_TARGET_COLOR, alpha: pulseAlpha })
+    }
+
+    if (player.hasParadoxAura) {
+      const pulse = 0.15 + 0.1 * Math.sin(this.frameCount * PARADOX_AURA_PULSE_FREQUENCY)
+      const centerY = -TRAIL_PLAYER_H / 2
+      this.overlayGfx.circle(0, centerY, PARADOX_AURA_RADIUS)
+      this.overlayGfx.fill({ color: PARADOX_AURA_COLOR, alpha: pulse })
+      this.overlayGfx.circle(0, centerY, PARADOX_AURA_RADIUS + 4)
+      this.overlayGfx.stroke({ color: PARADOX_AURA_COLOR, alpha: pulse * 0.6, width: 2 })
     }
   }
 

@@ -48,6 +48,7 @@ export function createInitialState(config: GameConfig): GameState {
       ticks: 0,
       invulTicksRemaining: 0,
       stunTicksRemaining: 0,
+      paradoxAuraTicksRemaining: 0,
     }
 
     state.players[playerId] = player

@@ -34,6 +34,7 @@ export interface PlayerState {
   ticks: number
   invulTicksRemaining: number
   stunTicksRemaining: number
+  paradoxAuraTicksRemaining: number
 }
 
 export interface Projectile {
@@ -87,6 +88,7 @@ export type GameEventType =
   | 'death'
   | 'rewind'
   | 'timelineSevered'
+  | 'ghostExpire'
   | 'paradox'
   | 'futureLaunch'
   | 'win'
@@ -132,6 +134,7 @@ export interface RenderPlayer {
   isStunned: boolean
   isPastSelf: boolean
   isParadoxTarget: boolean
+  hasParadoxAura: boolean
   shootCooldownRatio: number
 }
 

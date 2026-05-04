@@ -9,11 +9,13 @@ import { RewindEffect } from './rewind-effect.js'
 import { SeverEffect } from './sever-effect.js'
 import { ParadoxEffect } from './paradox-effect.js'
 import { LaunchEffect } from './launch-effect.js'
+import { LightningEffect } from './lightning-effect.js'
 
 const SHAKE_DEATH = 10
 const SHAKE_SEVER = 8
 const SHAKE_PARADOX = 10
 const SHAKE_LAUNCH = 8
+const SHAKE_GHOST_EXPIRE = 6
 
 export class VfxController {
   readonly shake: ScreenShake
@@ -22,6 +24,7 @@ export class VfxController {
   private readonly sever: SeverEffect
   private readonly paradox: ParadoxEffect
   private readonly launch: LaunchEffect
+  private readonly lightning: LightningEffect
   private readonly context: MatchContext
   private readonly sound: SoundManager | null
 
@@ -38,6 +41,7 @@ export class VfxController {
     this.sever = new SeverEffect(layers.effectLayer)
     this.paradox = new ParadoxEffect(layers.root)
     this.launch = new LaunchEffect(layers.effectLayer)
+    this.lightning = new LightningEffect(layers.effectLayer)
   }
 
   onScreenEvent(cb: (event: ScreenEvent) => void) {
@@ -83,6 +87,7 @@ export class VfxController {
         break
 
       case 'timelineSevered':
+        this.lightning.strike(pos.x, pos.y)
         this.sever.flash(pos.x, pos.y, event.ticksDelta != null ? Math.abs(event.ticksDelta) : undefined)
         this.shake.trigger(SHAKE_SEVER)
         if (isLocal) {
@@ -112,6 +117,11 @@ export class VfxController {
         }
         break
 
+      case 'ghostExpire':
+        this.lightning.strike(pos.x, pos.y)
+        this.shake.trigger(SHAKE_GHOST_EXPIRE)
+        break
+
       case 'futureLaunch':
         this.launch.start(pos.x, pos.y)
         this.shake.trigger(SHAKE_LAUNCH)
@@ -137,6 +147,7 @@ export class VfxController {
     this.sever.update()
     this.paradox.update()
     this.launch.update()
+    this.lightning.update()
   }
 
   clear() {
@@ -150,6 +161,7 @@ export class VfxController {
     this.sever.clear()
     this.paradox.reset()
     this.launch.reset()
+    this.lightning.clear()
     this.processedTick = -1
   }
 }

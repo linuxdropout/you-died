@@ -41,6 +41,7 @@ export function hashState(state: GameState): number {
     h = fnv1a(h, p.grounded ? 1 : 0)
     h = fnv1a(h, p.facingRight ? 1 : 0)
     h = fnv1a(h, p.stunTicksRemaining)
+    h = fnv1a(h, p.paradoxAuraTicksRemaining)
   }
 
   const sortedProj = state.projectiles.slice().sort((a, b) => a.id - b.id)

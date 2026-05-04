@@ -24,6 +24,7 @@ export function applyMovement(player: PlayerState, input: PlayerInput): void {
   if (player.dashTicksRemaining > 0) {
     player.vel.x = player.facingRight ? DASH_SPEED : -DASH_SPEED
     player.vel.y = 0
+    player.invulTicksRemaining = Math.max(player.invulTicksRemaining, 1)
     player.dashTicksRemaining--
     if (player.dashTicksRemaining === 0) {
       player.vel.x = 0

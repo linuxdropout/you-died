@@ -40,6 +40,7 @@ export function step(state: GameState, inputs: Record<string, PlayerInput>): Gam
     if (!player?.alive) continue
     if (player.invulTicksRemaining > 0) player.invulTicksRemaining--
     if (player.stunTicksRemaining > 0) player.stunTicksRemaining--
+    if (player.paradoxAuraTicksRemaining > 0) player.paradoxAuraTicksRemaining--
     const input = inputs[playerId] ?? NO_INPUT
     recordSnapshot(state, playerId, input)
   }

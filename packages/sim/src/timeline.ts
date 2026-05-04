@@ -7,7 +7,7 @@ import type {
   TimelineRecord,
   TimelineSnapshot,
 } from './types.ts'
-import { REWIND_TICKS, WIN_THRESHOLD_TICKS, PARADOX_MIN_GAIN_TICKS, INVUL_TICKS, SEVER_PENALTY_MAX_TICKS, SEVER_EFFECT_TICKS, GHOST_MIN_LOOPS, GHOST_MIN_DURATION_TICKS } from './constants.ts'
+import { REWIND_TICKS, WIN_THRESHOLD_TICKS, PARADOX_MIN_GAIN_TICKS, INVUL_TICKS, PARADOX_INVUL_TICKS, SEVER_PENALTY_MAX_TICKS, SEVER_EFFECT_TICKS, GHOST_MIN_LOOPS, GHOST_MIN_DURATION_TICKS } from './constants.ts'
 import { SEVER_PENALTY_FRACTION } from '@you-died/protocol'
 import { nextSeed } from './rng.ts'
 import { processPlayerActions } from './combat.ts'
@@ -132,6 +132,7 @@ export function handleHeadDeath(state: GameState, playerId: PlayerId, killerId?:
     restored.isGhost = false
     restored.invulTicksRemaining = INVUL_TICKS
     restored.stunTicksRemaining = 0
+    restored.paradoxAuraTicksRemaining = 0
     restored.slashTicksRemaining = 0
     restored.slashCooldownTicks = 0
     restored.shootCooldownTicks = 0
@@ -144,6 +145,7 @@ export function handleHeadDeath(state: GameState, playerId: PlayerId, killerId?:
     player.alive = true
     player.invulTicksRemaining = INVUL_TICKS
     player.stunTicksRemaining = 0
+    player.paradoxAuraTicksRemaining = 0
     player.vel.x = 0
     player.vel.y = 0
     player.slashTicksRemaining = 0
@@ -188,6 +190,19 @@ function severTimeline(state: GameState, timeline: TimelineRecord): void {
   }
 }
 
+function getReplayPosition(
+  state: GameState,
+  timeline: TimelineRecord,
+): { x: number; y: number } | undefined {
+  if (timeline.replayOriginTick === undefined) return undefined
+  if (timeline.snapshots.length === 0) return undefined
+  const elapsed = state.tick - timeline.replayOriginTick
+  if (elapsed < 0) return undefined
+  const index = elapsed % timeline.snapshots.length
+  const snap = timeline.snapshots[index]
+  return snap ? { x: snap.state.pos.x, y: snap.state.pos.y } : undefined
+}
+
 export function handlePastDeath(
   state: GameState,
   victimId: PlayerId,
@@ -199,6 +214,8 @@ export function handlePastDeath(
   )
   if (!timeline) return
   if (timeline.severed) return
+
+  const ghostPos = getReplayPosition(state, timeline)
 
   severTimeline(state, timeline)
 
@@ -222,6 +239,7 @@ export function handlePastDeath(
     playerId: victimId,
     attackerId: attackerPlayerId,
     ticksDelta: -penalty,
+    ...(ghostPos ? { pos: ghostPos } : {}),
   })
 
   if (attackerPlayerId !== victimId) {
@@ -251,21 +269,10 @@ function checkParadox(
   const gain = Math.max(PARADOX_MIN_GAIN_TICKS, (revengeLife.ticksAtDeath ?? 0) - player.ticks)
   player.ticks += gain
   player.stunTicksRemaining = 0
-
-  const lastSnap = revengeLife.snapshots[revengeLife.snapshots.length - 1]
-  if (lastSnap) {
-    player.pos.x = lastSnap.state.pos.x
-    player.pos.y = lastSnap.state.pos.y
-  }
-
-  player.vel.x = 0
-  player.vel.y = 0
-  player.invulTicksRemaining = INVUL_TICKS
-  player.slashTicksRemaining = 0
+  player.invulTicksRemaining = PARADOX_INVUL_TICKS
+  player.paradoxAuraTicksRemaining = PARADOX_INVUL_TICKS
   player.slashCooldownTicks = 0
   player.shootCooldownTicks = 0
-  player.shootTicksRemaining = 0
-  player.dashTicksRemaining = 0
   player.dashCooldownTicks = 0
 
   state.events.push({
@@ -300,6 +307,16 @@ export function processGhostActions(state: GameState): void {
         elapsed >= GHOST_MIN_DURATION_TICKS
       ) {
         timeline.replayComplete = true
+        const lastAlive = timeline.snapshots.findLast((s) => s.state.alive)
+        const pos = lastAlive?.state.pos ?? timeline.snapshots[0]?.state.pos
+        if (pos) {
+          state.events.push({
+            tick: state.tick,
+            type: 'ghostExpire',
+            playerId: timeline.playerId,
+            pos: { x: pos.x, y: pos.y },
+          })
+        }
         continue
       }
     }
