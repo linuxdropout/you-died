@@ -4,9 +4,9 @@
 
 A deterministic browser-based 2D multiplayer platform fighter where every hit kills.
 
-When a player dies while controlling their current timeline head, they rewind 10 seconds and continue from a new timeline. If a player’s past self is killed, their later actions become untouchable ghost actions that still render and remain lethal. If this creates a paradox, the affected player is launched forward in time.
+Players accumulate a **ticks counter** (displayed in seconds) that increases every tick they’re alive. When a player dies, they lose up to 10 seconds of ticks and respawn where they were 10 seconds ago. A past version of the player replays their full life in a loop — it looks like a real player to opponents but a ghost to the owner. Killing a past life severs it into a permanent ghost. If two players have linked unsevered past lives, killing the other’s past life first triggers a **paradox** — a powerful comeback mechanic that grants time and teleports the player.
 
-The goal is to become **30 seconds ahead of every other player**.
+The goal is to be the **first player to reach 30 seconds** of accumulated ticks with no tie.
 
 ## Target Experience
 
@@ -16,11 +16,11 @@ After several minutes, the arena should become a chaotic but readable mess of:
 - ghost fighters
 - lethal ghost bullets and sword swings
 - permanent blood, limbs, and debris
-- players hunting rivals to trigger paradox launches
+- players hunting rivals to trigger paradoxes
 
 The desired emotional loop is:
 
-> get ruined → survive the timeline mess → find the player who caused it → kill them in the past → launch forward.
+> get ruined → survive the timeline mess → find the player who caused it → kill them in the past → paradox forward.
 
 ## Core Rules
 
@@ -35,38 +35,51 @@ The desired emotional loop is:
   - slash
   - shoot
 
+### Ticks Counter
+
+- Every tick a player is alive, their ticks counter increments by 1.
+- Displayed in seconds (ticks / tick rate).
+- Starts at 0.
+
 ### Timeline Head Death
 
 If a player dies while controlling their current active self:
 
-- they rewind 10 seconds
+- they lose up to 10 seconds of ticks (minimum 0)
+- they respawn at the position they were 10 seconds ago
 - they receive a new `timelineId`
-- no ghost is created
+- a past version replays their **full life** (from spawn to death) in a loop
+- the past version looks like a normal player to opponents, but a ghost to the owner
 - permanent gore/debris is spawned
 
-### Past Death
+### Past Death (Severing)
 
-If a non-head version of a player is killed:
+If a looping past version of a player is killed:
 
 - a `timelineSevered` event is created
-- actions from that timeline after the sever point become ghost actions
-- ghost players cannot be affected
-- ghost bullets/slashes can still kill
+- the past version becomes a ghost (visible to everyone as a ghost)
+- the loop continues but can no longer be re-severed
+- ghost bullets/slashes from severed timelines can still kill
+- if the past self’s position in its current loop (tick-since-loop-start) is lower than the owner’s ticks counter, the owner loses time equal to the difference and respawns at a random spawn point
 - permanent gore/debris is spawned
 
 ### Paradox
 
-When a timeline is severed, any later sever event caused by that newly severed timeline is un-severed.
+**Condition:** PlayerA has an unsevered past life that was created when PlayerB killed them. PlayerB also has an unsevered past life — the same timeline during which PlayerB killed PlayerA. These are "linked" past lives.
 
-Result:
+**Trigger:** If PlayerA kills PlayerB’s linked past life before PlayerB kills PlayerA’s.
 
-- the affected player resumes from where they were previously killed
-- they are launched forward in time
+**Result:**
+
+- PlayerA’s own past life is severed (becomes a ghost)
+- PlayerA **gains** ticks instead of losing them — regaining up to the tick value at the end of that life (minimum +5 seconds)
+- PlayerA teleports to the end-position of that past life
+- PlayerA receives invulnerability
 - this is the main comeback mechanic
 
 ### Win Condition
 
-A player wins when they are **30 seconds ahead of every other player’s current timeline head**.
+A player wins when they reach **30 seconds** of accumulated ticks and no other player also has 30+ seconds. After the time limit (5 minutes), the player with the best KDA wins.
 
 ---
 
@@ -245,15 +258,15 @@ The game is done when:
 - 2–4 players can join the same browser lobby
 - players can move, jump, dash, slash, and shoot
 - one hit kills
-- head death rewinds the player 10 seconds
-- head death creates no ghost
-- past death creates a severed timeline
-- severed future actions render as ghosts
-- ghost players cannot be affected
-- ghost bullets and slashes can kill
-- paradox events restore invalidated sever events
-- paradox restoration launches players forward
-- a player can win by getting 30 seconds ahead of everyone else OR after a time limit (5mins) with best KDA.
+- head death loses up to 10 seconds of ticks and respawns at past position
+- head death creates a looping past life (full life replay)
+- past lives look normal to opponents, ghost to owner
+- killing a past life severs it into a permanent ghost
+- severed ghost attacks can still kill
+- sever causes time loss if loop-tick < owner's ticks
+- paradox triggers when linked past lives exist and one is killed first
+- paradox grants ticks, teleports, and severs own past life
+- a player wins by reaching 30 seconds of ticks with no tie, OR after a time limit (5mins) with best KDA.
 
 ## Multiplayer
 

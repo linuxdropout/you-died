@@ -83,6 +83,7 @@ export function processPlayerActions(
       vel: { x: dir * PROJECTILE_SPEED, y: 0 },
       ticksRemaining: PROJECTILE_LIFETIME,
       isGhost: player.isGhost,
+      deflectedThisTick: false,
     })
   }
 
@@ -113,7 +114,7 @@ export function moveProjectiles(state: GameState): void {
   }
 }
 
-export interface HitResult {
+interface HitResult {
   victimId: string
   victimTimelineId: string
   victimIsHead: boolean
@@ -157,15 +158,12 @@ export function checkSlashHits(state: GameState): HitResult[] {
       if (timeline.severed) continue
       if (timeline.replayComplete) continue
       if (timeline.headEndedAtTick === undefined) continue
-      if (timeline.replayOriginTick === undefined || timeline.replayStartTick === undefined)
-        continue
+      if (timeline.replayOriginTick === undefined) continue
+      if (timeline.snapshots.length === 0) continue
 
-      const playbackTick = timeline.replayStartTick + (state.tick - timeline.replayOriginTick)
-      const rawIndex = playbackTick - timeline.startTick
-      const rewindStartIndex = timeline.replayStartTick - timeline.startTick
-      const windowLength = timeline.snapshots.length - rewindStartIndex
-      if (rawIndex < 0 || windowLength <= 0) continue
-      const index = rewindStartIndex + ((rawIndex - rewindStartIndex) % windowLength)
+      const elapsed = state.tick - timeline.replayOriginTick
+      if (elapsed < 0) continue
+      const index = elapsed % timeline.snapshots.length
       const snapshot = timeline.snapshots[index]
       if (!snapshot) continue
       if (!snapshot.state.alive) continue
@@ -236,15 +234,12 @@ export function checkProjectileHits(state: GameState): HitResult[] {
       if (timeline.severed) continue
       if (timeline.replayComplete) continue
       if (timeline.headEndedAtTick === undefined) continue
-      if (timeline.replayOriginTick === undefined || timeline.replayStartTick === undefined)
-        continue
+      if (timeline.replayOriginTick === undefined) continue
+      if (timeline.snapshots.length === 0) continue
 
-      const playbackTick = timeline.replayStartTick + (state.tick - timeline.replayOriginTick)
-      const rawIndex = playbackTick - timeline.startTick
-      const rewindStartIndex = timeline.replayStartTick - timeline.startTick
-      const windowLength = timeline.snapshots.length - rewindStartIndex
-      if (rawIndex < 0 || windowLength <= 0) continue
-      const index = rewindStartIndex + ((rawIndex - rewindStartIndex) % windowLength)
+      const elapsed = state.tick - timeline.replayOriginTick
+      if (elapsed < 0) continue
+      const index = elapsed % timeline.snapshots.length
       const snapshot = timeline.snapshots[index]
       if (!snapshot) continue
       if (!snapshot.state.alive) continue
@@ -273,6 +268,37 @@ export function checkProjectileHits(state: GameState): HitResult[] {
 
   state.projectiles = state.projectiles.filter((p) => !consumedProjectiles.has(p.id))
   return hits
+}
+
+export function deflectProjectiles(state: GameState): void {
+  for (const proj of state.projectiles) {
+    proj.deflectedThisTick = false
+  }
+
+  for (const slash of state.slashHitboxes) {
+    const sLeft = slash.pos.x - slash.width / 2
+    const sRight = slash.pos.x + slash.width / 2
+    const sTop = slash.pos.y - slash.height / 2
+    const sBottom = slash.pos.y + slash.height / 2
+
+    for (const proj of state.projectiles) {
+      if (proj.deflectedThisTick) continue
+      if (proj.ownerId === slash.ownerId && proj.ownerTimelineId === slash.ownerTimelineId) continue
+
+      const pLeft = proj.pos.x - PROJECTILE_WIDTH / 2
+      const pRight = proj.pos.x + PROJECTILE_WIDTH / 2
+      const pTop = proj.pos.y - PROJECTILE_HEIGHT / 2
+      const pBottom = proj.pos.y + PROJECTILE_HEIGHT / 2
+
+      if (rectsOverlap(sLeft, sTop, sRight, sBottom, pLeft, pTop, pRight, pBottom)) {
+        proj.vel.x = -proj.vel.x
+        proj.ownerId = slash.ownerId
+        proj.ownerTimelineId = slash.ownerTimelineId
+        proj.isGhost = slash.isGhost
+        proj.deflectedThisTick = true
+      }
+    }
+  }
 }
 
 export function decayEntities(state: GameState): void {

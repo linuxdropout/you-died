@@ -4,12 +4,13 @@ import {
   processPlayerActions,
   updateSlashPositions,
   moveProjectiles,
+  deflectProjectiles,
   checkSlashHits,
   checkProjectileHits,
   decayEntities,
   rectsOverlap,
 } from './combat.ts'
-import { PROJECTILE_WIDTH, PROJECTILE_HEIGHT } from './constants.ts'
+import { PROJECTILE_WIDTH, PROJECTILE_HEIGHT, MAX_GHOST_TIMELINES } from './constants.ts'
 import {
   recordSnapshot,
   handleHeadDeath,
@@ -81,6 +82,7 @@ export function step(state: GameState, inputs: Record<string, PlayerInput>): Gam
   }
 
   updateSlashPositions(state)
+  deflectProjectiles(state)
 
   const boundaryDeaths: string[] = []
   for (const playerId of state.config.playerIds) {
@@ -122,11 +124,27 @@ export function step(state: GameState, inputs: Record<string, PlayerInput>): Gam
         processedDeaths.add(hit.victimId)
       }
     } else {
-      handlePastDeath(state, hit.victimId, hit.victimTimelineId, hit.attackerTimelineId)
+      handlePastDeath(state, hit.victimId, hit.victimTimelineId, hit.attackerId)
     }
   }
 
   decayEntities(state)
+
+  const activeTimelines = state.timelines.filter(
+    (t) => t.headEndedAtTick !== undefined && !t.replayComplete,
+  )
+  if (activeTimelines.length > MAX_GHOST_TIMELINES) {
+    for (let i = 0; i < activeTimelines.length - MAX_GHOST_TIMELINES; i++) {
+      const tl = activeTimelines[i]
+      if (tl) tl.replayComplete = true
+    }
+  }
+
+  for (const playerId of state.config.playerIds) {
+    const player = state.players[playerId]
+    if (!player?.alive) continue
+    player.ticks++
+  }
 
   const winner = checkWinCondition(state)
   if (winner !== undefined) {

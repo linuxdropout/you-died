@@ -127,17 +127,3 @@ export function isOutOfBounds(player: PlayerState, arena: Arena): boolean {
     player.pos.x > arena.width + PLAYER_WIDTH
   )
 }
-
-export function playerAABB(player: PlayerState): {
-  left: number
-  right: number
-  top: number
-  bottom: number
-} {
-  return {
-    left: player.pos.x - PLAYER_WIDTH / 2,
-    right: player.pos.x + PLAYER_WIDTH / 2,
-    top: player.pos.y - PLAYER_HEIGHT,
-    bottom: player.pos.y,
-  }
-}

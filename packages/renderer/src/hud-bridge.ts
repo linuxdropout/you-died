@@ -35,7 +35,7 @@ export class HudBridge {
       players.push({
         playerId: p.id,
         name: this.context.playerNames[p.id] ?? p.id,
-        offsetSeconds: (frame.tick + p.timelineOffset) / TICK_RATE,
+        offsetSeconds: p.ticks / TICK_RATE,
         isGhost: p.isGhost,
         isDead: !p.alive,
         color: this.context.playerColors[p.id] ?? 'red',

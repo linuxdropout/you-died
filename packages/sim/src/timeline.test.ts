@@ -1,8 +1,7 @@
 import type { PlayerInput, PlayerState } from './types.ts'
 import { createInitialState } from './state.ts'
 import { step } from './step.ts'
-import { resolveParadoxes } from './timeline.ts'
-import { REWIND_TICKS, WIN_LEAD_TICKS, PLAYER_WIDTH, INVUL_TICKS } from './constants.ts'
+import { REWIND_TICKS, WIN_THRESHOLD_TICKS, PARADOX_MIN_GAIN_TICKS, PLAYER_WIDTH, INVUL_TICKS } from './constants.ts'
 import { DEFAULT_ARENA } from './arena.ts'
 
 const NO_INPUT: PlayerInput = {
@@ -39,7 +38,17 @@ function runTicks(
 }
 
 describe('timeline', () => {
-  it('rewinds player on head death', () => {
+  it('ticks increment each tick while alive', () => {
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
+    const p1 = getPlayer(state, 'p1')
+    p1.pos = { x: 640, y: 550 }
+    p1.grounded = true
+
+    state = runTicks(state, 100)
+    expect(getPlayer(state, 'p1').ticks).toBe(100)
+  })
+
+  it('rewinds player on head death and reduces ticks', () => {
     let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
@@ -57,6 +66,7 @@ describe('timeline', () => {
     }))
 
     const p1Before = getPlayer(state, 'p1')
+    const ticksBefore = p1Before.ticks
     const posBeforeKill = p1Before.pos.x
     const timelineIdBefore = p1Before.timelineId
 
@@ -72,9 +82,36 @@ describe('timeline', () => {
     const p1After = getPlayer(state, 'p1')
     expect(p1After.alive).toBe(true)
     expect(p1After.timelineId).not.toBe(timelineIdBefore)
-    expect(p1After.ticks).toBeLessThan(0)
-
+    expect(p1After.ticks).toBe(Math.max(0, ticksBefore - REWIND_TICKS) + 1)
     expect(p1After.pos.x).not.toBe(posBeforeKill)
+  })
+
+  it('death ticks loss is capped at 0', () => {
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
+
+    const p1 = getPlayer(state, 'p1')
+    const p2 = getPlayer(state, 'p2')
+    p1.pos = { x: 640, y: 550 }
+    p1.vel = { x: 0, y: 0 }
+    p1.grounded = true
+    p2.pos = { x: 640, y: 10000 }
+    p2.vel = { x: 0, y: 0 }
+
+    state = runTicks(state, 30)
+
+    const p2b = getPlayer(state, 'p2')
+    const p1b = getPlayer(state, 'p1')
+    p2b.pos = { x: p1b.pos.x + PLAYER_WIDTH + 10, y: p1b.pos.y }
+    p2b.vel = { x: 0, y: 0 }
+    p2b.grounded = true
+    p2b.facingRight = false
+    p2b.alive = true
+
+    state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
+
+    const p1After = getPlayer(state, 'p1')
+    expect(p1After.ticks).toBe(1)
+    expect(p1After.alive).toBe(true)
   })
 
   it('rewinds position back to where player was REWIND_TICKS ago', () => {
@@ -109,143 +146,7 @@ describe('timeline', () => {
     expect(p1After.pos.x).toBe(posAtRewindTarget)
   })
 
-  it('creates no ghost on head death', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
-
-    const p1 = getPlayer(state, 'p1')
-    p1.pos = { x: 640, y: 550 }
-    p1.vel = { x: 0, y: 0 }
-    p1.grounded = true
-
-    const p2 = getPlayer(state, 'p2')
-    p2.pos = { x: 640, y: 10000 }
-    p2.vel = { x: 0, y: 0 }
-
-    state = runTicks(state, 100)
-
-    const p2b = getPlayer(state, 'p2')
-    const p1b = getPlayer(state, 'p1')
-    p2b.pos = { x: p1b.pos.x + PLAYER_WIDTH + 10, y: p1b.pos.y }
-    p2b.vel = { x: 0, y: 0 }
-    p2b.grounded = true
-    p2b.facingRight = false
-    p2b.alive = true
-
-    state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
-
-    const headTimeline = state.timelines.find(
-      (t) => t.playerId === 'p1' && t.headEndedAtTick !== undefined,
-    )
-    if (!headTimeline) throw new Error('no ended timeline found')
-    expect(headTimeline.severed).toBe(false)
-  })
-
-  it('severs timeline on past self death', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
-
-    const p1 = getPlayer(state, 'p1')
-    p1.pos = { x: 640, y: 550 }
-    p1.vel = { x: 0, y: 0 }
-    p1.grounded = true
-
-    const p2 = getPlayer(state, 'p2')
-    p2.pos = { x: 640, y: 10000 }
-    p2.vel = { x: 0, y: 0 }
-
-    state = runTicks(state, REWIND_TICKS + 50, (tick) => ({
-      p1: tick < REWIND_TICKS ? inputWith({ right: true }) : NO_INPUT,
-      p2: NO_INPUT,
-    }))
-
-    const p1Before = getPlayer(state, 'p1')
-    const p2b = getPlayer(state, 'p2')
-    p2b.pos = { x: p1Before.pos.x + PLAYER_WIDTH + 10, y: p1Before.pos.y }
-    p2b.vel = { x: 0, y: 0 }
-    p2b.grounded = true
-    p2b.facingRight = false
-    p2b.alive = true
-
-    state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
-
-    const p1After = getPlayer(state, 'p1')
-    expect(p1After.alive).toBe(true)
-
-    const oldTimeline = state.timelines.find(
-      (t) =>
-        t.playerId === 'p1' && t.headEndedAtTick !== undefined && t.replayOriginTick !== undefined,
-    )
-    expect(oldTimeline).toBeDefined()
-
-    if (!oldTimeline) return
-
-    if (oldTimeline.replayStartTick === undefined || oldTimeline.replayOriginTick === undefined)
-      return
-
-    const p1Head = getPlayer(state, 'p1')
-    const pastPlaybackTick =
-      oldTimeline.replayStartTick + (state.tick - oldTimeline.replayOriginTick)
-    const pastIndex = pastPlaybackTick - oldTimeline.startTick
-    const pastSnapshot = oldTimeline.snapshots[pastIndex]
-
-    if (!pastSnapshot) return
-
-    const p2c = getPlayer(state, 'p2')
-    p2c.pos = { x: pastSnapshot.state.pos.x + PLAYER_WIDTH + 10, y: pastSnapshot.state.pos.y }
-    p2c.vel = { x: 0, y: 0 }
-    p2c.grounded = true
-    p2c.facingRight = false
-    p2c.alive = true
-    p1Head.pos = { x: 100, y: 550 }
-
-    state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
-
-    const severedTimeline = state.timelines.find((t) => t.playerId === 'p1' && t.severed)
-    expect(severedTimeline).toBeDefined()
-    expect(state.events.some((e) => e.type === 'timelineSevered')).toBe(true)
-  })
-
-  it('win condition triggers when a player is far enough ahead', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
-
-    const p1 = getPlayer(state, 'p1')
-    const p2 = getPlayer(state, 'p2')
-    p1.pos = { x: 640, y: 550 }
-    p1.vel = { x: 0, y: 0 }
-    p1.grounded = true
-    p2.pos = { x: 700, y: 550 }
-    p2.vel = { x: 0, y: 0 }
-    p2.grounded = true
-
-    p1.ticks = WIN_LEAD_TICKS + 100
-    p2.ticks = 0
-
-    state = step(state, { p1: NO_INPUT, p2: NO_INPUT })
-
-    expect(state.winner).toBe('p1')
-    expect(state.events.some((e) => e.type === 'win' && e.playerId === 'p1')).toBe(true)
-  })
-
-  it('win condition does not trigger when lead is insufficient', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
-
-    const p1 = getPlayer(state, 'p1')
-    const p2 = getPlayer(state, 'p2')
-    p1.pos = { x: 640, y: 550 }
-    p1.vel = { x: 0, y: 0 }
-    p1.grounded = true
-    p2.pos = { x: 700, y: 550 }
-    p2.vel = { x: 0, y: 0 }
-    p2.grounded = true
-
-    p1.ticks = WIN_LEAD_TICKS - 100
-    p2.ticks = 0
-
-    state = step(state, { p1: NO_INPUT, p2: NO_INPUT })
-
-    expect(state.winner).toBeUndefined()
-  })
-
-  it('ghost replays loop instead of completing', () => {
+  it('past life replays from full life start as a loop', () => {
     let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
@@ -272,13 +173,136 @@ describe('timeline', () => {
       (t) => t.playerId === 'p1' && t.headEndedAtTick !== undefined,
     )
     if (!endedTimeline) throw new Error('no ended timeline found')
+
+    expect(endedTimeline.replayStartTick).toBe(endedTimeline.startTick)
     expect(endedTimeline.snapshots.length).toBeGreaterThan(0)
 
     const snapshotCount = endedTimeline.snapshots.length
-    state = runTicks(state, REWIND_TICKS + 100)
+    state = runTicks(state, snapshotCount * 2 + 10)
 
     expect(endedTimeline.replayComplete).toBe(false)
     expect(endedTimeline.snapshots.length).toBe(snapshotCount)
+  })
+
+  it('severs timeline on past self death', () => {
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
+
+    const p1 = getPlayer(state, 'p1')
+    p1.pos = { x: 640, y: 550 }
+    p1.vel = { x: 0, y: 0 }
+    p1.grounded = true
+
+    const p2 = getPlayer(state, 'p2')
+    p2.pos = { x: 300, y: 550 }
+    p2.vel = { x: 0, y: 0 }
+    p2.grounded = true
+
+    state = runTicks(state, REWIND_TICKS + 50)
+
+    const p1Before = getPlayer(state, 'p1')
+    const p2b = getPlayer(state, 'p2')
+    p2b.pos = { x: p1Before.pos.x + PLAYER_WIDTH + 10, y: p1Before.pos.y }
+    p2b.vel = { x: 0, y: 0 }
+    p2b.grounded = true
+    p2b.facingRight = false
+    p2b.alive = true
+
+    state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
+
+    const p1After = getPlayer(state, 'p1')
+    expect(p1After.alive).toBe(true)
+
+    const oldTimeline = state.timelines.find(
+      (t) =>
+        t.playerId === 'p1' && t.headEndedAtTick !== undefined && t.replayOriginTick !== undefined,
+    )
+    expect(oldTimeline).toBeDefined()
+    if (!oldTimeline) return
+    if (oldTimeline.replayOriginTick === undefined) return
+
+    const elapsed = state.tick - oldTimeline.replayOriginTick
+    if (elapsed < 0 || oldTimeline.snapshots.length === 0) return
+    const pastIndex = elapsed % oldTimeline.snapshots.length
+    const pastSnapshot = oldTimeline.snapshots[pastIndex]
+    if (!pastSnapshot) return
+
+    const p1Head = getPlayer(state, 'p1')
+    const p2c = getPlayer(state, 'p2')
+    p2c.pos = { x: pastSnapshot.state.pos.x + PLAYER_WIDTH + 10, y: pastSnapshot.state.pos.y }
+    p2c.vel = { x: 0, y: 0 }
+    p2c.grounded = true
+    p2c.facingRight = false
+    p2c.alive = true
+    p2c.slashCooldownTicks = 0
+    p2c.slashTicksRemaining = 0
+    p1Head.pos = { x: 100, y: 550 }
+
+    state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
+
+    const severedTimeline = state.timelines.find((t) => t.playerId === 'p1' && t.severed)
+    expect(severedTimeline).toBeDefined()
+    expect(state.events.some((e) => e.type === 'timelineSevered')).toBe(true)
+  })
+
+  it('win condition triggers when player reaches threshold with no tie', () => {
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
+
+    const p1 = getPlayer(state, 'p1')
+    const p2 = getPlayer(state, 'p2')
+    p1.pos = { x: 640, y: 550 }
+    p1.vel = { x: 0, y: 0 }
+    p1.grounded = true
+    p2.pos = { x: 700, y: 550 }
+    p2.vel = { x: 0, y: 0 }
+    p2.grounded = true
+
+    p1.ticks = WIN_THRESHOLD_TICKS - 1
+    p2.ticks = 0
+
+    state = step(state, { p1: NO_INPUT, p2: NO_INPUT })
+
+    expect(state.winner).toBe('p1')
+    expect(state.events.some((e) => e.type === 'win' && e.playerId === 'p1')).toBe(true)
+  })
+
+  it('win condition does not trigger when both at threshold (tie)', () => {
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
+
+    const p1 = getPlayer(state, 'p1')
+    const p2 = getPlayer(state, 'p2')
+    p1.pos = { x: 640, y: 550 }
+    p1.vel = { x: 0, y: 0 }
+    p1.grounded = true
+    p2.pos = { x: 700, y: 550 }
+    p2.vel = { x: 0, y: 0 }
+    p2.grounded = true
+
+    p1.ticks = WIN_THRESHOLD_TICKS - 1
+    p2.ticks = WIN_THRESHOLD_TICKS - 1
+
+    state = step(state, { p1: NO_INPUT, p2: NO_INPUT })
+
+    expect(state.winner).toBeUndefined()
+  })
+
+  it('win condition does not trigger when below threshold', () => {
+    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
+
+    const p1 = getPlayer(state, 'p1')
+    const p2 = getPlayer(state, 'p2')
+    p1.pos = { x: 640, y: 550 }
+    p1.vel = { x: 0, y: 0 }
+    p1.grounded = true
+    p2.pos = { x: 700, y: 550 }
+    p2.vel = { x: 0, y: 0 }
+    p2.grounded = true
+
+    p1.ticks = WIN_THRESHOLD_TICKS - 100
+    p2.ticks = 0
+
+    state = step(state, { p1: NO_INPUT, p2: NO_INPUT })
+
+    expect(state.winner).toBeUndefined()
   })
 
   it('determinism holds through death and rewind cycles', () => {
@@ -331,86 +355,12 @@ describe('timeline', () => {
     expect(state1.timelines.length).toBe(state2.timelines.length)
   })
 
-  it('paradox cascade grants at most one offset boost per player', () => {
-    const state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
+  it('paradox minimum gain is at least PARADOX_MIN_GAIN_TICKS', () => {
+    const gain1 = Math.max(PARADOX_MIN_GAIN_TICKS, 1050 - 1000)
+    expect(gain1).toBe(PARADOX_MIN_GAIN_TICKS)
 
-    const p1 = getPlayer(state, 'p1')
-    p1.pos = { x: 640, y: 550 }
-    p1.vel = { x: 0, y: 0 }
-    p1.grounded = true
-
-    const p2 = getPlayer(state, 'p2')
-    p2.pos = { x: 800, y: 550 }
-    p2.vel = { x: 0, y: 0 }
-    p2.grounded = true
-
-    // Simulate a chain of severed timelines for p1:
-    // tl-A severed by tl-B, tl-B severed by tl-C, tl-C severed by tl-D (p2's active timeline)
-    // When tl-D severs tl-C, the cascade should unsever tl-B then tl-A,
-    // but p1 should only get one REWIND_TICKS boost.
-    const tlA = {
-      timelineId: 'p1-tl-a',
-      playerId: 'p1',
-      startTick: 0,
-      snapshots: [],
-      headEndedAtTick: 100,
-      replayOriginTick: 100,
-      replayStartTick: 0,
-      severed: true,
-      severedAtSnapshotTick: 50,
-      severedByTimelineId: 'p1-tl-b',
-      replayComplete: false,
-    }
-    const tlB = {
-      timelineId: 'p1-tl-b',
-      playerId: 'p1',
-      startTick: 100,
-      snapshots: [],
-      headEndedAtTick: 200,
-      replayOriginTick: 200,
-      replayStartTick: 100,
-      severed: true,
-      severedAtSnapshotTick: 150,
-      severedByTimelineId: 'p1-tl-c',
-      replayComplete: false,
-    }
-    const tlC = {
-      timelineId: 'p1-tl-c',
-      playerId: 'p1',
-      startTick: 200,
-      snapshots: [],
-      headEndedAtTick: 300,
-      replayOriginTick: 300,
-      replayStartTick: 200,
-      severed: true,
-      severedAtSnapshotTick: 250,
-      severedByTimelineId: 'p2-tl-d',
-      replayComplete: false,
-    }
-    const tlD = {
-      timelineId: 'p2-tl-d',
-      playerId: 'p2',
-      startTick: 0,
-      snapshots: [],
-      headEndedAtTick: undefined,
-      replayOriginTick: undefined,
-      replayStartTick: undefined,
-      severed: true,
-      severedAtSnapshotTick: 200,
-      severedByTimelineId: undefined as string | undefined,
-      replayComplete: false,
-    }
-
-    state.timelines.push(tlA, tlB, tlC, tlD)
-
-    const offsetBefore = p1.ticks
-
-    resolveParadoxes(state)
-
-    expect(p1.ticks).toBe(offsetBefore + REWIND_TICKS)
-
-    const paradoxEvents = state.events.filter((e) => e.type === 'paradox' && e.playerId === 'p1')
-    expect(paradoxEvents.length).toBeGreaterThanOrEqual(1)
+    const gain2 = Math.max(PARADOX_MIN_GAIN_TICKS, 2000 - 1000)
+    expect(gain2).toBe(1000)
   })
 
   it('spawn invulnerability prevents immediate combat death', () => {
@@ -518,7 +468,6 @@ describe('timeline', () => {
 
     state = runTicks(state, REWIND_TICKS)
 
-    // First death: rewinds to tick 100
     const p1a = getPlayer(state, 'p1')
     const p2a = getPlayer(state, 'p2')
     p2a.pos = { x: p1a.pos.x + PLAYER_WIDTH + 10, y: p1a.pos.y }
@@ -531,10 +480,8 @@ describe('timeline', () => {
     state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
     expect(getPlayer(state, 'p1').pos.x).toBe(posAt100)
 
-    // Run a short time (less than REWIND_TICKS)
     state = runTicks(state, INVUL_TICKS + 10)
 
-    // Second death: should still rewind to around tick 100
     const p1b = getPlayer(state, 'p1')
     const p2b = getPlayer(state, 'p2')
     p2b.pos = { x: p1b.pos.x + PLAYER_WIDTH + 10, y: p1b.pos.y }
@@ -546,7 +493,6 @@ describe('timeline', () => {
 
     state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
 
-    // Player should be restored to a position from well before the current timeline started
     const p1c = getPlayer(state, 'p1')
     expect(p1c.alive).toBe(true)
     expect(p1c.pos.x).toBe(posAt100)

@@ -43,6 +43,7 @@ export interface Projectile {
   vel: Vec2
   ticksRemaining: number
   isGhost: boolean
+  deflectedThisTick: boolean
 }
 
 export interface SlashHitbox {
@@ -75,6 +76,9 @@ export interface TimelineRecord {
   severedAtSnapshotTick: number | undefined
   severedByTimelineId: TimelineId | undefined
   replayComplete: boolean
+  killedByPlayerId: PlayerId | undefined
+  killedByTimelineId: TimelineId | undefined
+  ticksAtDeath: number | undefined
 }
 
 export type GameEventType =
@@ -118,8 +122,9 @@ export interface RenderPlayer {
   isShooting: boolean
   isDashing: boolean
   alive: boolean
-  timelineOffset: number
+  ticks: number
   isInvulnerable: boolean
+  shootCooldownRatio: number
 }
 
 export interface RenderProjectile {

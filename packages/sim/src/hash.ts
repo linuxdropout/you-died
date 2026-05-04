@@ -48,6 +48,8 @@ export function hashState(state: GameState): number {
     h = fnv1a(h, proj.id)
     h = hashFloat(h, proj.pos.x)
     h = hashFloat(h, proj.pos.y)
+    h = hashFloat(h, proj.vel.x)
+    h = hashFloat(h, proj.vel.y)
   }
 
   h = fnv1a(h, state.slashHitboxes.length)

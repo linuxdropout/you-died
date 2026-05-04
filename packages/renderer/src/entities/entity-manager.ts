@@ -56,7 +56,7 @@ export class EntityManager {
     this.gorePool = new EntityPool(
       () => new GoreEntity(),
       (e) => e.reset(),
-      200,
+      1000,
     )
   }
 
@@ -71,6 +71,11 @@ export class EntityManager {
   private reconcilePlayers(frame: RenderFrame) {
     const seen = new Set<string>()
 
+    const localId = this.context.localPlayerId
+    const localLiveTimelineId = frame.players.find(
+      (p) => p.id === localId && !p.isGhost,
+    )?.timelineId
+
     for (const player of frame.players) {
       const key = `${player.id}-${player.timelineId}`
       seen.add(key)
@@ -82,8 +87,13 @@ export class EntityManager {
         this.activePlayers.set(key, entity)
       }
 
+      let visualGhost = player.isGhost
+      if (!visualGhost && player.id === localId && player.timelineId !== localLiveTimelineId) {
+        visualGhost = true
+      }
+
       const color = this.context.playerColors[player.id] ?? 'red'
-      entity.attach(this.sprites, color, player.isGhost)
+      entity.attach(this.sprites, color, visualGhost)
       entity.update(player, frame.tick)
     }
 
@@ -159,6 +169,7 @@ export class EntityManager {
       const player = frame.players.find((p) => p.id === event.playerId)
       const x = player?.pos.x ?? 0
       const y = player?.pos.y ?? 0
+      const playerColor = this.context.playerColors[event.playerId] ?? 'red'
 
       for (let i = 0; i < GORE_PER_DEATH; i++) {
         const gore = this.gorePool.acquire()
@@ -174,6 +185,10 @@ export class EntityManager {
           seed,
           vx,
           vy,
+          i,
+          playerColor,
+          this.context.arena.platforms,
+          this.context.arena.killBoundary,
         )
         this.layers.goreLayer.addChild(gore.container)
         this.activeGore.push(gore)
@@ -190,8 +205,15 @@ export class EntityManager {
   }
 
   private updateGore() {
-    for (const gore of this.activeGore) {
+    for (let i = this.activeGore.length - 1; i >= 0; i--) {
+      const gore = this.activeGore[i]
+      if (!gore) continue
       gore.update()
+      if (gore.markedForCull) {
+        this.layers.goreLayer.removeChild(gore.container)
+        this.gorePool.release(gore)
+        this.activeGore.splice(i, 1)
+      }
     }
   }
 

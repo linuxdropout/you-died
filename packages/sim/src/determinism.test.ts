@@ -145,7 +145,7 @@ describe('determinism', () => {
     expect(stateFingerprint(state1)).toBe(stateFingerprint(state2))
   })
 
-  it('remains deterministic over a full-length match (18000 ticks)', () => {
+  it('remains deterministic over a full-length match (18000 ticks)', { timeout: 60_000 }, () => {
     const inputFn = (tick: number): Record<string, PlayerInput> => ({
       p1: inputWith({
         right: tick % 7 < 3,

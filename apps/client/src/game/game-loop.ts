@@ -10,7 +10,7 @@ import type { FirstUseCallback } from '../input/input'
 import { captureInput, initInputListeners } from '../input/input'
 import { sendMessage } from '../net/connection'
 
-export interface GameLoopConfig {
+interface GameLoopConfig {
   seed: number
   playerId: PlayerId
   playerIds: PlayerId[]

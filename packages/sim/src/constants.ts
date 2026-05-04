@@ -1,7 +1,8 @@
-import { TICK_RATE, REWIND_SECONDS, WIN_LEAD_SECONDS } from '@you-died/protocol'
+import { TICK_RATE, REWIND_SECONDS, WIN_LEAD_SECONDS, PARADOX_MIN_GAIN_SECONDS } from '@you-died/protocol'
 
 export const REWIND_TICKS = TICK_RATE * REWIND_SECONDS
-export const WIN_LEAD_TICKS = TICK_RATE * WIN_LEAD_SECONDS
+export const WIN_THRESHOLD_TICKS = TICK_RATE * WIN_LEAD_SECONDS
+export const PARADOX_MIN_GAIN_TICKS = TICK_RATE * PARADOX_MIN_GAIN_SECONDS
 export const INVUL_TICKS = TICK_RATE
 
 export const GRAVITY = 0.55
@@ -18,15 +19,15 @@ export const PLAYER_HEIGHT = 48
 
 export const PROJECTILE_SPEED = 10
 export const PROJECTILE_LIFETIME = 120
-export const SHOOT_COOLDOWN = 30
+export const SHOOT_COOLDOWN = 45
 export const SHOOT_DURATION = 10
 export const PROJECTILE_WIDTH = 8
 export const PROJECTILE_HEIGHT = 4
 
 export const SLASH_DURATION = 6
 export const SLASH_COOLDOWN = 18
-export const SLASH_WIDTH = 48
-export const SLASH_HEIGHT = 40
+export const SLASH_WIDTH = 64
+export const SLASH_HEIGHT = 52
 export const SLASH_OFFSET_X = 28
 
 export const MAX_GHOST_TIMELINES = 100

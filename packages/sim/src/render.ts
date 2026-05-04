@@ -5,6 +5,7 @@ import type {
   RenderProjectile,
   RenderSlash,
 } from './types.ts'
+import { SHOOT_COOLDOWN } from './constants.ts'
 
 export function getRenderableState(state: GameState): RenderFrame {
   const players: RenderPlayer[] = []
@@ -21,22 +22,21 @@ export function getRenderableState(state: GameState): RenderFrame {
       isShooting: player.shootTicksRemaining > 0,
       isDashing: player.dashTicksRemaining > 0,
       alive: player.alive,
-      timelineOffset: player.ticks,
+      ticks: player.ticks,
       isInvulnerable: player.invulTicksRemaining > 0,
+      shootCooldownRatio: player.shootCooldownTicks / SHOOT_COOLDOWN,
     })
   }
 
   for (const timeline of state.timelines) {
     if (timeline.replayComplete) continue
     if (timeline.headEndedAtTick === undefined) continue
-    if (timeline.replayOriginTick === undefined || timeline.replayStartTick === undefined) continue
+    if (timeline.replayOriginTick === undefined) continue
+    if (timeline.snapshots.length === 0) continue
 
-    const playbackTick = timeline.replayStartTick + (state.tick - timeline.replayOriginTick)
-    const rawIndex = playbackTick - timeline.startTick
-    const rewindStartIndex = timeline.replayStartTick - timeline.startTick
-    const windowLength = timeline.snapshots.length - rewindStartIndex
-    if (rawIndex < 0 || windowLength <= 0) continue
-    const index = rewindStartIndex + ((rawIndex - rewindStartIndex) % windowLength)
+    const elapsed = state.tick - timeline.replayOriginTick
+    if (elapsed < 0) continue
+    const index = elapsed % timeline.snapshots.length
 
     const snapshot = timeline.snapshots[index]
     if (!snapshot) continue
@@ -48,13 +48,14 @@ export function getRenderableState(state: GameState): RenderFrame {
       pos: { ...snapshot.state.pos },
       facingRight: snapshot.state.facingRight,
       grounded: snapshot.state.grounded,
-      isGhost: true,
+      isGhost: timeline.severed,
       isSlashing: snapshot.state.slashTicksRemaining > 0,
       isShooting: snapshot.state.shootTicksRemaining > 0,
       isDashing: snapshot.state.dashTicksRemaining > 0,
       alive: snapshot.state.alive,
-      timelineOffset: 0,
+      ticks: 0,
       isInvulnerable: false,
+      shootCooldownRatio: 0,
     })
   }
 

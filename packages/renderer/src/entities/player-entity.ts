@@ -17,6 +17,12 @@ const TRAIL_COLOR = 0x8ecae6
 const TRAIL_PLAYER_W = 32
 const TRAIL_PLAYER_H = 48
 
+const COOLDOWN_BAR_WIDTH = 24
+const COOLDOWN_BAR_HEIGHT = 3
+const COOLDOWN_BAR_Y = 4
+const COOLDOWN_BAR_BG = 0x222222
+const COOLDOWN_BAR_FILL = 0xffcc00
+
 export class PlayerEntity {
   readonly container = new Container()
   private sprite: PlayerSprite | null = null
@@ -26,6 +32,7 @@ export class PlayerEntity {
   private lastTick = -1
   private frameCount = 0
   private readonly trailGfx = new Graphics()
+  private readonly cooldownBarGfx = new Graphics()
   private readonly trailPositions: { x: number; y: number }[] = []
 
   attach(sprites: SpriteManager, color: PlayerColor, ghost: boolean) {
@@ -36,6 +43,7 @@ export class PlayerEntity {
       this.container.addChild(this.trailGfx)
     }
     this.container.addChild(this.sprite.sprite)
+    this.container.addChild(this.cooldownBarGfx)
     this.container.alpha = ghost ? GHOST_ALPHA_CENTER : 1
     this.currentColor = color
     this.currentGhost = ghost
@@ -56,6 +64,28 @@ export class PlayerEntity {
     }
 
     this.sprite.update(1)
+
+    this.cooldownBarGfx.clear()
+    if (player.shootCooldownRatio > 0) {
+      const scaleX = player.facingRight ? 1 : -1
+      this.cooldownBarGfx.rect(
+        scaleX * -COOLDOWN_BAR_WIDTH / 2,
+        COOLDOWN_BAR_Y,
+        scaleX * COOLDOWN_BAR_WIDTH,
+        COOLDOWN_BAR_HEIGHT,
+      )
+      this.cooldownBarGfx.fill({ color: COOLDOWN_BAR_BG, alpha: 0.6 })
+      const fillWidth = COOLDOWN_BAR_WIDTH * (1 - player.shootCooldownRatio)
+      if (fillWidth > 0) {
+        this.cooldownBarGfx.rect(
+          scaleX * -COOLDOWN_BAR_WIDTH / 2,
+          COOLDOWN_BAR_Y,
+          scaleX * fillWidth,
+          COOLDOWN_BAR_HEIGHT,
+        )
+        this.cooldownBarGfx.fill({ color: COOLDOWN_BAR_FILL, alpha: 0.8 })
+      }
+    }
 
     if (this.currentGhost) {
       this.container.position.y +=
@@ -91,11 +121,13 @@ export class PlayerEntity {
   detach() {
     if (!this.sprite) return
     this.container.removeChild(this.sprite.sprite)
+    this.container.removeChild(this.cooldownBarGfx)
     this.sprite.sprite.destroy()
     if (this.currentGhost) {
       this.container.removeChild(this.trailGfx)
     }
     this.trailGfx.clear()
+    this.cooldownBarGfx.clear()
     this.trailPositions.length = 0
     this.sprite = null
     this.currentColor = null
@@ -107,6 +139,7 @@ export class PlayerEntity {
     this.prevX = 0
     this.lastTick = -1
     this.frameCount = 0
+    this.cooldownBarGfx.clear()
     this.container.alpha = 1
     this.container.scale.set(1, 1)
     this.container.position.set(0, 0)

@@ -18,7 +18,7 @@ export interface RendererConfig {
 export const DEFAULT_RENDERER_CONFIG: RendererConfig = {
   pixelScale: 3,
   cameraSmoothing: 0.1,
-  maxGoreSprites: 100,
+  maxGoreSprites: 1000,
 }
 
 export interface HudData {

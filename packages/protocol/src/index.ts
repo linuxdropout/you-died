@@ -62,6 +62,7 @@ export const MAX_PLAYERS = 12
 export const TICK_RATE = 60
 export const REWIND_SECONDS = 10
 export const WIN_LEAD_SECONDS = 30
+export const PARADOX_MIN_GAIN_SECONDS = 5
 export const MATCH_TIME_LIMIT_SECONDS = 300
 export const HASH_CHECK_INTERVAL_TICKS = 60
 export const ROOM_CODE_LENGTH = 6

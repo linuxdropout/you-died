@@ -7,8 +7,8 @@ import type {
   TimelineRecord,
   TimelineSnapshot,
 } from './types.ts'
-import { REWIND_TICKS, WIN_LEAD_TICKS, INVUL_TICKS } from './constants.ts'
-import { nextSeed } from './rng.ts'
+import { REWIND_TICKS, WIN_THRESHOLD_TICKS, PARADOX_MIN_GAIN_TICKS, INVUL_TICKS } from './constants.ts'
+import { nextSeed, seedToFloat } from './rng.ts'
 import { processPlayerActions } from './combat.ts'
 
 function clonePlayerState(p: PlayerState): PlayerState {
@@ -24,7 +24,7 @@ function generateTimelineId(state: GameState, playerId: PlayerId): TimelineId {
   return `${playerId}-${state.seed.toString(36)}`
 }
 
-export function findCurrentTimeline(
+function findCurrentTimeline(
   state: GameState,
   playerId: PlayerId,
 ): TimelineRecord | undefined {
@@ -75,6 +75,15 @@ export function handleHeadDeath(state: GameState, playerId: PlayerId, killerId?:
   if (!currentTimeline) return
   if (currentTimeline.headEndedAtTick !== undefined) return
 
+  currentTimeline.ticksAtDeath = player.ticks
+  if (killerId) {
+    currentTimeline.killedByPlayerId = killerId
+    const killerPlayer = state.players[killerId]
+    if (killerPlayer) {
+      currentTimeline.killedByTimelineId = killerPlayer.timelineId
+    }
+  }
+
   const localRewindTarget = Math.max(currentTimeline.startTick, state.tick - REWIND_TICKS)
   const fullRewindTarget = Math.max(0, state.tick - REWIND_TICKS)
 
@@ -91,7 +100,7 @@ export function handleHeadDeath(state: GameState, playerId: PlayerId, killerId?:
 
   currentTimeline.headEndedAtTick = state.tick
   currentTimeline.replayOriginTick = state.tick
-  currentTimeline.replayStartTick = localRewindTarget
+  currentTimeline.replayStartTick = currentTimeline.startTick
 
   const newTimelineId = generateTimelineId(state, playerId)
 
@@ -107,6 +116,9 @@ export function handleHeadDeath(state: GameState, playerId: PlayerId, killerId?:
     severedAtSnapshotTick: undefined,
     severedByTimelineId: undefined,
     replayComplete: false,
+    killedByPlayerId: undefined,
+    killedByTimelineId: undefined,
+    ticksAtDeath: undefined,
   }
   state.timelines.push(newTimeline)
 
@@ -139,7 +151,7 @@ export function handleHeadDeath(state: GameState, playerId: PlayerId, killerId?:
 
   const p = state.players[playerId]
   if (p) {
-    p.ticks -= state.tick - localRewindTarget
+    p.ticks = Math.max(0, p.ticks - REWIND_TICKS)
   }
 
   state.events.push({
@@ -151,11 +163,34 @@ export function handleHeadDeath(state: GameState, playerId: PlayerId, killerId?:
   state.events.push({ tick: state.tick, type: 'rewind', playerId })
 }
 
+function severTimeline(state: GameState, timeline: TimelineRecord): void {
+  timeline.severed = true
+
+  for (const proj of state.projectiles) {
+    if (proj.ownerTimelineId === timeline.timelineId) {
+      proj.isGhost = true
+    }
+  }
+  for (const slash of state.slashHitboxes) {
+    if (slash.ownerTimelineId === timeline.timelineId) {
+      slash.isGhost = true
+    }
+  }
+}
+
+function pickRandomSpawn(state: GameState): { x: number; y: number } {
+  const spawns = state.config.arena.spawnPoints
+  state.seed = nextSeed(state.seed)
+  const idx = Math.floor(seedToFloat(state.seed) * spawns.length)
+  const spawn = spawns[idx] ?? spawns[0] ?? { x: 0, y: 0 }
+  return { x: spawn.x, y: spawn.y }
+}
+
 export function handlePastDeath(
   state: GameState,
   victimId: PlayerId,
   victimTimelineId: TimelineId,
-  attackerTimelineId: TimelineId,
+  attackerPlayerId: PlayerId,
 ): void {
   const timeline = state.timelines.find(
     (t) => t.playerId === victimId && t.timelineId === victimTimelineId,
@@ -163,117 +198,99 @@ export function handlePastDeath(
   if (!timeline) return
   if (timeline.severed) return
 
-  const playbackTick =
-    timeline.replayStartTick !== undefined && timeline.replayOriginTick !== undefined
-      ? timeline.replayStartTick + (state.tick - timeline.replayOriginTick)
-      : state.tick
-
-  timeline.severed = true
-  timeline.severedAtSnapshotTick = playbackTick
-  timeline.severedByTimelineId = attackerTimelineId
-
-  for (const proj of state.projectiles) {
-    if (proj.ownerTimelineId === victimTimelineId) {
-      proj.isGhost = true
-    }
-  }
-  for (const slash of state.slashHitboxes) {
-    if (slash.ownerTimelineId === victimTimelineId) {
-      slash.isGhost = true
-    }
-  }
+  severTimeline(state, timeline)
 
   state.events.push({ tick: state.tick, type: 'death', playerId: victimId })
   state.events.push({ tick: state.tick, type: 'timelineSevered', playerId: victimId })
 
-  resolveParadoxes(state)
-}
+  const player = state.players[victimId]
+  if (player && timeline.replayOriginTick !== undefined && timeline.snapshots.length > 0) {
+    const elapsed = state.tick - timeline.replayOriginTick
+    const loopTick = elapsed % timeline.snapshots.length
 
-export function resolveParadoxes(state: GameState): void {
-  let changed = true
-  let iterations = 0
-  const maxIterations = state.timelines.length * 2
-  const boostedPlayers = new Set<PlayerId>()
-
-  while (changed && iterations < maxIterations) {
-    changed = false
-    iterations++
-
-    for (const timeline of state.timelines) {
-      if (!timeline.severed) continue
-      if (timeline.severedByTimelineId === undefined) continue
-
-      const causingTimeline = state.timelines.find(
-        (t) => t.timelineId === timeline.severedByTimelineId,
-      )
-      if (!causingTimeline) continue
-
-      if (causingTimeline.severed) {
-        const causerSeverTick = causingTimeline.severedAtSnapshotTick ?? 0
-        const mySeverTick = timeline.severedAtSnapshotTick ?? 0
-
-        if (causerSeverTick <= mySeverTick) {
-          timeline.severed = false
-          timeline.severedAtSnapshotTick = undefined
-          timeline.severedByTimelineId = undefined
-
-          for (const proj of state.projectiles) {
-            if (proj.ownerTimelineId === timeline.timelineId) {
-              proj.isGhost = false
-            }
-          }
-          for (const slash of state.slashHitboxes) {
-            if (slash.ownerTimelineId === timeline.timelineId) {
-              slash.isGhost = false
-            }
-          }
-
-          const player = state.players[timeline.playerId]
-          if (player && !boostedPlayers.has(timeline.playerId)) {
-            player.ticks += REWIND_TICKS
-            boostedPlayers.add(timeline.playerId)
-          }
-
-          state.events.push({
-            tick: state.tick,
-            type: 'paradox',
-            playerId: timeline.playerId,
-          })
-          state.events.push({
-            tick: state.tick,
-            type: 'futureLaunch',
-            playerId: timeline.playerId,
-          })
-
-          changed = true
-        }
-      }
+    if (loopTick < player.ticks) {
+      player.ticks = loopTick
+      const spawn = pickRandomSpawn(state)
+      player.pos.x = spawn.x
+      player.pos.y = spawn.y
+      player.vel.x = 0
+      player.vel.y = 0
+      player.invulTicksRemaining = INVUL_TICKS
+      player.slashTicksRemaining = 0
+      player.slashCooldownTicks = 0
+      player.shootCooldownTicks = 0
+      player.shootTicksRemaining = 0
+      player.dashTicksRemaining = 0
+      player.dashCooldownTicks = 0
     }
   }
+
+  checkParadox(state, attackerPlayerId, victimId, victimTimelineId)
+}
+
+function checkParadox(
+  state: GameState,
+  attackerPlayerId: PlayerId,
+  victimPlayerId: PlayerId,
+  victimTimelineId: TimelineId,
+): void {
+  const linkedPastLife = state.timelines.find(
+    (t) =>
+      t.playerId === attackerPlayerId &&
+      !t.severed &&
+      t.headEndedAtTick !== undefined &&
+      t.killedByPlayerId === victimPlayerId &&
+      t.killedByTimelineId === victimTimelineId,
+  )
+  if (!linkedPastLife) return
+
+  severTimeline(state, linkedPastLife)
+
+  const player = state.players[attackerPlayerId]
+  if (!player) return
+
+  const gain = Math.max(PARADOX_MIN_GAIN_TICKS, (linkedPastLife.ticksAtDeath ?? 0) - player.ticks)
+  player.ticks += gain
+
+  const lastSnap = linkedPastLife.snapshots[linkedPastLife.snapshots.length - 1]
+  if (lastSnap) {
+    player.pos.x = lastSnap.state.pos.x
+    player.pos.y = lastSnap.state.pos.y
+  }
+
+  player.vel.x = 0
+  player.vel.y = 0
+  player.invulTicksRemaining = INVUL_TICKS
+  player.slashTicksRemaining = 0
+  player.slashCooldownTicks = 0
+  player.shootCooldownTicks = 0
+  player.shootTicksRemaining = 0
+  player.dashTicksRemaining = 0
+  player.dashCooldownTicks = 0
+
+  state.events.push({ tick: state.tick, type: 'paradox', playerId: attackerPlayerId })
+  state.events.push({ tick: state.tick, type: 'futureLaunch', playerId: attackerPlayerId })
 }
 
 export function processGhostActions(state: GameState): void {
   for (const timeline of state.timelines) {
     if (timeline.replayComplete) continue
     if (timeline.headEndedAtTick === undefined) continue
-    if (timeline.replayOriginTick === undefined || timeline.replayStartTick === undefined) continue
-
-    const playbackTick = timeline.replayStartTick + (state.tick - timeline.replayOriginTick)
-    const rawIndex = playbackTick - timeline.startTick
-    if (rawIndex < 0) continue
-    const rewindStartIndex = timeline.replayStartTick - timeline.startTick
-    const windowLength = timeline.snapshots.length - rewindStartIndex
-    if (windowLength <= 0) {
+    if (timeline.replayOriginTick === undefined) continue
+    if (timeline.snapshots.length === 0) {
       timeline.replayComplete = true
       continue
     }
-    const index = rewindStartIndex + ((rawIndex - rewindStartIndex) % windowLength)
+
+    const elapsed = state.tick - timeline.replayOriginTick
+    if (elapsed < 0) continue
+    const index = elapsed % timeline.snapshots.length
 
     const snapshot = timeline.snapshots[index]
     if (!snapshot) continue
     if (!snapshot.state.alive) continue
 
-    const isGhost = timeline.severed && playbackTick >= (timeline.severedAtSnapshotTick ?? 0)
+    const isGhost = timeline.severed
 
     const ghostPlayer: PlayerState = {
       ...clonePlayerState(snapshot.state),
@@ -286,33 +303,17 @@ export function processGhostActions(state: GameState): void {
 
 export function checkWinCondition(state: GameState): PlayerId | undefined {
   const playerIds = state.config.playerIds
-  if (playerIds.length < 2) {
-    const soloId = playerIds[0]
-    const solo = soloId !== undefined ? state.players[soloId] : undefined
-    if (solo?.alive && solo.ticks >= WIN_LEAD_TICKS) return soloId
-    return undefined
-  }
 
-  for (const candidateId of playerIds) {
-    const candidate = state.players[candidateId]
-    if (!candidate) continue
-    if (!candidate.alive) continue
-
-    let isAhead = true
-    for (const otherId of playerIds) {
-      if (otherId === candidateId) continue
-      const other = state.players[otherId]
-      if (!other) continue
-
-      if (candidate.ticks - other.ticks < WIN_LEAD_TICKS) {
-        isAhead = false
-        break
-      }
+  const atThreshold: PlayerId[] = []
+  for (const id of playerIds) {
+    const p = state.players[id]
+    if (!p?.alive) continue
+    if (p.ticks >= WIN_THRESHOLD_TICKS) {
+      atThreshold.push(id)
     }
-
-    if (isAhead) return candidateId
   }
 
+  if (atThreshold.length === 1) return atThreshold[0]
   return undefined
 }
 
@@ -358,6 +359,9 @@ export function createInitialTimeline(state: GameState, playerId: PlayerId): Tim
     severedAtSnapshotTick: undefined,
     severedByTimelineId: undefined,
     replayComplete: false,
+    killedByPlayerId: undefined,
+    killedByTimelineId: undefined,
+    ticksAtDeath: undefined,
   }
 
   return timeline
