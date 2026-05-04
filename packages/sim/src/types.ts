@@ -45,7 +45,6 @@ export interface Projectile {
   vel: Vec2
   ticksRemaining: number
   isGhost: boolean
-  deflectedThisTick: boolean
 }
 
 export interface SlashHitbox {

@@ -68,7 +68,7 @@ export function applyMovement(player: PlayerState, input: PlayerInput): void {
   player.pos.y += player.vel.y
 }
 
-export function resolvePlayerPlatformCollisions(player: PlayerState, arena: Arena): void {
+export function resolvePlayerPlatformCollisions(player: PlayerState, arena: Arena, dropThrough: boolean): void {
   if (!player.alive) return
 
   const playerLeft = player.pos.x - PLAYER_WIDTH / 2
@@ -80,6 +80,7 @@ export function resolvePlayerPlatformCollisions(player: PlayerState, arena: Aren
 
   for (const platform of arena.platforms) {
     if (platform.isWall) continue
+    if (dropThrough) continue
     if (playerRight <= platform.x || playerLeft >= platform.x + platform.width) continue
 
     if (prevPlayerBottom <= platform.y && playerBottom >= platform.y && player.vel.y >= 0) {

@@ -301,6 +301,11 @@ export function processGhostActions(state: GameState): void {
 
     if (index === 0 && elapsed > 0) {
       timeline.ghostLoopsCompleted++
+
+      state.projectiles = state.projectiles.filter(
+        (p) => p.ownerTimelineId !== timeline.timelineId,
+      )
+
       if (
         timeline.severed &&
         timeline.ghostLoopsCompleted >= GHOST_MIN_LOOPS &&

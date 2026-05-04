@@ -83,7 +83,6 @@ export function processPlayerActions(
       vel: { x: dir * PROJECTILE_SPEED, y: 0 },
       ticksRemaining: PROJECTILE_LIFETIME,
       isGhost: player.isGhost,
-      deflectedThisTick: false,
     })
   }
 
@@ -270,10 +269,8 @@ export function checkProjectileHits(state: GameState): HitResult[] {
   return hits
 }
 
-export function deflectProjectiles(state: GameState): void {
-  for (const proj of state.projectiles) {
-    proj.deflectedThisTick = false
-  }
+export function destroyDeflectedProjectiles(state: GameState): void {
+  const destroyed = new Set<number>()
 
   for (const slash of state.slashHitboxes) {
     const sLeft = slash.pos.x - slash.width / 2
@@ -282,7 +279,7 @@ export function deflectProjectiles(state: GameState): void {
     const sBottom = slash.pos.y + slash.height / 2
 
     for (const proj of state.projectiles) {
-      if (proj.deflectedThisTick) continue
+      if (destroyed.has(proj.id)) continue
       if (proj.ownerId === slash.ownerId && proj.ownerTimelineId === slash.ownerTimelineId) continue
 
       const pLeft = proj.pos.x - PROJECTILE_WIDTH / 2
@@ -291,14 +288,12 @@ export function deflectProjectiles(state: GameState): void {
       const pBottom = proj.pos.y + PROJECTILE_HEIGHT / 2
 
       if (rectsOverlap(sLeft, sTop, sRight, sBottom, pLeft, pTop, pRight, pBottom)) {
-        proj.vel.x = -proj.vel.x
-        proj.ownerId = slash.ownerId
-        proj.ownerTimelineId = slash.ownerTimelineId
-        proj.isGhost = slash.isGhost
-        proj.deflectedThisTick = true
+        destroyed.add(proj.id)
       }
     }
   }
+
+  state.projectiles = state.projectiles.filter((p) => !destroyed.has(p.id))
 }
 
 export function decayEntities(state: GameState): void {

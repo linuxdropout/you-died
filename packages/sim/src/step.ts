@@ -4,7 +4,7 @@ import {
   processPlayerActions,
   updateSlashPositions,
   moveProjectiles,
-  deflectProjectiles,
+  destroyDeflectedProjectiles,
   checkSlashHits,
   checkProjectileHits,
   decayEntities,
@@ -23,6 +23,7 @@ const NO_INPUT: PlayerInput = {
   left: false,
   right: false,
   jump: false,
+  down: false,
   dash: false,
   slash: false,
   shoot: false,
@@ -82,11 +83,12 @@ export function step(state: GameState, inputs: Record<string, PlayerInput>): Gam
   for (const playerId of state.config.playerIds) {
     const player = state.players[playerId]
     if (!player?.alive) continue
-    resolvePlayerPlatformCollisions(player, arena)
+    const input = inputs[playerId] ?? NO_INPUT
+    resolvePlayerPlatformCollisions(player, arena, input.down)
   }
 
   updateSlashPositions(state)
-  deflectProjectiles(state)
+  destroyDeflectedProjectiles(state)
 
   const boundaryDeaths: string[] = []
   for (const playerId of state.config.playerIds) {

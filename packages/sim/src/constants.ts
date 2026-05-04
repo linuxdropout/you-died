@@ -28,7 +28,7 @@ export const PROJECTILE_WIDTH = 8
 export const PROJECTILE_HEIGHT = 4
 
 export const SLASH_DURATION = 6
-export const SLASH_COOLDOWN = 18
+export const SLASH_COOLDOWN = 10
 export const SLASH_WIDTH = 64
 export const SLASH_HEIGHT = 52
 export const SLASH_OFFSET_X = 28

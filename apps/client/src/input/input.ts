@@ -50,6 +50,7 @@ export function captureInput(): PlayerInput {
   const left = keyState.get('ArrowLeft') === true || keyState.get('KeyA') === true
   const right = keyState.get('ArrowRight') === true || keyState.get('KeyD') === true
   const jump = keyState.get('ArrowUp') === true || keyState.get('KeyW') === true
+  const down = keyState.get('ArrowDown') === true || keyState.get('KeyS') === true
 
   trackFirstUse('move', left || right)
   trackFirstUse('jump', jump)
@@ -61,6 +62,7 @@ export function captureInput(): PlayerInput {
     left,
     right,
     jump,
+    down,
     dash,
     slash,
     shoot,

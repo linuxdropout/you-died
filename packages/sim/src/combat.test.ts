@@ -14,6 +14,7 @@ const NO_INPUT: PlayerInput = {
   left: false,
   right: false,
   jump: false,
+  down: false,
   dash: false,
   slash: false,
   shoot: false,
@@ -272,7 +273,7 @@ describe('combat', () => {
     expect(p1Timelines.length).toBe(1)
   })
 
-  it('slash deflects an enemy projectile', () => {
+  it('slash destroys an enemy projectile', () => {
     let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
 
     const p1 = getPlayer(state, 'p1')
@@ -288,19 +289,14 @@ describe('combat', () => {
 
     state = step(state, { p1: inputWith({ shoot: true }), p2: NO_INPUT })
     expect(state.projectiles.length).toBe(1)
-    expect(state.projectiles[0]?.vel.x).toBeGreaterThan(0)
 
     state = step(state, { p1: NO_INPUT, p2: NO_INPUT })
-
     state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
 
-    expect(state.projectiles.length).toBe(1)
-    const proj = state.projectiles[0]
-    expect(proj?.vel.x).toBeLessThan(0)
-    expect(proj?.ownerId).toBe('p2')
+    expect(state.projectiles.length).toBe(0)
   })
 
-  it('slash does not deflect own projectile', () => {
+  it('slash does not destroy own projectile', () => {
     let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
     placePlayersFarApart(state)
 
@@ -310,42 +306,7 @@ describe('combat', () => {
     state = step(state, { p1: inputWith({ shoot: true, slash: true }), p2: NO_INPUT })
 
     expect(state.projectiles.length).toBe(1)
-    expect(state.projectiles[0]?.vel.x).toBeGreaterThan(0)
     expect(state.projectiles[0]?.ownerId).toBe('p1')
-  })
-
-  it('deflected projectile can kill original shooter', () => {
-    let state = createInitialState({ seed: 1, playerIds: ['p1', 'p2'], arena: DEFAULT_ARENA })
-
-    const p1 = getPlayer(state, 'p1')
-    const p2 = getPlayer(state, 'p2')
-    p1.pos = { x: 400, y: 550 }
-    p1.vel = { x: 0, y: 0 }
-    p1.grounded = true
-    p1.facingRight = true
-    p2.pos = { x: 500, y: 550 }
-    p2.vel = { x: 0, y: 0 }
-    p2.grounded = true
-    p2.facingRight = false
-
-    state = step(state, { p1: inputWith({ shoot: true }), p2: NO_INPUT })
-    state = step(state, { p1: NO_INPUT, p2: NO_INPUT })
-    state = step(state, { p1: NO_INPUT, p2: inputWith({ slash: true }) })
-
-    const proj = state.projectiles[0]
-    if (!proj) throw new Error('projectile consumed or missing')
-    expect(proj.vel.x).toBeLessThan(0)
-
-    for (let i = 0; i < 60; i++) {
-      state = step(state, { p1: NO_INPUT, p2: NO_INPUT })
-      if (state.timelines.some(
-        (t) => t.playerId === 'p1' && t.headEndedAtTick !== undefined,
-      )) {
-        return
-      }
-    }
-
-    throw new Error('deflected projectile did not kill original shooter')
   })
 
   it('shoot cooldown lasts the expected duration', () => {

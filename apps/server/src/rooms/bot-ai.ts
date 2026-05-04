@@ -18,7 +18,7 @@ export function generateBotInput(
 ): PlayerInput {
   const bot = state.players[botId]
   if (!bot?.alive) {
-    return { left: false, right: false, jump: false, dash: false, slash: false, shoot: false }
+    return { left: false, right: false, jump: false, down: false, dash: false, slash: false, shoot: false }
   }
 
   let rng = nextSeed((matchSeed ^ tick ^ hashBotId(botId)) >>> 0)
@@ -44,7 +44,7 @@ export function generateBotInput(
   }
 
   if (nearestDist === Infinity) {
-    return { left: false, right: false, jump: false, dash: false, slash: false, shoot: false }
+    return { left: false, right: false, jump: false, down: false, dash: false, slash: false, shoot: false }
   }
 
   const left = nearestDx < -10
@@ -55,5 +55,5 @@ export function generateBotInput(
   const shoot = nearestDist >= 80 && nearestDist < 400 && rand() < 0.15
   const dash = nearestDist > 150 && rand() < 0.05
 
-  return { left, right, jump, dash, slash, shoot }
+  return { left, right, jump, down: false, dash, slash, shoot }
 }

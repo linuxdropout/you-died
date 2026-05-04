@@ -25,6 +25,7 @@ const NO_OP_INPUT: PlayerInput = {
   left: false,
   right: false,
   jump: false,
+  down: false,
   dash: false,
   slash: false,
   shoot: false,

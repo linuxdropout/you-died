@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import type { Room } from 'colyseus.js'
 import type { PlayerId, PlayerInput } from '@you-died/protocol'
 import type { HudData, ScreenEvent, AudioContextGuard } from '@you-died/renderer'
+import { SEVER_EFFECT_SECONDS } from '@you-died/protocol'
 import {
   GameHud,
   DeathSplash,
@@ -72,7 +73,8 @@ export function MatchScreen({
         setScreenEvent(event)
         if (clearTimer) clearTimeout(clearTimer)
         if (event.kind !== 'win') {
-          clearTimer = setTimeout(() => setScreenEvent(null), 2000)
+          const ms = event.kind === 'sever' ? SEVER_EFFECT_SECONDS * 1000 : 2000
+          clearTimer = setTimeout(() => setScreenEvent(null), ms)
         }
       },
     })

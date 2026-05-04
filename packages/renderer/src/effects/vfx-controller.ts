@@ -11,11 +11,11 @@ import { ParadoxEffect } from './paradox-effect.js'
 import { LaunchEffect } from './launch-effect.js'
 import { LightningEffect } from './lightning-effect.js'
 
-const SHAKE_DEATH = 10
-const SHAKE_SEVER = 8
-const SHAKE_PARADOX = 10
-const SHAKE_LAUNCH = 8
-const SHAKE_GHOST_EXPIRE = 6
+const SHAKE_DEATH = 5
+const SHAKE_SEVER = 4
+const SHAKE_PARADOX = 5
+const SHAKE_LAUNCH = 4
+const SHAKE_GHOST_EXPIRE = 3
 
 export class VfxController {
   readonly shake: ScreenShake
@@ -105,7 +105,7 @@ export class VfxController {
         this.paradox.start()
         this.shake.trigger(SHAKE_PARADOX)
         this.pendingTimer = setTimeout(() => {
-          this.shake.trigger(6)
+          this.shake.trigger(3)
           this.pendingTimer = null
         }, 200)
         if (isLocal) {
