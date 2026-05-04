@@ -1,14 +1,24 @@
-import { Container, Graphics } from 'pixi.js'
+import { Container, Graphics, Text, TextStyle } from 'pixi.js'
 
 interface SeverFlash {
   gfx: Graphics
+  text: Text | null
   timer: number
+  startY: number
 }
 
 const DURATION = 30
 const CRACK_SEGMENTS = 10
 const CRACK_SPREAD = 60
 const COLOR = 0x38e888
+const FLOAT_DISTANCE = 30
+
+const penaltyStyle = new TextStyle({
+  fontFamily: 'monospace',
+  fontSize: 14,
+  fill: 0xff4444,
+  fontWeight: 'bold',
+})
 
 export class SeverEffect {
   private readonly container: Container
@@ -18,10 +28,9 @@ export class SeverEffect {
     this.container = container
   }
 
-  flash(x: number, y: number) {
+  flash(x: number, y: number, penaltyTicks?: number) {
     const gfx = new Graphics()
 
-    // Brief white flash
     gfx.rect(x - 40, y - 50, 80, 100)
     gfx.fill({ color: 0xffffff, alpha: 0.15 })
 
@@ -47,8 +56,17 @@ export class SeverEffect {
     }
     gfx.stroke({ width: 1, color: COLOR, alpha: 0.5 })
 
+    let text: Text | null = null
+    if (penaltyTicks != null && penaltyTicks !== 0) {
+      const seconds = (Math.abs(penaltyTicks) / 60).toFixed(1)
+      text = new Text({ text: `-${seconds}s`, style: penaltyStyle })
+      text.anchor.set(0.5)
+      text.position.set(x, y - 40)
+      this.container.addChild(text)
+    }
+
     this.container.addChild(gfx)
-    this.flashes.push({ gfx, timer: DURATION })
+    this.flashes.push({ gfx, text, timer: DURATION, startY: y - 40 })
   }
 
   update() {
@@ -56,11 +74,21 @@ export class SeverEffect {
       const f = this.flashes[i]
       if (!f) continue
       f.timer--
+      const progress = 1 - f.timer / DURATION
       f.gfx.alpha = f.timer / DURATION
+
+      if (f.text) {
+        f.text.alpha = f.timer / DURATION
+        f.text.position.y = f.startY - progress * FLOAT_DISTANCE
+      }
 
       if (f.timer <= 0) {
         this.container.removeChild(f.gfx)
         f.gfx.destroy()
+        if (f.text) {
+          this.container.removeChild(f.text)
+          f.text.destroy()
+        }
         this.flashes.splice(i, 1)
       }
     }
@@ -70,6 +98,10 @@ export class SeverEffect {
     for (const f of this.flashes) {
       this.container.removeChild(f.gfx)
       f.gfx.destroy()
+      if (f.text) {
+        this.container.removeChild(f.text)
+        f.text.destroy()
+      }
     }
     this.flashes.length = 0
   }

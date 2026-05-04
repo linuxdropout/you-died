@@ -58,6 +58,8 @@ export interface HudKillEvent {
   readonly victim?: string
   readonly weapon?: 'slash' | 'shoot'
   readonly message?: string
+  readonly ticksDelta?: number
+  readonly attackerName?: string
 }
 
 export interface ScreenEvent {
@@ -65,4 +67,6 @@ export interface ScreenEvent {
   readonly killerName?: string
   readonly weapon?: 'slash' | 'shoot'
   readonly winnerId?: string
+  readonly ticksDelta?: number
+  readonly victimName?: string
 }

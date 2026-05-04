@@ -167,8 +167,8 @@ export class EntityManager {
       this.knownGoreEvents.add(eventKey)
 
       const player = frame.players.find((p) => p.id === event.playerId)
-      const x = player?.pos.x ?? 0
-      const y = player?.pos.y ?? 0
+      const x = event.pos?.x ?? player?.pos.x ?? 0
+      const y = event.pos?.y ?? player?.pos.y ?? 0
       const playerColor = this.context.playerColors[event.playerId] ?? 'red'
 
       for (let i = 0; i < GORE_PER_DEATH; i++) {

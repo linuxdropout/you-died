@@ -3,10 +3,14 @@ import type { ReactNode } from 'react'
 interface SeverNoticeProps {
   readonly visible: boolean
   readonly timelineId?: string
+  readonly ticksDelta?: number
 }
 
-export function SeverNotice({ visible, timelineId }: SeverNoticeProps): ReactNode {
+export function SeverNotice({ visible, timelineId, ticksDelta }: SeverNoticeProps): ReactNode {
   if (!visible) return null
+
+  const penaltyText =
+    ticksDelta != null ? `${(Math.abs(ticksDelta) / 60).toFixed(1)}s` : undefined
 
   return (
     <div className="severNotice">
@@ -22,6 +26,7 @@ export function SeverNotice({ visible, timelineId }: SeverNoticeProps): ReactNod
             TIMELINE SEVERED
           </span>
         </div>
+        {penaltyText != null && <span className="severNoticePenalty">-{penaltyText}</span>}
         {timelineId != null && <span className="severNoticeId">#{timelineId.slice(0, 6)}</span>}
       </div>
       <div className="severNoticeCrackLeft" />

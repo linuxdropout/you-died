@@ -50,7 +50,7 @@ export class VfxController {
 
     for (const event of frame.events) {
       if (event.tick !== frame.tick - 1) continue
-      const pos = findEventPosition(frame, event.playerId)
+      const pos = event.pos ?? findEventPosition(frame, event.playerId)
       this.dispatchEvent(event, pos, screenWidth, screenHeight)
     }
   }
@@ -83,10 +83,16 @@ export class VfxController {
         break
 
       case 'timelineSevered':
-        this.sever.flash(pos.x, pos.y)
+        this.sever.flash(pos.x, pos.y, event.ticksDelta != null ? Math.abs(event.ticksDelta) : undefined)
         this.shake.trigger(SHAKE_SEVER)
         if (isLocal) {
-          this.emitScreenEvent({ kind: 'sever' })
+          this.emitScreenEvent({
+            kind: 'sever',
+            ...(event.ticksDelta != null ? { ticksDelta: event.ticksDelta } : {}),
+            ...(event.attackerId
+              ? { killerName: this.context.playerNames[event.attackerId] ?? event.attackerId }
+              : {}),
+          })
         }
         break
 
@@ -98,7 +104,11 @@ export class VfxController {
           this.pendingTimer = null
         }, 200)
         if (isLocal) {
-          this.emitScreenEvent({ kind: 'paradox' })
+          this.emitScreenEvent({
+            kind: 'paradox',
+            ...(event.ticksDelta != null ? { ticksDelta: event.ticksDelta } : {}),
+            victimName: this.context.playerNames[event.playerId] ?? event.playerId,
+          })
         }
         break
 

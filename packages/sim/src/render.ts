@@ -4,11 +4,27 @@ import type {
   RenderPlayer,
   RenderProjectile,
   RenderSlash,
+  PlayerId,
 } from './types.ts'
 import { SHOOT_COOLDOWN } from './constants.ts'
 
+function buildParadoxTargetSet(state: GameState): Set<PlayerId> {
+  const targets = new Set<PlayerId>()
+  for (const timeline of state.timelines) {
+    if (timeline.severed) continue
+    if (timeline.headEndedAtTick === undefined) continue
+    if (!timeline.killedByPlayerId) continue
+    if (timeline.killedByPlayerId === timeline.playerId) continue
+    const killer = state.players[timeline.killedByPlayerId]
+    if (!killer?.alive) continue
+    targets.add(timeline.playerId)
+  }
+  return targets
+}
+
 export function getRenderableState(state: GameState): RenderFrame {
   const players: RenderPlayer[] = []
+  const paradoxTargets = buildParadoxTargetSet(state)
 
   for (const player of Object.values(state.players)) {
     players.push({
@@ -24,6 +40,9 @@ export function getRenderableState(state: GameState): RenderFrame {
       alive: player.alive,
       ticks: player.ticks,
       isInvulnerable: player.invulTicksRemaining > 0,
+      isStunned: player.stunTicksRemaining > 0,
+      isPastSelf: false,
+      isParadoxTarget: paradoxTargets.has(player.id),
       shootCooldownRatio: player.shootCooldownTicks / SHOOT_COOLDOWN,
     })
   }
@@ -55,6 +74,9 @@ export function getRenderableState(state: GameState): RenderFrame {
       alive: snapshot.state.alive,
       ticks: 0,
       isInvulnerable: false,
+      isStunned: false,
+      isPastSelf: true,
+      isParadoxTarget: paradoxTargets.has(timeline.playerId),
       shootCooldownRatio: 0,
     })
   }

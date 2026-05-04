@@ -23,6 +23,18 @@ const COOLDOWN_BAR_Y = 4
 const COOLDOWN_BAR_BG = 0x222222
 const COOLDOWN_BAR_FILL = 0xffcc00
 
+const STUN_BAR_WIDTH = 28
+const STUN_BAR_HEIGHT = 3
+const STUN_BAR_Y = -52
+const STUN_BAR_COLOR = 0xff4444
+
+const PAST_SELF_OUTLINE_COLOR = 0x8ecae6
+const PAST_SELF_OUTLINE_FREQUENCY = 0.04
+
+const PARADOX_TARGET_COLOR = 0xffaa00
+const PARADOX_TARGET_FREQUENCY = 0.06
+const PARADOX_DIAMOND_SIZE = 4
+
 export class PlayerEntity {
   readonly container = new Container()
   private sprite: PlayerSprite | null = null
@@ -33,6 +45,7 @@ export class PlayerEntity {
   private frameCount = 0
   private readonly trailGfx = new Graphics()
   private readonly cooldownBarGfx = new Graphics()
+  private readonly overlayGfx = new Graphics()
   private readonly trailPositions: { x: number; y: number }[] = []
 
   attach(sprites: SpriteManager, color: PlayerColor, ghost: boolean) {
@@ -44,6 +57,7 @@ export class PlayerEntity {
     }
     this.container.addChild(this.sprite.sprite)
     this.container.addChild(this.cooldownBarGfx)
+    this.container.addChild(this.overlayGfx)
     this.container.alpha = ghost ? GHOST_ALPHA_CENTER : 1
     this.currentColor = color
     this.currentGhost = ghost
@@ -116,18 +130,50 @@ export class PlayerEntity {
         this.trailGfx.fill({ color: TRAIL_COLOR, alpha })
       }
     }
+
+    this.overlayGfx.clear()
+
+    if (player.isStunned) {
+      const scaleX = player.facingRight ? 1 : -1
+      this.overlayGfx.rect(
+        scaleX * -STUN_BAR_WIDTH / 2,
+        STUN_BAR_Y,
+        scaleX * STUN_BAR_WIDTH,
+        STUN_BAR_HEIGHT,
+      )
+      this.overlayGfx.fill({ color: STUN_BAR_COLOR, alpha: 0.9 })
+    }
+
+    if (player.isPastSelf && !this.currentGhost) {
+      const pulseAlpha = 0.1 + 0.08 * Math.sin(this.frameCount * PAST_SELF_OUTLINE_FREQUENCY)
+      this.overlayGfx.rect(-TRAIL_PLAYER_W / 2 - 1, -TRAIL_PLAYER_H - 1, TRAIL_PLAYER_W + 2, TRAIL_PLAYER_H + 2)
+      this.overlayGfx.stroke({ color: PAST_SELF_OUTLINE_COLOR, alpha: pulseAlpha, width: 1 })
+    }
+
+    if (player.isParadoxTarget) {
+      const pulseAlpha = 0.5 + 0.4 * Math.sin(this.frameCount * PARADOX_TARGET_FREQUENCY)
+      const dy = STUN_BAR_Y - 6
+      this.overlayGfx.moveTo(0, dy - PARADOX_DIAMOND_SIZE)
+      this.overlayGfx.lineTo(PARADOX_DIAMOND_SIZE, dy)
+      this.overlayGfx.lineTo(0, dy + PARADOX_DIAMOND_SIZE)
+      this.overlayGfx.lineTo(-PARADOX_DIAMOND_SIZE, dy)
+      this.overlayGfx.closePath()
+      this.overlayGfx.fill({ color: PARADOX_TARGET_COLOR, alpha: pulseAlpha })
+    }
   }
 
   detach() {
     if (!this.sprite) return
     this.container.removeChild(this.sprite.sprite)
     this.container.removeChild(this.cooldownBarGfx)
+    this.container.removeChild(this.overlayGfx)
     this.sprite.sprite.destroy()
     if (this.currentGhost) {
       this.container.removeChild(this.trailGfx)
     }
     this.trailGfx.clear()
     this.cooldownBarGfx.clear()
+    this.overlayGfx.clear()
     this.trailPositions.length = 0
     this.sprite = null
     this.currentColor = null

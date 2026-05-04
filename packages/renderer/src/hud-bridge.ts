@@ -111,6 +111,10 @@ export class HudBridge {
           kind: 'sever',
           tick: event.tick,
           victim: name,
+          ...(event.attackerId
+            ? { attackerName: this.context.playerNames[event.attackerId] ?? event.attackerId }
+            : {}),
+          ...(event.ticksDelta != null ? { ticksDelta: event.ticksDelta } : {}),
         })
         break
 
@@ -119,6 +123,8 @@ export class HudBridge {
           id: String(this.nextEventId++),
           kind: 'paradox',
           tick: event.tick,
+          victim: name,
+          ...(event.ticksDelta != null ? { ticksDelta: event.ticksDelta } : {}),
         })
         break
 

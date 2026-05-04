@@ -146,8 +146,15 @@ export function MatchScreen({
               {...(screenEvent?.weapon != null ? { weapon: screenEvent.weapon } : {})}
             />
             <RewindFlash visible={screenEvent?.kind === 'rewind'} secondsBack={10} />
-            <ParadoxAlert visible={screenEvent?.kind === 'paradox'} />
-            <SeverNotice visible={screenEvent?.kind === 'sever'} />
+            <ParadoxAlert
+              visible={screenEvent?.kind === 'paradox'}
+              {...(screenEvent?.ticksDelta != null ? { ticksDelta: screenEvent.ticksDelta } : {})}
+              {...(screenEvent?.victimName != null ? { victimName: screenEvent.victimName } : {})}
+            />
+            <SeverNotice
+              visible={screenEvent?.kind === 'sever'}
+              {...(screenEvent?.ticksDelta != null ? { ticksDelta: screenEvent.ticksDelta } : {})}
+            />
             <WinScreen
               visible={screenEvent?.kind === 'win'}
               winnerName={

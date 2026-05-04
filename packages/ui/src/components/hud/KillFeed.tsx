@@ -10,11 +10,19 @@ export interface KillEvent {
   readonly victim?: string
   readonly weapon?: 'slash' | 'shoot'
   readonly message?: string
+  readonly ticksDelta?: number
+  readonly attackerName?: string
 }
 
 interface KillFeedProps {
   readonly events: readonly KillEvent[]
   readonly maxVisible?: number
+}
+
+function formatDelta(ticks: number): string {
+  const seconds = Math.abs(ticks) / 60
+  const sign = ticks >= 0 ? '+' : '-'
+  return `${sign}${seconds.toFixed(1)}s`
 }
 
 const WEAPON_GLYPH: Record<string, string> = {
@@ -51,10 +59,16 @@ function formatEvent(event: KillEvent): string {
       return `${event.killer ?? '?'}${weapon}${event.victim ?? '?'}`
     case 'rewind':
       return `${prefix} ${event.victim ?? '?'} REWOUND`
-    case 'sever':
-      return `${prefix} ${event.victim ?? '?'} SEVERED`
-    case 'paradox':
-      return `${prefix} PARADOX ${prefix}`
+    case 'sever': {
+      const delta = event.ticksDelta != null ? ` (${formatDelta(event.ticksDelta)})` : ''
+      return event.attackerName
+        ? `${prefix} ${event.attackerName} SEVERED ${event.victim ?? '?'}${delta}`
+        : `${prefix} ${event.victim ?? '?'} SEVERED${delta}`
+    }
+    case 'paradox': {
+      const delta = event.ticksDelta != null ? ` (${formatDelta(event.ticksDelta)})` : ''
+      return `${prefix} ${event.victim ?? '?'} PARADOX${delta} ${prefix}`
+    }
     case 'launch':
       return `${prefix} ${event.victim ?? '?'} LAUNCHED`
     case 'win':

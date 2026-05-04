@@ -10,7 +10,7 @@ import {
   decayEntities,
   rectsOverlap,
 } from './combat.ts'
-import { PROJECTILE_WIDTH, PROJECTILE_HEIGHT, MAX_GHOST_TIMELINES } from './constants.ts'
+import { PROJECTILE_WIDTH, PROJECTILE_HEIGHT, MAX_GHOST_TIMELINES, GHOST_MIN_LOOPS, GHOST_MIN_DURATION_TICKS, MAX_GHOSTS_PER_PLAYER } from './constants.ts'
 import {
   recordSnapshot,
   handleHeadDeath,
@@ -39,6 +39,7 @@ export function step(state: GameState, inputs: Record<string, PlayerInput>): Gam
     const player = state.players[playerId]
     if (!player?.alive) continue
     if (player.invulTicksRemaining > 0) player.invulTicksRemaining--
+    if (player.stunTicksRemaining > 0) player.stunTicksRemaining--
     const input = inputs[playerId] ?? NO_INPUT
     recordSnapshot(state, playerId, input)
   }
@@ -46,6 +47,7 @@ export function step(state: GameState, inputs: Record<string, PlayerInput>): Gam
   for (const playerId of state.config.playerIds) {
     const player = state.players[playerId]
     if (!player?.alive) continue
+    if (player.stunTicksRemaining > 0) continue
     const input = inputs[playerId] ?? NO_INPUT
     processPlayerActions(state, playerId, player, input)
   }
@@ -55,6 +57,7 @@ export function step(state: GameState, inputs: Record<string, PlayerInput>): Gam
   for (const playerId of state.config.playerIds) {
     const player = state.players[playerId]
     if (!player?.alive) continue
+    if (player.stunTicksRemaining > 0) continue
     const input = inputs[playerId] ?? NO_INPUT
     applyMovement(player, input)
   }
@@ -129,6 +132,28 @@ export function step(state: GameState, inputs: Record<string, PlayerInput>): Gam
   }
 
   decayEntities(state)
+
+  for (const playerId of state.config.playerIds) {
+    const playerGhosts = state.timelines.filter(
+      (t) =>
+        t.playerId === playerId &&
+        t.severed &&
+        t.headEndedAtTick !== undefined &&
+        !t.replayComplete,
+    )
+    if (playerGhosts.length > MAX_GHOSTS_PER_PLAYER) {
+      const eligible = playerGhosts.filter((t) => {
+        const elapsed = state.tick - (t.replayOriginTick ?? state.tick)
+        return t.ghostLoopsCompleted >= GHOST_MIN_LOOPS && elapsed >= GHOST_MIN_DURATION_TICKS
+      })
+      let toRemove = playerGhosts.length - MAX_GHOSTS_PER_PLAYER
+      for (const tl of eligible) {
+        if (toRemove <= 0) break
+        tl.replayComplete = true
+        toRemove--
+      }
+    }
+  }
 
   const activeTimelines = state.timelines.filter(
     (t) => t.headEndedAtTick !== undefined && !t.replayComplete,

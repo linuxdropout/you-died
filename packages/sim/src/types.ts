@@ -33,6 +33,7 @@ export interface PlayerState {
   isGhost: boolean
   ticks: number
   invulTicksRemaining: number
+  stunTicksRemaining: number
 }
 
 export interface Projectile {
@@ -76,6 +77,7 @@ export interface TimelineRecord {
   severedAtSnapshotTick: number | undefined
   severedByTimelineId: TimelineId | undefined
   replayComplete: boolean
+  ghostLoopsCompleted: number
   killedByPlayerId: PlayerId | undefined
   killedByTimelineId: TimelineId | undefined
   ticksAtDeath: number | undefined
@@ -94,6 +96,9 @@ export interface GameEvent {
   type: GameEventType
   playerId: PlayerId
   killerId?: PlayerId
+  attackerId?: PlayerId
+  ticksDelta?: number
+  pos?: { x: number; y: number }
 }
 
 export interface GameState {
@@ -124,6 +129,9 @@ export interface RenderPlayer {
   alive: boolean
   ticks: number
   isInvulnerable: boolean
+  isStunned: boolean
+  isPastSelf: boolean
+  isParadoxTarget: boolean
   shootCooldownRatio: number
 }
 
